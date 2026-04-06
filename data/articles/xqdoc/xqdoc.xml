@@ -1,0 +1,224 @@
+<topic id="xqdoc">
+    <title>xqDoc</title>
+    <prolog>
+        <data name="date" value="1Q18"/>
+        <data name="keyword" value="XQuery"/>
+    </prolog>
+    <body>
+        <p> xqDoc comments (see <xref href="http://xqdoc.org/" scope="external">xqdoc.org</xref>) are used to document XQuery library and main modules in a manner similar
+        to how Javadoc comments are used to document Java classes and packages. With the
+        documentation close to the source, documentation maintenance is easier. From this, xqDoc can
+        generate useful documentation quickly and easily.</p>
+        <p> An XQuery module does not need to contain xqDoc style comments in order for the xqDoc
+        tools to produce useful output. Even without any xqDoc documentation style comments, a cross
+        reference (for modules, functions, and variables) and XQuery code browser (for modules and
+        functions) will be created by xqDoc. </p>
+        <p>xqDoc comments are extracted when eXist-db parses an XQuery. It keeps them with the
+        function signature. </p>
+        <p>To speed up parsing, xqDoc uses "lazy evaluation". Comments are stored as plain strings
+        first. This is parsed and merged into the function signature when needed. It allows tools
+        like eXide to display up to date documentation while working on a module.</p>
+        <section id="comment-style">
+            <title>Comment Style</title>
+        
+
+        <p> xqDoc style comments begin with <ph>(:~</ph>  and end with  <ph>:)</ph>. </p>
+        <p>An xqDoc style comment can be specified for each of the following:</p>
+        <p>Library Modules:</p>
+        <ul>
+                <li>
+                <p>Module Declaration</p>
+            </li>
+                <li>
+                <p>Module Import</p>
+            </li>
+                <li>
+                <p>Variable Definition</p>
+            </li>
+                <li>
+                <p>Function Definition</p>
+            </li>
+            </ul>
+        <p>Main Modules:</p>
+        <ul>
+                <li>
+                <p>Main Module</p>
+            </li>
+                <li>
+                <p>Module Import</p>
+            </li>
+                <li>
+                <p>Variable Definition</p>
+            </li>
+                <li>
+                <p>Function Definition</p>
+            </li>
+            </ul>
+
+        <p>An xqDoc comment contains specials strings, called <i>tags</i> Tags
+            start with an <ph>@</ph> character. The text up to the first tag is assumed to be
+            the general description for the component being documented.</p>
+        <p>The following tags are recognized and handled:</p>
+
+        <dl>
+                <dlentry>
+                    <dt> <ph>@author</ph> </dt>
+                    <dd>
+                    <p>Author of this component. Occurrences: zero or more.</p>
+                    <pre outputclass="xquery">(:~
+@author Darin McBeath
+:)</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@version</ph> </dt>
+                    <dd>
+                    <p>Version of the component. Occurrences: zero or more, but only a single
+                        <ph>@version</ph> makes sense.</p>
+                    <pre outputclass="xquery">(:~
+@version 1.0
+:)</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@since</ph> </dt>
+                    <dd>
+                    <p>Identifies the version of the module since when this component is
+                        supported. Occurrences: zero or more, but only a single <ph>@since</ph>
+                        makes sense.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@see</ph> </dt>
+                    <dd>
+                    <p>Adds a hypertext link to an external site, a library or main module, a
+                        specific function or variable, or arbitrary text. Occurrences: zero or
+                        more.</p>
+                    <ul>
+                            <li>
+                            <p>To link to an external site, use a complete URL such as
+                                <ph>http://www.xquery.com</ph>.</p>
+                        </li>
+                            <li>
+                            <p>To link to a library or main module (contained in xqDoc), provide
+                                the URI for this (see example below).</p>
+                        </li>
+                            <li>
+                            <p>To link to a specific function or variable (contained in xqDoc),
+                                provide the URI for the library or main module, followed by a
+                                semicolon <ph>;</ph> and the function or variable name.</p>
+                        </li>
+                            <li>
+                            <p>To provide a name for a link, add a semicolon <ph>;</ph>,
+                                followed by the name</p>
+                        </li>
+                            <li>
+                            <p>Anything else will be interpreted as just text.</p>
+                        </li>
+                        </ul>
+                    <pre outputclass="xquery">(:~
+@see http://www.xquery.com
+@see xqdoc/xqdoc-display
+@see xqdoc/xqdoc-display;build-link
+@see xqdoc/xqdoc-display;$months
+@see xqdoc/xqdoc-display;$months;month variable
+@see http://www.xquery.com;;xquery
+@see some text
+:)</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@param</ph> </dt>
+                    <dd>
+                    <p>Describes the parameters associated with a function. Append the parameter
+                        name and its description.</p>
+                    <pre outputclass="xquery">(:~
+@param $name The username
+:)</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@return</ph> </dt>
+                    <dd>
+                    <p>Describes the return value from a function. Occurrences: zero or
+                        more.</p>
+                    <pre outputclass="xquery">(:~
+@return Sequence of names matching the search criteria
+:)</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@deprecated</ph> </dt>
+                    <dd>
+                    <p>Identifies the component as deprecated. Its text should indicate the
+                        reason and its optional replacement.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>@error</ph> </dt>
+                    <dd>
+                    <p>Identifies an error raised by the function. Occurrences: zero or
+                        more.</p>
+                    <pre outputclass="xquery">(:~
+@error The requested URI does not exist
+:)</pre>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>Values provided for each of the tags can contain embedded XHTML markup to enhance or
+            emphasize the xqDoc presentation. However, make sure the content is well formed and that
+            entities are used (for instance &amp;amp; instead of &amp;). </p>
+
+    </section>
+        <section id="ex-xqdoc">
+            <title>Examples</title>
+        
+        <p>Two examples for library and function comments.</p>
+        <section id="ex-lib">
+                <title>Library module comment:</title>
+            
+            <pre outputclass="xquery">(:~ 
+ : This module provides the functions that control the Web presentation
+ : of xqDoc. The logic contained in this module is not specific to any
+ : XQuery implementation and is written to the May 2003 XQuery working
+ : draft specification. It would be a trivial exercise to convert this
+ : code to either the Nov 2003 or Oct 2004 XQuery working draft.
+ :
+ : It should also be noted that these functions not only support the 
+ : real-time presentation of the xqDoc information but are also used
+ : for the static offline presentation mode as well. The static offline
+ : presentation mode has advantages because access to a native XML
+ : database is not needed when viewing the xqDoc information ... it is
+ : only needed when generating the offline materials. 
+ :
+ : @author Darin McBeath
+ : @version 1.0
+ :)
+module "xqdoc/display"</pre>
+        </section>
+        <section id="ex-func">
+                <title>Function comment</title>
+            
+            <pre outputclass="xquery">(:~ 
+ : The controller for constructing the xqDoc HTML information for
+ : the specified library module. The following information for
+ : each library module will be generated.
+ : &lt;ul&gt;
+ : &lt;li&gt; Module introductory information&lt;/li&gt;
+ : &lt;li&gt; Global variables declared in this module&lt;/li&gt;
+ : &lt;li&gt; Modules imported by this module&lt;/li&gt;
+ : &lt;li&gt; Summary information for each function defined in the module&lt;/li&gt;
+ : &lt;li&gt; Detailed information for each function defined in the module&lt;/li&gt;
+ : &lt;/ul&gt;
+ :
+ : @param $uri the URI for the library module
+ : @param $local indicates whether to build static HTML link for offline
+ : viewing or dynamic links for real-time viewing.
+ : @return XHTML.
+ :)
+define function print-module($uri as xs:string, $local as xs:boolean) as element()*</pre>
+        </section>
+    </section>
+    </body>
+</topic>

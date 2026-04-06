@@ -1,0 +1,248 @@
+<topic id="oldrangeindex">
+    <title>Legacy Range index</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="indexing"/>
+    </prolog>
+    <body>
+        <p>This article describes eXist-db's old range index. This has been replaced by a <xref href="newrangeindex" scope="external">redesigned range index</xref> (since eXist 2.2). The old index is
+        still available for compatibility reasons. Its use is discouraged.</p>
+        <section id="intro">
+            <title>Introduction</title>
+        
+
+        <p>Range indexes provide a shortcut for the database to directly select nodes based on
+            their typed values. They are used when matching or comparing nodes by way of standard
+            XPath operators and functions. Without a range index, comparison operators like
+            <ph>=</ph>, <ph>&gt;</ph> or <ph>&lt;</ph> will default to a "brute-force"
+            inspection of the DOM, which can be extremely slow if eXist-db has to search through
+            maybe millions of nodes: each node has to be loaded and cast to the target type.</p>
+        <p>To see how range indexes work, consider the following fragment:</p>
+
+        <pre outputclass="xml">&lt;items&gt;
+  &lt;item n="1"&gt;
+    &lt;name&gt;
+      Tall Bookcase
+    &lt;/name&gt;
+    &lt;price&gt;
+      299.99
+    &lt;/price&gt;
+  &lt;/item&gt;
+  &lt;item n="2"&gt;
+    &lt;name&gt;
+      Low Bookcase
+    &lt;/name&gt;
+    &lt;price&gt;
+      199.99
+    &lt;/price&gt;
+  &lt;/item&gt;
+&lt;/items&gt;</pre>
+        <p>With this short inventory, the text nodes of the <ph>price</ph> elements have dollar
+            values expressed as a floating-point number, (e.g. "299.99"), which has an <xref href="https://www.w3.org/TR/xmlschema-0/" scope="external">XML Schema Definition</xref> (XSD) data
+            type of <ph>xs:double</ph>. Using this built-in type to define a range index,
+            we can improve the efficiency of searches for <ph>price</ph> values. During indexing,
+            eXist-db will apply this data type selection by attempting to cast all <ph>price</ph>
+            values as double floating point numbers and add appropriate values to the index. Values
+            that cannot be cast as double are ignored. This range index will be used by any
+            expression that compares <ph>price</ph> to an <ph>xs:double</ph> value. For
+            instance:</p>
+        <pre>//item[price &gt; 100.0]</pre>
+
+        <p>For non-string data types, the range index provides the query engine with a more
+            efficient method of data conversion. Instead of retrieving the value of each selected
+            element and casting it as a <ph>xs:double</ph> type, the engine can evaluate
+            the expression by using the range index as a form of lookup index. Without an index,
+            eXist-db has to do a full scan over all price <ph>price</ph> elements, retrieve the
+            string values of their text node and cast them to a double number. This is a
+            time-consuming process which also scales very badly with growing data sets. With a
+            proper index, eXist-db needs just a single index lookup to evaluate <ph>price =
+            100.0</ph>. The range expression <ph>price &gt; 100.0</ph> is processed
+            with an index scan starting at 100. </p>
+        <p>For string data, the index will also be used by the standard functions
+            <ph>fn:contains()</ph>, <ph>fn:starts-with()</ph>,
+            <ph>fn:ends-with()</ph> and <ph>fn:matches()</ph>.</p>
+        <p>To illustrate this functionality, let's return to the previous example. If you define
+            a range index of type <ph>xs:string</ph> for element <ph>name</ph>, a query
+            on this element to select tall bookcases using <ph>fn:matches()</ph> will be
+            supported by the following index:</p>
+        <pre>//item[fn:matches(name, '[Tt]all\s[Bb]')]</pre>
+        <p>Note that <ph>fn:matches</ph> will by default try to match the regular
+            expression <i>anywhere</i> in the string. We can thus speed up the query
+            dramatically by using "^" to restrict the match to the start of the string: </p>
+        <pre>//item[fn:matches(name, '^[Tt]all\s[Bb]')]</pre>
+
+        <note type="note">
+                <p>If you really need to search for an exact substring in a longer text sequence, it
+                is often better to use the NGram index instead of the range index, i.e. use
+                <ph>ngram:contains()</ph> instead of <ph>fn:contains()</ph>.
+                Unfortunately, there's no equivalent NGram function for
+                <ph>fn:matches()</ph>.</p>
+            </note>
+
+        <p>In general, three conditions must be met in order to optimize a search using a range
+            index:</p>
+        <ol>
+                <li>
+                <p> <i>The range index must be defined on all items in the input
+                    sequence.</i> </p>
+                <p>For example, suppose you have two collections in the database: C1 and C2. If
+                    you have a range index defined for collection C1, but your query happens to
+                    operate on both C1 and C2, then the range index would <i>not</i>
+                    be used. The query optimizer selects an optimization strategy based on the
+                    entire input sequence of the query. Since, in this example, since only nodes in
+                    C1 have a range index, no range index optimization would be applied.</p>
+            </li>
+                <li>
+                <p> <i>The index data type (first argument type) must match the test data
+                    type (second argument type).</i> </p>
+                <p>In other words, with range indexes, there is no promotion of data types (i.e.
+                    no data type precedes or replaces another data type). For example, if you
+                    defined an index of type <ph>xs:double</ph> on <ph>price</ph>, a
+                    query that compares this element's value with a string literal would not use a
+                    range index, for instance:</p>
+                <pre>//item[price = '1000.0']</pre>
+                <p>In order to apply the range index, you would need to cast the value as a type
+                    <ph>xs:double</ph>, i.e.:</p>
+                <pre>//item[price = xs:double($price)] (where $price is any test value)</pre>
+                <p>Similarly, when we compare <ph>xs:double</ph> values with
+                    <ph>xs:integer</ph> values, as in, for instance:</p>
+                <pre>//item[price = 1000]</pre>
+                <p>the range index would again not be used since the <ph>price</ph> data type
+                    differs from the test value type, although this conflict might not seem as
+                    obvious as it is with string values.</p>
+            </li>
+                <li>
+                <p> <i>The right-hand argument has no dependencies on the current context
+                    item.</i> </p>
+                <p>That is, the test or conditional value must not depend on the value against
+                    which it is being tested. For example, range indexes will not be applied given
+                    the following expression:</p>
+                <pre>//item[price = self]</pre>
+            </li>
+            </ol>
+        <p>Concerning range indexes on strings there's another restriction to be considered: up
+            to version 1.3, range indexes on strings can only be used with the default Unicode
+            collation. Also, string indexes will always be case sensitive (while n-gram and full
+            text indexes are not). It is not (yet) possible to define a string index on a different
+            collation (e.g. for German or French) or to make it case-insensitive. </p>
+    </section>
+        <section id="range-idx">
+            <title>Range index configuration</title>
+        
+
+        <p>Range index configuration is done in <ph>collection.xconf</ph> documents (see
+            <xref href="indexing" scope="external">indexing</xref>):</p>
+        <pre outputclass="xml">&lt;!-- Range indexes --&gt;
+&lt;create qname="title" type="xs:string"/&gt;
+&lt;create qname="author" type="xs:string"/&gt;
+&lt;create qname="year" type="xs:integer"/&gt;
+&lt;!-- "old" context-dependant configuration using the path attribute: --&gt;
+&lt;create path="//booktitle" type="xs:string"/&gt;</pre>
+        <p>A range index is configured by adding a <ph>create</ph> element directly below the
+            root <ph>index</ph> element. As explained above, the node to be indexed is either
+            specified through a <ph>path</ph> or a <ph>qname</ph>
+            attribute.</p>
+
+        <note type="note">
+                <p>Unlike the <xref href="newrangeindex" scope="external">new range index</xref>, the
+                <ph>create</ph> elements of the old range index are <i>not</i>
+                wrapped inside a <ph>range</ph> tag.</p>
+            </note>
+
+        <p>As range indexes are type specific, the <ph>type</ph> attribute is always
+            required. The type should be one of the atomic XML schema types, currently including
+            <ph>xs:string</ph>, <ph>xs:integer</ph> and its derived types
+            <ph>xs:double</ph> and <ph>xs:float</ph>,
+            <ph>xs:boolean</ph> and <ph>xs:dateTime</ph>. If the name of the
+            type is unknown, the index configuration will be ignored and you will get a warning
+            written into the logs.</p>
+        <p>Please note that the index configuration will only apply to the node specified via the
+            <ph>path</ph> or <ph>qname</ph> attribute, not to descendants of
+            that node. Consider a mixed content element like:</p>
+
+        <pre outputclass="xml">&lt;mixed&gt;
+  &lt;s&gt;
+    un
+  &lt;/s&gt;
+  &lt;s&gt;
+    even
+  &lt;/s&gt;
+&lt;/mixed&gt;</pre>
+        <p>If an index is defined on <ph>mixed</ph>, the key for the index is built from the
+            concatenated text nodes of element <ph>mixed</ph> and all its descendants, so
+            <ph>uneven</ph> in this case. The created index will only be used to evaluate
+            queries on <ph>mixed</ph>, but not for queries on <ph>s</ph>. However, you can
+            create an additional index on <ph>s</ph> without getting into conflict with the
+            existing index on <ph>mixed</ph>.</p>
+    </section>
+        <section id="pathvsqname">
+            <title>Configuration by path vs. configuration by qname</title>
+        
+
+        <p>It is important to note the difference between the <ph>path</ph> and
+            <ph>qname</ph> attributes used in above examples. Both attributes are used to
+            define the elements or attributes to which the index should apply. However, the
+            <ph>path</ph> attribute creates <i>context-dependant</i>
+            indexes, while the <ph>qname</ph> attribute does not. </p>
+        <p>The <ph>path</ph> attribute takes a simple path expression: <ph>create path="//book/title" type="xs:string"/</ph>
+            </p>
+        <p>The <ph>path</ph> expression looks like XPath, but it's not. Index path syntax
+            uses the following components to construct paths:</p>
+        <ul>
+                <li>
+                <p>Elements are specified by their <i>qname</i> </p>
+            </li>
+                <li>
+                <p>Attributes are specified by <ph>@attributeName</ph>, so if the
+                    attribute is called <ph>attrib1</ph>, one uses <ph>@attrib1</ph>
+                    in the index specification.</p>
+            </li>
+                <li>
+                <p>Child nodes are selected using the forward-slash (<ph>/</ph>)</p>
+            </li>
+                <li>
+                <p>All descendant nodes in a tree are selected using the double forward-slash
+                    (<ph>//</ph>)</p>
+            </li>
+            </ul>
+        <p>The example above creates a range index of type string on all <ph>title</ph>
+            elements which are children of <ph>book</ph> elements, which may occur at an arbitrary
+            position in the document tree. All other <ph>title</ph> elements, e.g. those being
+            children of <ph>section</ph> nodes, are not indexed. The path expression thus defines
+            a <i>selective</i> index, which is also
+            <i>context-dependant</i>: we always need look at the context of each
+            <ph>title</ph> node before we can determine if this particular title is to be indexed
+            or not.</p>
+        <p>This kind of context-dependant index definition helps to keep the index small, but
+            unfortunately it makes it hard for the query optimizer to properly rewrite the
+            expression tree without missing some nodes. The optimizer needs to make an optimization
+            decision at compile time, where the context of an expression is unknown or at least not
+            exactly known (read the <xref href="http://atomic.exist-db.org/blogs/eXist/NewIndexing" scope="external">blog article</xref> to
+            get the whole picture). This means that some of the optimization techniques can not be
+            applied to context-dependant indexes!</p>
+        <p>We therefore had to introduce an alternative configuration method which is not
+            context-dependant. To keep things simple, we decided to define the index on the
+            <i>qname</i> of the element or attribute alone and to ignore the context
+            altogether: <ph>create qname="title" type="xs:string"/</ph>
+            </p>
+        <p>This results in an index being created on every <ph>title</ph> element found in the
+            document node tree. Section titles will be indexed as well as chapter or book titles. </p>
+        <p>Indexes on attributes are defined as above by prepending "@" to the attribute's
+            name: <ph>create qname="@type" type="xs:string"/</ph>
+            </p>
+        <p>This defines an index on all attributes named "type", but not on elements with the
+            same name.</p>
+        <p>Defining indexes on qnames may result in a considerably larger index, but it allows
+            the query engine to apply all available optimization techniques, which can improve query
+            times by an order of magnitude. As always, there's a trade-off here between performance
+            and storage space. In many cases, the performance win can be dramatic enough to justify
+            the increase in index size.</p>
+        <note type="notice">
+                <p>To be on the safe side, and to benefit from current and future improvements in the
+                query engine, you should prefer <ph>qname</ph> over
+                <ph>path</ph>, unless you really need to exclude certain nodes from
+                indexing.</p>
+            </note>
+    </section>
+    </body>
+</topic>

@@ -1,0 +1,214 @@
+<topic id="kwic">
+    <title>KWIC (Keywords in Context) Output</title>
+    <prolog>
+        <data name="date" value="1Q18"/>
+        <data name="keyword" value="xquery"/>
+    </prolog>
+    <body>
+        <p>Keywords In Context (KWIC) helps users to quickly scan through search results by listing
+        hits surrounded by their context. eXist provides a KWIC module that is not bound to a
+        specific index or query operation. It but can be applied to query results from all indexes
+        that support match highlighting. This includes the Lucene-based index and the ngram
+        index.</p>
+        <p>The documentation search function on eXist's home page is a good example. It queries
+        documents written in DocBook format. However, the KWIC module has also been successfully
+        used with different schemas (e.g. TEI) and languages (e.g. Chinese).</p>
+        <section id="using">
+            <title>Using the Module</title>
+        
+
+        <p>The KWIC module is entirely written in XQuery. To use the module, import its namespace
+            into your query (you don't need to specify a location):</p>
+        <pre outputclass="xquery">import module namespace kwic="http://exist-db.org/xquery/kwic";</pre>
+
+        <p>The easiest way to get KWIC output is to call the <ph>kwic:summarize</ph>
+            function on an element node returned from a full text or ngram query:</p>
+        <pre outputclass="xquery">import module namespace kwic="http://exist-db.org/xquery/kwic";
+for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "'nature'")] 
+order by ft:score($hit) descending
+return
+    kwic:summarize($hit, &lt;config width="40"/&gt;)</pre>
+        <p>Every call to <ph>kwic:summarize</ph> will return an HTML paragraph
+            containing 3 <ph>span</ph> elements with the text before and after each match, as
+            well as the match text itself:</p>
+        <pre outputclass="xml">&lt;p&gt;
+  &lt;span class="previous"&gt;
+    ... s effect, sir; after what flourish your
+  &lt;/span&gt;
+  &lt;span class="hi"&gt;
+    nature
+  &lt;/span&gt;
+  &lt;span class="following"&gt;
+    will.
+  &lt;/span&gt;
+&lt;/p&gt;</pre>
+
+        <p>The <ph>config</ph> element, passed to <ph>kwic:summarize</ph> (as second
+            parameter) determines the appearance of the generated HTML. It recognizes 3
+            attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>width</ph>
+                    </dt>
+                    <dd>
+                    <p>The maximum number of characters to be printed before and after the
+                        match</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>table</ph>
+                    </dt>
+                    <dd>
+                    <p>By default <ph>kwic:summarize</ph> returns an HTML paragraph
+                        with spans.</p>
+                    <p>If <ph>table="yes"</ph> it will return an HTML <i>table
+                        row</i> <ph>tr</ph> element. The text chunks will be enclosed in a
+                        table column <ph>td</ph> element.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>link</ph>
+                    </dt>
+                    <dd>
+                    <p>If present, each match will be enclosed within a link, using the URI in
+                        the link attribute as target. 
+                    </p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <section id="call-back">
+                <title>Using a callback function for more fine-grained control</title>
+            
+
+            <p>If you look at the output of query above you may notice that a space is missing
+                between words if the previous or following chunk extends to a different
+                <ph>LINE</ph> element. And it would also be nicer to display text from
+                <ph>LINE</ph> elements only and to ignore <ph>SPEAKER</ph> or
+                <ph>STAGEDIR</ph> elements. This can be achieved with the help of a callback
+                function:</p>
+            <pre outputclass="xquery">import module namespace kwic="http://exist-db.org/xquery/kwic";
+                
+declare function local:filter($node as node(), $mode as xs:string) as xs:string? {
+  if ($node/parent::SPEAKER or $node/parent::STAGEDIR) then 
+      ()
+  else if ($mode eq 'before') then 
+      concat($node, ' ')
+  else 
+      concat(' ', $node)
+};
+
+for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "'nature'")] 
+order by ft:score($hit) descending
+return
+kwic:summarize($hit, &lt;config width="40"/&gt;, local:filter#2)
+</pre>
+            <p>The third parameter to <ph>kwic:summarize</ph> here is a reference to a
+                function accepting 2 arguments:</p>
+            <ol>
+                    <li>
+                    <p>A single text node which should be appended or prepended to the current
+                        text chunk</p>
+                </li>
+                    <li>
+                    <p>A string indicating the current direction in which text is appended:
+                        <ph>before</ph> or <ph>after</ph>.</p>
+                </li>
+                </ol>
+
+
+            <p>The function can return the empty sequence if the current node should be ignored
+                (for instance if it belongs to a footnote which should not be displayed). Otherwise
+                it must return a single string.</p>
+            <p>The <ph>local:filter</ph> function above first checks if the passed node
+                has a SPEAKER or STAGEDIR parent. If so, it <i>ignores</i> that node
+                by returning the empty sequence. If not, the function adds a single whitespace
+                before or after the string, so adjacent lines will be properly separated.</p>
+        </section>
+    </section>
+        <section id="advanced">
+            <title>Advanced Use</title>
+        
+
+        <p>Using <ph>kwic:summarize</ph>, you will get one KWIC-formatted item for
+            every match, even if the matches are in the same paragraph. Also, the context from which
+            the text is taken is always the same: the element you queried. To get more control over
+            the output, you can directly call <ph>kwic:get-summary</ph>, which is the
+            module's core function. </p>
+        <p>
+                <ph>kwic:get-summary</ph> expects 3 or 4 parameters. </p>
+        <ul>
+                <li>
+                <p>The current context root</p>
+            </li>
+                <li>
+                <p>The match object to process</p>
+            </li>
+                <li>
+                <p>Parameters 3 and 4 are the same as for
+                    <ph>kwic:summarize</ph>
+                    </p>
+            </li>
+            </ul>
+
+        <p>Before passing nodes to <ph>kwic:get-summary</ph> you have to
+            <i>expand</i> them, which basically means to create an in-memory copy in
+            which all matches are properly marked up with <ph>exist:match</ph> tags. The main part
+            of the query should look as follows:</p>
+        <pre outputclass="xquery">for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "'nature'")]
+let $expanded := kwic:expand($hit)
+order by ft:score($hit) descending
+return
+    kwic:get-summary($expanded, ($expanded//exist:match)[1], &lt;config width="40"/&gt;,
+        local:filter#2)
+</pre>
+        <p>In this example, we select the first <ph>exist:match</ph> only, thus ignoring all
+            other matches within <ph>$expanded</ph>.</p>
+
+        <p>Sometimes you may also want to change the context to restrict the KWIC display to
+            certain elements within the larger query context, for instance paragraphs within
+            sections. The following example still queries <ph>SPEECH</ph> but displays a KWIC
+            entry for each <ph>LINE</ph> with a match, grouped by speech:</p>
+        <pre outputclass="xquery">for $hit in doc("/db/shakespeare/plays/hamlet.xml")//SPEECH[ft:query(., "nature")]
+let $expanded := kwic:expand($hit)
+order by ft:score($hit) descending
+return
+    &lt;div class="speech"&gt;{
+        for $line in $expanded//LINE[.//exist:match]
+        return
+            kwic:get-summary($line, ($line/exist:match)[1], &lt;config width="40"/&gt;,
+                local:filter#2)
+    }&lt;/div&gt;
+</pre>
+        <p>You might wonder why we don't query <ph>LINE</ph> directly to get a different
+            context, as in:</p>
+        <pre outputclass="xquery">//SPEECH[ft:query(LINE, "nature")]</pre>
+        <p>This is because Lucene computes the relevance of each match with respect to the SPEECH
+            context, not LINE. If we queried LINE, each single line would get a match score and the
+            matches would end up in a completely different order.</p>
+    </section>
+        <section id="highlight">
+            <title>Marking up Matches without using KWIC</title>
+        
+
+        <p>Sometimes you don't want to use the KWIC module, but still would like an indication
+            where matches were found in the text. eXist's XML serializer can automatically highlight
+            matches when it writes out a piece of XML. All the matches will be surrounded by an
+            <ph>exist:match</ph> tag.</p>
+        <p>You can achieve the same within an XQuery by calling the extension function
+            <ph>util:expand</ph>:</p>
+
+        <pre outputclass="xquery">let $expanded := util:expand($hit, "expand-xincludes=no")
+return $expanded//exist:match</pre>
+        <p> <ph>util:expand</ph> returns a copy of the XML fragment it received in its
+            first parameter, which, unless configured otherwise, has all matches wrapped into
+            <ph>exist:match</ph> tags.</p>
+
+        <p>Please note that <ph>util:expand</ph> will not expand matches in Lucene fields. 
+        Use <ph>ft:highlight-field-matches</ph> instead. For more information, see <xref href="lucene.xml#expand-fields" scope="external">lucene.xml#expand-fields</xref>.</p>    
+    </section>
+    </body>
+</topic>

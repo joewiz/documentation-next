@@ -1,0 +1,44 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index>
+        <!-- Lucene full-text indexes for XDITA articles (no namespace) -->
+        <lucene>
+            <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+
+            <!-- Topic title: heavily boosted -->
+            <text match="/topic/title" boost="2.0"/>
+
+            <!-- Section titles -->
+            <text match="//section/title" boost="1.3"/>
+
+            <!-- Paragraphs: main content -->
+            <text qname="p"/>
+
+            <!-- Code blocks (searchable) -->
+            <text qname="pre"/>
+
+            <!-- Site-wide search fields for exist-api / site-shell integration -->
+            <text qname="topic">
+                <field name="site-content"
+                       expression="string-join((
+                           title,
+                           prolog/data[@name='keyword']/@value,
+                           .//p,
+                           .//section/title
+                       ), ' ')"/>
+                <field name="site-title"
+                       expression="title"/>
+                <field name="site-app"
+                       expression="'docs'"/>
+                <field name="site-section"
+                       expression="'articles'"/>
+                <field name="site-url"
+                       expression="processing-instruction('site-url')"/>
+            </text>
+        </lucene>
+
+        <!-- Range indexes -->
+        <range>
+            <create qname="@id" type="xs:string"/>
+        </range>
+    </index>
+</collection>

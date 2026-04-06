@@ -1,0 +1,624 @@
+<topic id="triggers">
+    <title>Configuring Database Triggers</title>
+    <prolog>
+        <data name="date" value="1Q22"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db supports triggers: code that runs when certain events in the database occur. This
+        article will tell you how to use this facility.</p>
+        <section id="triggers">
+            <title>Overview</title>
+        
+
+
+        <p>Triggers can be configured to respond to document and/or collection events. There are
+            five types of events triggers can respond to:</p>
+        <dl>
+                <dlentry>
+                    <dt>create</dt>
+                    <dd>
+                    <p>Fired when a collection or document is created in a collection</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>update</dt>
+                    <dd>
+                    <p>Fired when a document is updated (there is no collection update)</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>copy</dt>
+                    <dd>
+                    <p>Fired when a collection or document is copied</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>move</dt>
+                    <dd>
+                    <p>Fired when a collection or document is moved (a rename operation is
+                        considered a move, not an update)</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>delete</dt>
+                    <dd>
+                    <p>Fired when a collection or document is deleted</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>Triggers can be defined for running both <i>before</i> and
+            <i>after</i> the event.</p>
+        <p>Triggers may be chained together into a pipeline like approach. For example, if a
+            document is stored into Collection A (configured with Trigger A), Trigger A may process
+            the document and in response store a new document into Collection B (configured with
+            Trigger B), which will in turn cause the document to be processed by Trigger B and so
+            on.</p>
+
+    </section>
+        <section id="types">
+            <title>Trigger Types</title>
+        
+
+        <p>Triggers can be written in XQuery or Java. </p>
+
+        
+
+        <section id="xq-triggers">
+                <title>XQuery Triggers</title>
+            
+
+            <p>The XQuery code to execute when the trigger is fired can be placed in the
+                collection configuration <ph>collection.xconf</ph> file or referenced by a
+                URL.</p>
+            <p>The XQuery functions mapped to trigger event:</p>
+            <ul>
+                    <li>
+                    <p> <ph>trigger:before-create-collection($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-create-collection($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-copy-collection($uri as xs:anyURI, $new-uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-copy-collection($new-uri as xs:anyURI, $uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-move-collection($uri as xs:anyURI, $new-uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-move-collection($new-uri as xs:anyURI, $uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-delete-collection($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-delete-collection($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-create-document($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-create-document($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-update-document($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-update-document($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-copy-document($uri as xs:anyURI, $new-uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-copy-document($new-uri as xs:anyURI, $uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-move-document($uri as xs:anyURI, $new-uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-move-document($new-uri as xs:anyURI, $uri as
+                        xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:before-delete-document($uri as xs:anyURI)</ph> </p>
+                </li>
+                    <li>
+                    <p> <ph>trigger:after-delete-document($uri as xs:anyURI)</ph> </p>
+                </li>
+                </ul>
+            <p>The <ph>trigger:</ph> prefix must be mapped to
+                <ph>http://exist-db.org/xquery/trigger</ph> namespace.</p>
+        </section>
+
+        
+
+        <section id="java-triggers">
+                <title>Java Triggers</title>
+            
+
+            <p>Triggers written in Java must implement the
+                <ph>org.exist.collections.triggers.CollectionTrigger</ph> or
+                <ph>org.exist.collections.triggers.DocumentTrigger</ph> interface. The Java
+                class for your trigger must be available on the class path. <ph>lib/user</ph> is
+                a good place to store the your custom trigger. </p>
+            <p>The <ph>DocumentTrigger</ph> interface provides a convenient starting place
+                and provides the methods.</p>
+        </section>
+    </section>
+        <section id="trigger-config">
+            <title>Configuring Triggers</title>
+        
+
+        <p>Triggers are configured using the collection-specific configuration files called
+            <ph>collection.xconf</ph>. These files are stored as standard XML documents in the
+            system collection <ph>/db/system/config</ph>. <ph>collection.xconf</ph> is
+            used also to define other collection specific settings such as <xref href="indexing" scope="external">indexes</xref> or default permissions.</p>
+        <p>The hierarchy of the collection <ph>/db/system/config</ph> mirrors the
+            hierarchical structure of the main database collection. </p>
+        <p>Configurations are inherited by descendants in this hierarchy, (the configuration
+            settings for a child collection are added to or override those set for its parent). With
+            this it is possible for each collection to have its own <i>trigger creation
+            policy</i> defined by a configuration file.</p>
+        <p>To configure triggers for a given collection, for example: <ph>/db/foo</ph>,
+            create a new collection configuration file <ph>collection.xconf</ph> and store it in
+            the system collection (for instance as
+            <ph>/db/system/config/db/foo/collection.xconf</ph>). Since sub-collections
+            inherit the configuration policy of their parents, you are not required to specify a
+            configuration for its sub-collections.</p>
+
+        
+
+        <section id="conf-syntax">
+                <title>Configuration Structure and Syntax</title>
+            
+
+            <p>Trigger configuration files are standard XML documents that have their elements
+                defined in the eXist namespace
+                <ph>http://exist-db.org/collection-config/1.0</ph>.</p>
+            <p>All configuration documents have a <ph>collection</ph> root element. The
+                triggers <ph>child</ph> element encloses the trigger configuration. Only a
+                single <ph>triggers</ph> element is permitted. In the <ph>triggers</ph> element
+                are <ph>trigger</ph> elements that define each trigger and the event(s) that it is
+                fired for.</p>
+            <p>Each <ph>trigger</ph> element has two attributes, <ph>event</ph> and
+                <ph>class</ph>.</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                            <ph>event</ph>
+                        </dt>
+                        <dd>
+                        <p>A comma separated list of events to fire on:</p>
+                        <ul>
+                                <li>
+                                <p>
+                                        <ph>create</ph>
+                                    </p>
+                            </li>
+                                <li>
+                                <p>
+                                        <ph>update</ph>
+                                    </p>
+                            </li>
+                                <li>
+                                <p>
+                                        <ph>copy</ph>
+                                    </p>
+                            </li>
+                                <li>
+                                <p>
+                                        <ph>move</ph>
+                                    </p>
+                            </li>
+                                <li>
+                                <p>
+                                        <ph>delete</ph>
+                                    </p>
+                            </li>
+                            </ul>
+
+                        <p>If for an XQuery trigger the <ph>event</ph> attribute is not
+                            present, the code will never be invoked. </p>
+                        <p>For Java triggers the <ph>event</ph> attribute may or may not have
+                            any effect depending on the implementation of the
+                            <ph>configure()</ph> method. See the examples below.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>class</ph>
+                        </dt>
+                        <dd>
+                        <p>The name of the Java Class to fire when an event occurs. XQuery
+                            triggers are handled by the built-in Java trigger
+                            <ph>org.exist.collections.triggers.XQueryTrigger</ph>.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+            <p>The <ph>trigger</ph> element can in addition contain zero or more
+                <ph>parameter</ph> child-elements, defining any parameters to send to the
+                trigger.</p>
+
+            <section id="conf-xq">
+                    <title>Configuring an XQuery Trigger</title>
+                
+
+                <p>For XQuery triggers the following parameters apply:</p>
+                <dl>
+                        <dlentry>
+                            <dt>
+                                <ph>url</ph>
+                            </dt>
+                            <dd>
+                            <p>The URL of the XQuery to execute</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>
+                                <ph>query</ph>
+                            </dt>
+                            <dd>
+                            <p>Can be used instead of <ph>url</ph>. Contains the XQuery
+                                itself.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+
+                <p>The following example shows two XQuery Triggers configured in
+                    <ph>collection.xconf</ph>. The first executes an XQuery stored in the
+                    database, the second an XQuery placed inline:</p>
+                <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;triggers&gt;
+    &lt;trigger event="update" class="org.exist.collections.triggers.XQueryTrigger"&gt;
+      &lt;parameter name="url" value="xmldb:exist:///db/myTrigger.xql"/&gt;
+    &lt;/trigger&gt;
+    &lt;trigger event="create" class="org.exist.collections.triggers.XQueryTrigger"&gt;
+      &lt;parameter name="query" value="module namespace trigger='http://exist-db.org/xquery/trigger';      declare function trigger:before-create-collection($uri as xs:anyURI) {              util:log('debug', concat('Trigger fired at ', current-dateTime()))           };"/&gt;
+    &lt;/trigger&gt;
+  &lt;/triggers&gt;
+&lt;/collection&gt;</pre>
+            </section>
+
+            <section id="conf-java">
+                    <title>Configuring a Java Trigger</title>
+                
+
+                <p>When configuring a Java Trigger, parameters are passed in a named map to the
+                    <ph>configure()</ph> function of the trigger.</p>
+                <p>The following example shows a Java trigger configuration:</p>
+                <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;triggers&gt;
+    &lt;trigger class="my.domain.testTrigger"&gt;
+      &lt;parameter name="myParam" value="myValue"/&gt;
+    &lt;/trigger&gt;
+  &lt;/triggers&gt;
+&lt;/collection&gt;</pre>
+            </section>
+
+        </section>
+    </section>
+        <section id="ex-trigger">
+            <title>Example Triggers</title>
+        
+
+        <p>Here are trigger examples:</p>
+
+        
+
+        <section id="logging-xq">
+                <title>Simple logging Trigger in XQuery</title>
+            
+            <pre outputclass="xquery">xquery version "1.0";
+
+(:
+    A simple XQuery for an XQueryTrigger that
+    logs all trigger events for which it is executed
+    in the file /db/triggers-log.xml
+:)
+
+module namespace trigger="http://exist-db.org/xquery/trigger";
+
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+declare function trigger:before-create-collection($uri as xs:anyURI) {
+    local:log-event("before", "create", "collection", $uri)
+};
+
+declare function trigger:after-create-collection($uri as xs:anyURI) {
+    local:log-event("after", "create", "collection", $uri)
+};
+
+declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-delete-collection($uri as xs:anyURI) {
+    local:log-event("before", "delete", "collection", $uri)
+};
+
+declare function trigger:after-delete-collection($uri as xs:anyURI) {
+    local:log-event("after", "delete", "collection", $uri)
+};
+
+declare function trigger:before-create-document($uri as xs:anyURI) {
+    local:log-event("before", "create", "document", $uri)
+};
+
+declare function trigger:after-create-document($uri as xs:anyURI) {
+    local:log-event("after", "create", "document", $uri)
+};
+
+declare function trigger:before-update-document($uri as xs:anyURI) {
+    local:log-event("before", "update", "document", $uri)
+};
+
+declare function trigger:after-update-document($uri as xs:anyURI) {
+    local:log-event("after", "update", "document", $uri)
+};
+
+declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-delete-document($uri as xs:anyURI) {
+    local:log-event("before", "delete", "document", $uri)
+};
+
+declare function trigger:after-delete-document($uri as xs:anyURI) {
+    local:log-event("after", "delete", "document", $uri)
+};
+
+declare function local:log-event($type as xs:string, $event as xs:string, $object-type as xs:string, $uri as xs:string) {
+    let $log-collection := "/db"
+    let $log := "triggers-log.xml"
+    let $log-uri := concat($log-collection, "/", $log)
+    return
+        (
+        (: create the log file if it does not exist :)
+        if (not(doc-available($log-uri))) then
+            xmldb:store($log-collection, $log, &lt;triggers/&gt;)
+        else ()
+        ,
+        (: log the trigger details to the log file :)
+        update insert &lt;trigger event="{string-join(($type, $event, $object-type), "-")}" uri="{$uri}" timestamp="{current-dateTime()}"/&gt; into doc($log-uri)/triggers
+        )
+};</pre>
+        </section>
+
+        
+
+        <section id="logging-java">
+                <title>Simple Logging Trigger in Java</title>
+            
+            <pre outputclass="java">import java.io.File;
+import java.io.FileOutputStream;
+
+import org.exist.collections.triggers.FilteringTrigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.DateTimeValue;
+
+/**
+ 	A simple Java Trigger that
+	logs all trigger events for which it is executed
+	in the file triggersLog.xml in the systems temporary folder
+*/
+
+public class LoggingTrigger extends FilteringTrigger implements DocumentTrigger
+{
+    private final static String TEMPLATE = "&lt;?xml version=\"1.0\"?&gt;&lt;events&gt;&lt;/events&gt;";
+
+    private DocumentImpl doc;
+
+    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map&lt;String, List&lt;?&gt;&gt; parameters) throws CollectionConfigurationException {
+        super.configure(broker, parent, parameters);
+        XmldbURI docPath = XmldbURI.create("messages.xml");
+        System.out.println("TestTrigger prepares");
+        this.doc = parent.getDocument(broker, docPath);
+        if (this.doc == null) {
+            TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
+            Txn transaction = transactMgr.beginTransaction();
+            try {
+                getLogger().debug("creating new file for collection contents");
+
+                // IMPORTANT: temporarily disable triggers on the collection.
+                // We would end up in infinite recursion if we don't do that
+                parent.setTriggersEnabled(false);
+                IndexInfo info = parent.validateXMLResource(transaction, broker, docPath, TEMPLATE);
+
+                parent.store(transaction, broker, info, TEMPLATE, false);
+                this.doc = info.getDocument();
+
+                transactMgr.commit(transaction);
+            } catch (Exception e) {
+                transactMgr.abort(transaction);
+                throw new CollectionConfigurationException(e.getMessage(), e);
+            } finally {
+                parent.setTriggersEnabled(true);
+            }
+        }
+    }
+
+	@Deprecated
+    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
+    }
+
+	@Deprecated
+	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
+	}
+	
+	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
+        MutableDocumentSet docs = new DefaultDocumentSet();
+        docs.add(doc);
+        try {
+            // IMPORTANT: temporarily disable triggers on the collection.
+            // We would end up in infinite recursion if we don't do that
+            getCollection().setTriggersEnabled(false);
+            // create the XUpdate processor
+            XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.TRIGGER);
+            // process the XUpdate
+            Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
+            for (int i = 0; i &lt; modifications.length; i++)
+                modifications[i].process(null);
+            broker.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TriggerException(e.getMessage(), e);
+        } finally {
+            // IMPORTANT: reenable trigger processing for the collection.
+            getCollection().setTriggersEnabled(true);
+        }
+
+	}
+
+	@Override
+	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+        String xupdate = "&lt;?xml version=\"1.0\"?&gt;" +
+        "&lt;xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\"&gt;" +
+        "   &lt;xu:append select='/events'&gt;" +
+        "       &lt;xu:element name='event'&gt;" +
+        "           &lt;xu:attribute name='id'&gt;STORE-DOCUMENT&lt;/xu:attribute&gt;" +
+        "           &lt;xu:attribute name='collection'&gt;" + doc.getCollection().getURI() + "&lt;/xu:attribute&gt;" +
+        "       &lt;/xu:element&gt;" +
+        "   &lt;/xu:append&gt;" +
+        "&lt;/xu:modifications&gt;";
+
+        addRecord(broker, xupdate);
+	}
+
+	@Override
+	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) {
+		//ignore this event
+	}
+
+	@Override
+	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+		//ignore this event
+	}
+
+	@Override
+	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) {
+		//ignore this event
+	}
+
+	@Override
+	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		//ignore this event
+	}
+
+	@Override
+	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) {
+		//ignore this event
+	}
+
+	@Override
+	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+		//ignore this event
+	}
+
+	@Override
+	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) {
+		//ignore this event
+	}
+
+	@Override
+	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+        String xupdate = "&lt;?xml version=\"1.0\"?&gt;" +
+        "&lt;xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\"&gt;" +
+        "   &lt;xu:append select='/events'&gt;" +
+        "       &lt;xu:element name='event'&gt;" +
+        "           &lt;xu:attribute name='id'&gt;REMOVE-DOCUMENT&lt;/xu:attribute&gt;" +
+        "           &lt;xu:attribute name='collection'&gt;" + doc.getCollection().getURI() + "&lt;/xu:attribute&gt;" +
+        "       &lt;/xu:element&gt;" +
+        "   &lt;/xu:append&gt;" +
+        "&lt;/xu:modifications&gt;";
+        
+        addRecord(broker, xupdate);
+	}
+
+	@Override
+	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) {
+	}
+}</pre>
+        </section>
+    </section>
+        <section id="provided">
+            <title>Provided Triggers</title>
+        
+
+        <p>eXist provides some triggers that might be useful:</p>
+
+        <dl>
+                <dlentry>
+                    <dt>HistoryTrigger</dt>
+                    <dd>
+                    <p>This collection trigger will save all old versions of documents before
+                        they are overwritten or removed. The old versions are kept in the 'history
+                        root' which is by default <ph>/db/history</ph>. This can be changed with
+                        the parameter <ph>root</ph>. You need to configure this trigger for
+                        every collection whose history you want to preserve.</p>
+                    <p>The <i>event</i> attribute is ignored by
+                        <ph>HistoryTrigger</ph> </p>
+                    <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;triggers&gt;
+    &lt;trigger class="org.exist.collections.triggers.HistoryTrigger"/&gt;
+  &lt;/triggers&gt;
+&lt;/collection&gt;</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>STX Transformer Trigger</dt>
+                    <dd>
+                    <p>STXTransformerTrigger applies an STX stylesheet to the input SAX stream,
+                        using <xref href="http://joost.sourceforge.net" scope="external">Joost</xref>. The stylesheet location is identified by parameter
+                        <ph>src</ph>. The <ph>src</ph> parameter is just a path, the
+                        stylesheet will be loaded from the database, otherwise, it is interpreted as
+                        an URI.</p>
+                    <p>The <i>event</i> attribute is ignored by
+                        <ph>STXTransformerTrigger</ph> </p>
+                </dd>
+                </dlentry>
+            </dl>
+
+    </section>
+    </body>
+</topic>

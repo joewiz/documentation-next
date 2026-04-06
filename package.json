@@ -1,0 +1,66 @@
+{
+  "name": "documentation-next",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Unified documentation and function reference for eXist-db",
+  "scripts": {
+    "build": "npm run bundle-highlighter && gulp build",
+    "bundle-highlighter": "node tools/bundle-highlighter.cjs",
+    "deploy": "npm run build && npx @existdb/xst package install local --force dist/docs-*.xar",
+    "develop": "gulp",
+    "validate": "find data/articles -name '*.xml' -exec xmllint --noout {} +",
+    "test": "npm run bats && npm run cypress",
+    "bats": "bats --tap test/bats/*.bats",
+    "cypress": "cypress run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eXist-db/documentation-next.git"
+  },
+  "keywords": [
+    "eXist-db",
+    "expath",
+    "xar",
+    "xquery",
+    "documentation",
+    "functions"
+  ],
+  "author": "exist-db",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/eXist-db/documentation-next/issues"
+  },
+  "homepage": "https://github.com/eXist-db/documentation-next#readme",
+  "app": {
+    "author": "The eXist-db Authors",
+    "target": "docs",
+    "abbrev": "docs",
+    "description": "Unified documentation and function reference for eXist-db",
+    "namespace": "http://exist-db.org/apps/docs",
+    "website": "https://github.com/eXist-db/documentation-next",
+    "status": "alpha",
+    "title": "eXist-db Documentation",
+    "license": "LGPL-2.1-or-later"
+  },
+  "dependencies": {
+    "@codemirror/lang-html": "^6.4.11",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/lang-xml": "^6.1.0",
+    "@codemirror/language": "^6.12.2",
+    "@codemirror/legacy-modes": "^6.5.2",
+    "@jinntec/jinntap": "^1.29.0",
+    "@lezer/highlight": "^1.2.1",
+    "esbuild": "^0.25.0"
+  },
+  "devDependencies": {
+    "@existdb/gulp-exist": "^5.0.0",
+    "@existdb/gulp-replace-tmpl": "^1.0.4",
+    "cypress": "^15.12.0",
+    "delete": "^1.1.0",
+    "gulp": "^5.0.1",
+    "gulp-rename": "^2.1.0",
+    "gulp-zip": "^6.1.0"
+  }
+}

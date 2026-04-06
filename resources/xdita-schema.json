@@ -1,0 +1,250 @@
+{
+    "attributes": {
+        "id": { "type": "string" },
+        "outputclass": { "type": "string" }
+    },
+    "toolbar": {
+        "Show/Hide Code": {
+            "command": "toggleSource",
+            "label": "<i class='bi bi-filetype-xml'></i>",
+            "order": 20
+        }
+    },
+    "selects": {
+        "Blocks": {
+            "label": "<i class='bi bi-text-paragraph'></i>",
+            "order": 0
+        },
+        "Inline": {
+            "label": "<i class='bi bi-type'></i>",
+            "order": 5
+        }
+    },
+    "schema": {
+        "section": {
+            "type": "block",
+            "defining": true,
+            "content": "heading* (block | table)*",
+            "selectable": true,
+            "attributes": {
+                "id": { "type": "string" }
+            },
+            "toolbar": {
+                "Section": {
+                    "select": "Blocks",
+                    "command": "wrapDiv",
+                    "label": "<i class='bi bi-body-text'></i>"
+                }
+            }
+        },
+        "title": {
+            "type": "block",
+            "group": "heading",
+            "content": "inline*",
+            "toolbar": {
+                "Title": {
+                    "select": "Blocks",
+                    "label": "<i class='bi bi-type-h1'></i>"
+                }
+            },
+            "inputRules": [
+                { "find": "^##", "type": "textblock" }
+            ]
+        },
+        "p": {
+            "type": "block",
+            "priority": 100,
+            "toolbar": {
+                "Paragraph": {
+                    "select": "Blocks",
+                    "attributes": {},
+                    "label": "<i class='bi bi-paragraph'></i>"
+                }
+            }
+        },
+        "pre": {
+            "type": "block",
+            "content": "text*",
+            "attributes": {
+                "outputclass": { "type": "string" }
+            },
+            "toolbar": {
+                "Code Block": {
+                    "select": "Blocks",
+                    "label": "<i class='bi bi-code-square'></i>"
+                }
+            }
+        },
+        "ul": {
+            "type": "list",
+            "content": "li+",
+            "selectable": true,
+            "toolbar": {
+                "Unordered List": {
+                    "select": "Blocks",
+                    "attributes": {},
+                    "label": "<i class='bi bi-list-ul'></i>"
+                }
+            },
+            "inputRules": [
+                { "find": "^\\s*([-+*])\\s$", "type": "wrapping" }
+            ]
+        },
+        "ol": {
+            "type": "list",
+            "content": "li+",
+            "selectable": true,
+            "toolbar": {
+                "Ordered List": {
+                    "select": "Blocks",
+                    "attributes": {},
+                    "label": "<i class='bi bi-list-ol'></i>"
+                }
+            },
+            "inputRules": [
+                { "find": "^\\s*(\\d+)\\.\\s$", "type": "wrapping" }
+            ]
+        },
+        "li": {
+            "type": "listItem",
+            "selectable": true
+        },
+        "dl": {
+            "type": "block",
+            "content": "dlentry+",
+            "selectable": true,
+            "toolbar": {
+                "Definition List": {
+                    "select": "Blocks",
+                    "label": "<i class='bi bi-card-list'></i>"
+                }
+            }
+        },
+        "dlentry": {
+            "type": "block",
+            "content": "dt dd+",
+            "selectable": true
+        },
+        "dt": {
+            "type": "block",
+            "content": "inline*"
+        },
+        "dd": {
+            "type": "block",
+            "content": "block*"
+        },
+        "note": {
+            "type": "block",
+            "group": "note",
+            "content": "p+",
+            "selectable": true,
+            "attributes": {
+                "type": {
+                    "type": "string",
+                    "enum": ["note", "warning", "notice", "tip", "caution"],
+                    "default": "note"
+                }
+            },
+            "toolbar": {
+                "Note": {
+                    "select": "Blocks",
+                    "label": "<i class='bi bi-exclamation-triangle'></i>",
+                    "attributes": { "type": "note" }
+                }
+            }
+        },
+        "fig": {
+            "type": "block",
+            "selectable": true,
+            "content": "(graphic|figDesc|head)*"
+        },
+        "image": {
+            "type": "graphic",
+            "attributes": {
+                "href": {
+                    "type": "string",
+                    "default": "https://placehold.co/320x200"
+                },
+                "alt": { "type": "string" }
+            },
+            "toolbar": {
+                "Image": {
+                    "label": "<i class='bi bi-image'></i>",
+                    "select": "Blocks"
+                }
+            }
+        },
+        "b": {
+            "type": "inline",
+            "keyboard": {
+                "Mod-b": { "attributes": {} }
+            },
+            "toolbar": {
+                "Bold": {
+                    "attributes": {},
+                    "label": "<i class='bi bi-type-bold'></i>",
+                    "order": 1
+                }
+            }
+        },
+        "i": {
+            "type": "inline",
+            "keyboard": {
+                "Mod-i": { "attributes": {} }
+            },
+            "toolbar": {
+                "Italic": {
+                    "attributes": {},
+                    "label": "<i class='bi bi-type-italic'></i>",
+                    "order": 2
+                }
+            }
+        },
+        "u": {
+            "type": "inline",
+            "keyboard": {
+                "Mod-u": { "attributes": {} }
+            },
+            "toolbar": {
+                "Underline": {
+                    "attributes": {},
+                    "label": "<i class='bi bi-type-underline'></i>",
+                    "order": 3
+                }
+            }
+        },
+        "ph": {
+            "type": "inline",
+            "toolbar": {
+                "Phrase": {
+                    "select": "Inline",
+                    "attributes": {},
+                    "label": "<i class='bi bi-braces'></i>"
+                }
+            }
+        },
+        "xref": {
+            "type": "ref",
+            "attributes": {
+                "href": { "type": "string" },
+                "scope": {
+                    "type": "string",
+                    "enum": ["local", "external", "peer"],
+                    "default": "external"
+                },
+                "format": { "type": "string" }
+            },
+            "toolbar": {
+                "Link": {
+                    "attributes": {},
+                    "label": "<i class='bi bi-link'></i>",
+                    "order": 4
+                }
+            }
+        },
+        "simpletable": { "type": "table" },
+        "strow": { "type": "row" },
+        "stentry": { "type": "cell" },
+        "sthead": { "type": "row" }
+    }
+}

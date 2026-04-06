@@ -1,0 +1,125 @@
+<topic id="uploading-files">
+    <title>Getting Data into eXist-db</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="getting-started"/>
+    </prolog>
+    <body>
+        <p>eXist-db is a document oriented <i>database</i> and therefore stores <i>documents</i>. But how do you get them in?
+    This article will handle several ways of doing that.</p>
+        <section id="with-dashboard">
+            <title>Uploading files using the Dashboard</title>
+    
+
+    <p> eXist-db's <xref href="{dashboard}" scope="external">Dashboard</xref>'s comes with a Collections pane. This
+      lets you upload files from your filesystem into the database. Click on this icon to open it iIf you are not logged in, Dashboard will prompt you
+      to log in first):</p>
+    <fig>
+                <title>The Collection pane's icon</title>
+                <image href="assets/collections-app.png" width="20%"/>
+            </fig>
+
+    <p>A dialog will appear showing you the database collection hierarchy. After that perform the following steps:</p>
+    <ol>
+                <li>
+        <p>Select the target collection for your files in the left pane. </p>
+        <p>If you need to create a new collection for your files first, do so by selecting the <ph>New Collection</ph> button; it
+          looks like a manila folder with a green plus.</p>
+      </li>
+                <li>
+        <p>Click on the <ph>Upload</ph> button (it looks like a gray cylinder with a green plus).</p>
+      </li>
+                <li>
+        <p>Either drag and drop the files you want to upload or browse to select a file from your disk.</p>
+      </li>
+            </ol>
+  </section>
+        <section id="with-exide">
+            <title>Uploading files with eXide</title>
+    
+
+    <p>eXide is eXist-db's built-in Integrated Development Environment (IDE). Among eXide's many functions is the ability to upload files from your
+      filesystem into the database.</p>
+    <p>To initiate an upload:</p>
+    <ol>
+                <li>
+        <p>Open eXide from the Dashboard</p>
+      </li>
+                <li>
+        <p>Choose <ph>File</ph>, <ph>Manage</ph> from the menu</p>
+      </li>
+                <li>
+        <p>click on the <ph>Upload</ph> button.</p>
+      </li>
+                <li>
+        <p>Either drag and drop the files you want to upload or browse to select a file from your disk.</p>
+      </li>
+            </ol>
+
+  </section>
+        <section id="with-webdav">
+            <title>Uploading files with a WebDAV client</title>
+    
+
+    <p>A WebDAV client lets you manage eXist-db database collections and documents almost like directories and files in a filesystem. WebDAV
+      clients, or applications with built-in WebDAV support, include Windows Explorer, macOS Finder, <xref href="http://www.webdav.org/cadaver" scope="external">cadaver</xref>, <xref href="https://www.konqueror.org/" scope="external">KDE Konqueror</xref>, <xref href="https://www.oxygenxml.com/" scope="external">oXygen XML Editor</xref>, <xref href="https://www.altova.com/" scope="external">XML Spy</xref>, <xref href="https://www.libreoffice.org/" scope="external">LibreOffice</xref>, <xref href="https://panic.com/transmit/" scope="external">Transmit</xref> (MacOS only),
+      and many others.</p>
+
+    <p>To connect a WebDAV client to eXist-db, you need the URL for eXist's WebDAV interface and an eXist-db username and password. eXist-db's
+      default URL for its WebDAV interface is:</p>
+    <pre>http://localhost:8080/exist/webdav/db/</pre>
+    <p>The URL with HTTPS (SSL) encryption (some clients, among which Windows Explorer, require such a connection) is:</p>
+    <pre>https://localhost:8443/exist/webdav/db/</pre>
+    <p>The client may accept a URL or it may ask you to split up the URL into its component parts. Taking
+        <ph>http://localhost:8080/exist/webdav/db/</ph> as an example, the server name is <ph>localhost</ph>, the port is <ph>8080</ph>,
+      and the remote path is <ph>/exist/webdav/db</ph>.</p>
+    <p>Dedicated WebDAV clients are an excellent way to upload and manage the contents of their database. For more information about using WebDAV
+      connections with eXist-db (including client-specific instructions), see the <xref href="webdav" scope="external">WebDAV</xref> article.</p>
+  </section>
+        <section id="with-java-client">
+            <title>Uploading files with the Java Admin Client</title>
+    
+
+    <p>The <xref href="java-admin-client" scope="external">Java Admin Client</xref> also lets you upload files into
+      the database. This can be done using the GUI or the command line.</p>
+    <p>For uploading files using the Java Admin Client's GUI:</p>
+    <ol>
+                <li>
+        <p>Start the Java Admin Client, for instance by selecting the <ph>Open Java Admin Client</ph> command from eXist-db
+          system tray application's menu.</p>
+      </li>
+                <li>
+        <p>Select <ph>File</ph>, <ph>Store files/directories</ph>, or click on the
+            <ph>Store</ph> icon (which looks like a piece of paper with a plus icon).</p>
+      </li>
+                <li>
+        <p>Select the file(s) you want to store in the database</p>
+      </li>
+            </ol>
+
+    <p>To upload files with the command line:</p>
+    <pre>bin/client.sh -m /db/path/in/database -p /path/on/file/system</pre>
+    <p>The <ph>-m</ph> parameter specifies the target collection, the <ph>-p</ph> parameter the path on the filesystem to the files to
+      upload. See also the <xref href="java-admin-client" scope="external">Java Admin Client</xref>
+      documentation.</p>
+  </section>
+        <section id="with-xquery">
+            <title>Uploading files with XQuery</title>
+    
+
+    <p>Of course you can also programmaticly store documents in the database files using eXist-db's main programming language XQuery. For this use
+      the <ph>xmldb:store()</ph> function. Fetching the documents (or data) to store can be done using the various HTTP Client modules, such as
+      the EXPath HTTP Client <ph>http:request()</ph> function or the eXist-db specific <ph>httpclient:get()</ph> function. You can also fetch
+      your data from the filesystem using <ph>xmldb:store-files-from-pattern()</ph>, which accepts wildcard patterns like
+      <ph>*.xml</ph>.</p>
+  </section>
+        <section id="with-ant">
+            <title>Uploading files with Ant</title>
+    
+
+    <p>Ant is a build tool for automating common tasks. eXist-db comes with some special Ant eXist-db actions to automate things like importing or
+      exporting files, etc.</p>
+    <p>The action for uploading files and storing them into your database is <ph>xdb:store</ph>. See <xref href="ant-tasks" scope="external">Ant Tasks</xref> for more information.</p>
+  </section>
+    </body>
+</topic>

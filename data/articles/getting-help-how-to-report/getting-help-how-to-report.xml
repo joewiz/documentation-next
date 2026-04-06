@@ -1,0 +1,86 @@
+<topic id="getting-help-how-to-report">
+    <title>How to report issues</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="getting-started"/>
+    </prolog>
+    <body>
+        <p>This article will tell you what information to provide when you report an issue.</p>
+        <section id="reporting">
+            <title>Reporting an issue</title>
+        
+
+        <p>Bugs can be reported on the <xref href="https://github.com/eXist-db/exist/issues/" scope="external">Bug Tracker</xref>. Data and log
+            files can be attached.</p>
+
+        <p>When a (potential) bug is reported, please include as much of the information
+            described below. When more information is provided it is easier for the developers to
+            understand and reproduce the issue, which means that the issue can be picked-up and
+            solved much faster.</p>
+
+        
+
+        <section id="general">
+                <title>General information</title>
+            
+
+            <p>When reporting a (suspected) bug please make the report as complete as possible: </p>
+            <ul>
+                    <li>
+                    <p>Try to write a clear (and short) description how to reproduce the
+                        problem</p>
+                </li>
+                    <li>
+                    <p>Include the exact version (and revision), e.g. "1.4.3" (rev1234) or "2.1".
+                    </p>
+                </li>
+                    <li>
+                    <p>Always add the operating system (e.g. "Windows7 64bit"), the exact Java
+                        version as is outputted by the command <ph>java -version</ph> on the
+                        console.</p>
+                </li>
+                    <li>
+                    <p>Include relevant <b>parts</b> of the logfile
+                        (<ph>logs/exist.log</ph>).</p>
+                </li>
+                    <li>
+                    <p>Mention the changes made in the configuration files, for instance
+                        <ph>etc/conf.xml</ph>, <ph>etc/launcher.properties</ph>,
+                        and <ph>etc/jetty/jetty.xml</ph>.</p>
+                </li>
+                </ul>
+
+        </section>
+
+        
+
+        <section id="xq">
+                <title>XQuery specific</title>
+            
+
+            <p>When reporting a potential <b>XQuery</b> bug please: </p>
+            <ul>
+                    <li>
+                    <p>Make the XQuery, if possible, 'self containing', meaning that the XQuery
+                        does not require any additional files to run.</p>
+                </li>
+                    <li>
+                    <p>Describe the actual XQuery result and the expected result</p>
+                </li>
+                    <li>
+                    <p>Check if the issue has been solved in the latest version of eXist-db; For
+                        this the web based tool <xref href="https://exist-db.org/exist/apps/eXide/index.html" scope="external">eXide</xref>
+                        can be used.</p>
+                </li>
+                    <li>
+                    <p>Run the XQuery with <xref href="http://kernowforsaxon.sourceforge.net" scope="external">Kernow for Saxon</xref>
+                        and check the similarities and differences. </p>
+                </li>
+                </ul>
+
+
+        </section>
+
+    </section>
+    </body>
+</topic>

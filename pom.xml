@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Validation-only POM.
+
+    This project uses npm/gulp for building the XAR package.
+    Maven is used ONLY for XML validation (RelaxNG + Schematron)
+    of DocBook articles.
+
+    Usage:
+        mvn validate              (validate articles against schemas)
+        npm run build             (build the XAR package)
+        npm run validate          (shortcut for mvn validate)
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.exist-db</groupId>
+    <artifactId>documentation-next-validation</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Documentation Validation</name>
+    <description>RelaxNG and Schematron validation for DocBook articles</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- RelaxNG validation -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <executions>
+                    <execution>
+                        <id>validate-docbook</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <validationSets>
+                        <!-- Validate against full DocBook 5 RNG -->
+                        <validationSet>
+                            <dir>data/articles</dir>
+                            <includes>
+                                <include>**/*.xml</include>
+                            </includes>
+                            <!-- Exclude listing files (they're code snippets, not DocBook) -->
+                            <excludes>
+                                <exclude>**/listings/**</exclude>
+                            </excludes>
+                            <validating>true</validating>
+                            <schemaLanguage>http://relaxng.org/ns/structure/1.0</schemaLanguage>
+                            <schemas>
+                                <schema>
+                                    <resource>schema/docbook.rng</resource>
+                                </schema>
+                            </schemas>
+                        </validationSet>
+                        <!-- Validate against eXist-db custom constraints -->
+                        <validationSet>
+                            <dir>data/articles</dir>
+                            <includes>
+                                <include>**/*.xml</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/listings/**</exclude>
+                            </excludes>
+                            <validating>true</validating>
+                            <schemaLanguage>http://relaxng.org/ns/structure/1.0</schemaLanguage>
+                            <schemas>
+                                <schema>
+                                    <resource>schema/exist-docs.rng</resource>
+                                </schema>
+                            </schemas>
+                        </validationSet>
+                    </validationSets>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.google.code.jxvc</groupId>
+                        <artifactId>jxvc</artifactId>
+                        <version>0.9.4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.google.code.jxvc</groupId>
+                        <artifactId>relaxng</artifactId>
+                        <version>0.9.4</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- Schematron validation -->
+            <plugin>
+                <groupId>com.helger.maven</groupId>
+                <artifactId>ph-schematron-maven-plugin</artifactId>
+                <version>8.0.3</version>
+                <executions>
+                    <execution>
+                        <id>schematron-docbook</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <schematronFile>schema/docbook.sch</schematronFile>
+                    <schematronProcessingEngine>schematron</schematronProcessingEngine>
+                    <xmlDirectory>data/articles</xmlDirectory>
+                    <xmlIncludes>
+                        <xmlInclude>**/*.xml</xmlInclude>
+                    </xmlIncludes>
+                    <xmlExcludes>
+                        <xmlExclude>**/listings/**</xmlExclude>
+                    </xmlExcludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

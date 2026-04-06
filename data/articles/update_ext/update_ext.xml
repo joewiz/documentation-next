@@ -1,0 +1,201 @@
+<topic id="update_ext">
+    <title>XQuery Update Extension</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="xquery"/>
+    </prolog>
+    <body>
+        <p>This article describes eXist-db's extension to XQuery for updating nodes in the
+        database.</p>
+        <section id="considerations">
+            <title>Important Considerations</title>
+        
+        <p>Two things you should take into account with respect to the updating extension.</p>
+        
+
+        <section id="w3c-rec">
+                <title>Relationship to W3C Recommendation</title>
+            
+
+            <p>This extension was created well before the W3C working group created the <xref href="https://www.w3.org/TR/xquery-update-10/" scope="external">XQuery
+                Update Facility 1.0</xref> recommendation and therefore differs substantially from
+                it. </p>
+        </section>
+
+        
+
+        <section id="persistence">
+                <title>Persistent Document Updates</title>
+            
+
+            <p>The XQuery update extension was designed for updating
+                <i>persistent</i> documents stored in the database. It does not work
+                for updating temporary document fragments constructed within an query.</p>
+            <p>For example: </p>
+            <pre outputclass="xquery">let $node := &lt;root&gt;&lt;a/&gt;&lt;/root&gt;
+return 
+    update insert &lt;b/&gt; into $node/a</pre>
+            <p>Since <ph>$node</ph> is an in-memory constructed element (rather than a node
+                stored in the database) the query has no effect and simply returns the empty
+                element.</p>
+        </section>
+    </section>
+        <section id="syntax">
+            <title>Update Syntax</title>
+        
+
+        <p>All update statements start with the keyword <ph>update</ph>, followed by an
+            update action.</p>
+        <p>Available actions are: <ph>insert</ph>, <ph>delete</ph>, <ph>replace</ph>,
+            <ph>value</ph> and <ph>rename</ph>. The return type of an update expression is
+            <ph>empty-sequence()</ph>. </p>
+        <p>An update statement may occur at any position within the XQuery main code or a
+            function body. </p>
+        <note type="warning">
+                <p>When using <ph>update</ph> within the return clause of a FLWOR expression, be
+                cautious when deleting or replacing nodes that are still being used by the enclosing
+                code. This is because a delete or replace will be processed immediately, and so the
+                deleted or replaced node will no longer be available to the query. <i>Such
+                actions can corrupt the database!</i> </p>
+                <p>For example, the following expression will throw the database into an inconsistent
+                state if <ph>//address</ph> returns more than one node:</p>
+                <pre outputclass="xquery">for $address in //address
+return
+    update delete //address</pre>
+                <p>However, an expression like the following is safe as it only modifies the current
+                iteration variable. The following example only deletes <ph>$address</ph> (the
+                current iteration variable) instead of <ph>//address</ph> (all addresses in the
+                database):</p>
+                <pre outputclass="xquery">for $address in //address
+return
+    update delete $address</pre>
+            </note>
+
+        
+
+        <section id="insert">
+                <title>Insert</title>
+            
+
+            <pre>update insert expr ( into | following | preceding )
+                exprSingle</pre>
+            <p>Inserts the content sequence specified in <ph>expr</ph> into the element node
+                passed via <ph>exprSingle</ph>. <ph>exprSingle</ph> and <ph>expr</ph>
+                must evaluate to a node set. If <ph>exprSingle</ph> contains more than one
+                element node, the modification will be applied to each of the nodes. The position of
+                the insertion is determined by the keywords <ph>into</ph>,
+                <ph>following</ph> or <ph>preceding</ph>:</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                            <ph>into</ph>
+                        </dt>
+                        <dd>
+                        <p>The content is appended after the last child node of the specified
+                            elements.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>following</ph>
+                        </dt>
+                        <dd>
+                        <p>The content is inserted immediately after the node specified in
+                            <ph>exprSingle</ph>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>preceding</ph>
+                        </dt>
+                        <dd>
+                        <p>The content is inserted before the node specified in
+                            <ph>exprSingle</ph>.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+            <section>
+                    <title>Insert Example: Element</title>
+                    <pre outputclass="xquery">update insert &lt;email type="office"&gt;andrew@gmail.com&lt;/email&gt; into //address[fname="Andrew"]</pre>
+                </section>
+            <section>
+                    <title>Insert Example: Attribute</title>
+                    <pre outputclass="xquery">update insert attribute type {'permanent'} into //address[fname="Andrew"]</pre>
+                </section>
+        </section>
+
+        
+
+        <section id="replace">
+                <title>Replace</title>
+            
+
+            <pre>update replace expr with exprSingle</pre>
+            <p>Replaces the nodes returned by <ph>expr</ph> with the nodes in
+                <ph>exprSingle</ph>. <ph>expr</ph> must evaluate to a single element,
+                attribute or text node. If it is an element, <ph>exprSingle</ph> must contain a
+                single element node. If it is an attribute or text node, the value of the attribute
+                or the text node is set to the concatenated string values of all nodes in
+                <ph>exprSingle</ph>. <ph>expr</ph> cannot be the root element of a
+                document.</p>
+            <section>
+                    <title>Replace Example</title>
+                    <pre outputclass="xquery">update replace //fname[. = "Andrew"] with &lt;fname&gt;Andy&lt;/fname&gt;</pre>
+                </section>
+        </section>
+
+        
+
+        <section id="value">
+                <title>Value</title>
+            
+
+            <pre>update value expr with exprSingle</pre>
+            <p>Updates the content of all nodes in <ph>expr</ph> with the items in
+                <ph>exprSingle</ph>. If <ph>expr</ph> is an attribute or text node, its
+                value will be set to the concatenated string value of all items in
+                <ph>exprSingle</ph>.</p>
+            <section>
+                    <title>Value Example</title>
+                    <pre outputclass="xquery">update value //fname[. = "Andrew"] with 'Andy'</pre>
+                </section>
+        </section>
+
+        
+
+        <section id="delete">
+                <title>Delete</title>
+            
+
+            <pre>update delete expr</pre>
+            <p>Removes all nodes in <ph>expr</ph> from their document. <ph>expr</ph>
+                cannot be the root element of a document.</p>
+            <section>
+                    <title>Delete Example</title>
+                    <pre outputclass="xquery">for $city in //address/city 
+return
+    update delete $city</pre>
+                </section>
+        </section>
+
+        
+
+        <section id="rename">
+                <title>Rename</title>
+            
+
+            <pre>update rename expr as exprSingle</pre>
+            <p>Renames the nodes in <ph>expr</ph> using the string value of the first item in
+                <ph>exprSingle</ph> as the new name of the node. <ph>expr</ph> should
+                evaluate to a set of elements or attributes. <ph>expr</ph> cannot be the root
+                element of a document.</p>
+            <section>
+                    <title>Rename Example</title>
+                    <pre outputclass="xquery">for $city in //address/city 
+return
+    update rename $city as 'locale'</pre>
+                </section>
+        </section>
+    </section>
+    </body>
+</topic>

@@ -1,0 +1,520 @@
+<topic id="validation">
+    <title>XML Validation</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="application-development"/>
+        <data name="keyword" value="testing"/>
+    </prolog>
+    <body>
+        <p>eXist-db supports validation of XML documents. </p>
+        <p>There are two ways to validate documents: </p>
+        <ul>
+            <li>
+            <p> <xref href="#sect-implicit-validation" scope="local"/>happens automatically when
+                inserting documents into the database.</p>
+        </li>
+            <li>
+            <p> <xref href="#sect-explicit-validation" scope="local"/> must use one of the
+                provided XQuery extension functions.</p>
+        </li>
+        </ul>
+        <section id="sect-implicit-validation">
+            <title>Implicit validation</title>
+        
+
+        <p>Implicit validation is executed automatically when documents are inserted into the
+            database.</p>
+        <p>To enable implicit validation, change eXist-db configuration by editing
+            <ph>conf.xml</ph>. The following two items must be configured:</p>
+        <ul>
+                <li>
+                <p>Validation mode</p>
+            </li>
+                <li>
+                <p>Catalog Entity Resolver</p>
+            </li>
+            </ul>
+
+        
+
+        <section id="val-mode">
+                <title>Validation mode</title>
+            
+
+            <p>The validation mode can be set in the <ph>validation</ph> element in
+                <ph>conf.xml</ph>:</p>
+
+            <pre outputclass="xml">&lt;validation mode="auto"&gt;
+  &lt;entity-resolver&gt;
+    &lt;catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml"/&gt;
+  &lt;/entity-resolver&gt;
+&lt;/validation&gt;</pre>
+            <p>Attribute <i>mode</i> switches the validation capabilities of the
+                (Xerces) XML parser. Its values are:</p>
+            <dl>
+                    <dlentry>
+                        <dt> <ph>yes</ph> </dt>
+                        <dd>
+                        <p>Switch validation on. All XML documents will be validated. If the
+                            grammar (XML schema, DTD) document(s) cannot be resolved, the XML
+                            document is rejected.</p>
+                        <p/>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt> <ph>no</ph> </dt>
+                        <dd>
+                        <p>(default) Switch validation off. No grammar validation is performed
+                            and all well-formed XML documents will be accepted.</p>
+                        <p/>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>auto</dt>
+                        <dd>
+                        <p>Validation of an XML document is performed based on the content of the
+                            document. </p>
+                        <ul>
+                                <li>
+                                <p>When a document contains a reference to a grammar document
+                                    (<i>XML schema</i> or <i>DTD</i>),
+                                    the XML parser tries to resolve this grammar and the XML
+                                    document is validated against it (equivalent to
+                                    <i>mode="yes"</i>). Again, if the grammar cannot
+                                    be resolved, the XML document will be rejected. </p>
+                            </li>
+                                <li>
+                                <p>When the XML document does not contain a reference to a
+                                    grammar, it will not be parsed. </p>
+                            </li>
+                            </ul>
+
+                    </dd>
+                    </dlentry>
+                </dl>
+
+        </section>
+
+        
+
+        <section id="cat-resolver">
+                <title>Catalog Entity Resolver</title>
+            
+
+            <p>All grammars (XML schema, DTD) used for implicit validation must be registered
+                with eXist using <xref href="https://www.oasis-open.org/committees/download.php/14809/xml-catalogs.html" scope="external">OASIS catalog</xref> files. The actual resolving is performed by the Apache <xref href="https://xml.apache.org/commons/components/resolver/" scope="external">xml-commons resolver</xref> library.</p>
+            <p>Catalogs can be stored on disk and/or in the database.</p>
+            <p>It is possible to configure multiple catalog entries in <ph>entity-resolver</ph>
+                child element(s) of <ph>validation</ph> in <ph>conf.xml</ph>. For instance: </p>
+
+            <pre outputclass="xml">&lt;validation mode="auto"&gt;
+  &lt;entity-resolver&gt;
+    &lt;catalog uri="xmldb:exist:///db/grammar/catalog.xml"/&gt;
+    &lt;catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml"/&gt;
+  &lt;/entity-resolver&gt;
+&lt;/validation&gt;</pre>
+
+            <p>A catalog stored in the database can be addressed by a URL like
+                <ph>xmldb:exist:///db/mycollection/catalog.xml</ph> (note the 3 leading slashes,
+                which implies localhost). Or use the shorter equivalent
+                <ph>/db/mycollection/catalog.xml</ph>.</p>
+            <note type="note">
+                    <p>In the preceding example <ph>${WEBAPP_HOME}</ph> can be substituted by a
+                    <ph>file://</ph> URL pointing to the <ph>webapp</ph> directory of eXist
+                    (for instance <ph>$EXIST_HOME/etc/webapp/</ph>).</p>
+                </note>
+            <p>Here is an example of a catalog file:</p>
+            <pre outputclass="xml">&lt;catalog xmlns="urn:oasis:names:tc:entity:            xmlns:xml:catalog"&gt;
+  &lt;public publicId="-//PLAY//EN" uri="entities/play.dtd"/&gt;
+  &lt;system systemId="play.dtd" uri="entities/play.dtd"/&gt;
+  &lt;system systemId="mondial.dtd" uri="entities/mondial.dtd"/&gt;
+  &lt;uri name="http://exist-db.org/samples/shakespeare" uri="entities/play.xsd"/&gt;
+  &lt;uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/&gt;
+  &lt;uri name="http://www.w3.org/2001/XMLSchema" uri="entities/XMLSchema.xsd"/&gt;
+  &lt;uri name="urn:oasis:names:tc:entity:                    xmlns:xml:catalog" uri="entities/catalog.xsd"/&gt;
+&lt;/catalog&gt;</pre>
+        </section>
+
+        
+
+        <section id="col-conf">
+                <title>Collection configuration</title>
+            
+
+            <p>Within the database the validation mode for each individual collection can be
+                configured using <i>collection.xconf</i> documents (in the same way
+                these are used for configuring <xref href="indexing" scope="external">indexes</xref>).
+                These documents need to be stored in <ph>/db/system/config/db/...</ph>.</p>
+            <p>The following example <ph>collection.xconf</ph> file turns implicit validation
+                off:</p>
+            <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;validation mode="no"/&gt;
+&lt;/collection&gt;</pre>
+
+        </section>
+    </section>
+        <section id="sect-explicit-validation">
+            <title>Explicit validation</title>
+        
+
+        <p>Explicit validation is performed through the use of provided XQuery extension
+            functions. The following validation options are provided: </p>
+        <ul>
+                <li>
+                <p>JAXP</p>
+            </li>
+                <li>
+                <p>JAXV</p>
+            </li>
+                <li>
+                <p>Jing</p>
+            </li>
+            </ul>
+        <p>Each of these options is discussed in the following sections. Consult the function
+            documentation for details.</p>
+
+        
+
+        <section id="jaxp">
+                <title>JAXP</title>
+            
+
+            <p>The JAXP validation functions are based on the validation capabilities of the
+                <xref href="https://docs.oracle.com/javase/10/docs/api/javax/xml/parsers/package-summary.html" scope="external"> <ph>javax.xml.parsers</ph> </xref> API. The actual validation is performed by
+                the <xref href="https://xerces.apache.org/xerces2-j/" scope="external">Xerces2</xref> library.</p>
+            <p>When parsing an XML document and a reference to a grammar (either DTD or XSD) is
+                found, the parser attempts to resolve the grammar reference by following
+                either:</p>
+            <ul>
+                    <li>
+                    <p>The XSD <ph>xsi:schemaLocation</ph> or
+                        <ph>xsi:noNamespaceSchemaLocation</ph> hints</p>
+                </li>
+                    <li>
+                    <p>The DTD DOCTYPE SYSTEM information</p>
+                </li>
+                    <li>
+                    <p>by outsourcing the retrieval of the grammars to an XML Catalog resolver.
+                        The resolver identifies XSDs by their (target)namespace. DTDs are identified
+                        by the <ph>PublicId</ph>.</p>
+                </li>
+                </ul>
+            <p>The <ph>jaxp()</ph> and <ph>jaxp-report()</ph> functions accept the
+                following parameters: </p>
+            <dl>
+                    <dlentry>
+                        <dt> <ph>$instance</ph> </dt>
+                        <dd>
+                        <p>The XML instance document, either as document node, element node,
+                            <ph>xs:anyURI</ph> or as Java file object.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt> <ph>$cache-grammars</ph> </dt>
+                        <dd>
+                        <p>Set this to true() to enable grammar caching.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt> <ph>$catalogs</ph> </dt>
+                        <dd>
+                        <p>One or more OASIS catalog files referenced as <ph>xs:anyURI</ph>.
+                            Depending on its values different resolvers will be used: </p>
+                        <ul>
+                                <li>
+                                <p>When passing an empty sequence <ph>()</ph>, the catalog
+                                    files defined in <ph>conf.xml</ph> are used.</p>
+                            </li>
+                                <li>
+                                <p>If the URI ends with <ph>.xml</ph> the specified catalog
+                                    is used.</p>
+                            </li>
+                                <li>
+                                <p>If the URI points ends with <ph>/</ph> it is supposed to
+                                    point a collection. The grammar files are searched in this
+                                    collection and its sub-collections. XSDs are found by their
+                                    <ph>targetNamespace</ph> attribute, DTDs are found by their
+                                    <ph>publicId</ph> entries in catalog files.</p>
+                            </li>
+                            </ul>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="jaxv">
+                <title>JAXV</title>
+            
+
+            <p>The JAXV validation functions are based on the <xref href="https://docs.oracle.com/javase/10/docs/api/javax/xml/validation/package-summary.html" scope="external"> <ph>java.xml.validation</ph> </xref> API which has been introduced in Java 5
+                to provide a schema-language-independent interface to validation services. Although
+                officially the specification allows use of additional schema languages, only XML
+                schemas can be really used so far. </p>
+            <p>The <ph>jaxv()</ph> and <ph>jaxv-report()</ph> functions accept the
+                following parameters: </p>
+            <dl>
+                    <dlentry>
+                        <dt> <ph>$instance</ph> </dt>
+                        <dd>
+                        <p>The XML instance document either as document node, element node,
+                            <ph>xs:anyURI</ph> or as Java file object.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt> <ph>$grammars</ph> </dt>
+                        <dd>
+                        <p>One or more grammar files either as document nodes, element nodes,
+                            <ph>xs:anyURI</ph>, or as Java file objects.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt> <ph>$language</ph> </dt>
+                        <dd>
+                        <p>The namespace of the schema language as <ph>xs:anyURI</ph>. The
+                            following values are supported by the <xref href="https://docs.oracle.com/javase/10/docs/api/javax/xml/validation/SchemaFactory.html" scope="external">
+                                    <ph>jaxv.SchemaFactory</ph>
+                                </xref>: </p>
+                        <ul>
+                                <li>
+                                <p>For XSD 1.0 either
+                                    <ph>http://www.w3.org/2001/XMLSchema</ph> or
+                                    <ph>http://www.w3.org/XML/XMLSchema/v1.0</ph>
+                                    </p>
+                            </li>
+                                <li>
+                                <p>For XSD 1.1
+                                    <ph>http://www.w3.org/XML/XMLSchema/v1.1</ph>
+                                    </p>
+                            </li>
+                                <li>
+                                <p>For RELAX NG 1.0
+                                    <ph>http://relaxng.org/ns/structure/1.0</ph>
+                                    </p>
+                            </li>
+                            </ul>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="jing">
+                <title>Jing</title>
+            
+
+            <p>The Jing validation functions are based on James Clark's <xref href="http://www.thaiopensource.com/relaxng/jing.html" scope="external">Jing</xref> library.
+                eXist uses the maintained version that is available via <xref href="https://code.google.com/p/jing-trang/" scope="external">Google Code</xref>. The library
+                relies on the <xref href="http://www.thaiopensource.com/relaxng/api/jing/com/thaiopensource/validate/ValidationDriver.html" scope="external">
+                        <ph>com.thaiopensource.validate.ValidationDriver</ph>
+                    </xref> which supports a
+                wide range of grammar types: </p>
+            <ul>
+                    <li>
+                    <p>XML schema (<ph>.xsd</ph>)</p>
+                </li>
+                    <li>
+                    <p>Namespace-based Validation Dispatching Language
+                        (<ph>.nvdl</ph>)</p>
+                </li>
+                    <li>
+                    <p>RelaxNG (<ph>.rng</ph> and <ph>.rnc</ph>)</p>
+                </li>
+                    <li>
+                    <p>Schematron 1.5 (<ph>.sch</ph>)</p>
+                </li>
+                </ul>
+            <p>The <ph>jing()</ph> and <ph>jing-report()</ph> functions accept the
+                following parameters: </p>
+            <dl>
+                    <dlentry>
+                        <dt> <ph>$instance</ph> </dt>
+                        <dd>
+                        <p>The XML instance document as document node, element node,
+                            <ph>xs:anyURI</ph>, or as Java file object.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt> <ph>$grammar</ph> </dt>
+                        <dd>
+                        <p>The grammar file can be referenced either as document node, element
+                            node, <ph>xs:anyURI</ph>, binary document, or as Java file
+                            object.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+            <note type="note">
+                    <p>You can use <ph>util:binary-doc()</ph> to pass <ph>.rnc</ph> files as
+                    binary document</p>
+                </note>
+        </section>
+    </section>
+        <section id="sect3a">
+            <title>Validation report</title>
+        
+
+        <p> A validation report contains the following for a valid document: </p>
+
+        <pre outputclass="xml">&lt;report&gt;
+  &lt;status&gt;
+    valid
+  &lt;/status&gt;
+  &lt;namespace&gt;
+    MyNameSpace
+  &lt;/namespace&gt;
+  &lt;duration unit="msec"&gt;
+    106
+  &lt;/duration&gt;
+&lt;/report&gt;</pre>
+
+        <p>For an invalid document the following is returned:</p>
+        <pre outputclass="xml">&lt;report&gt;
+  &lt;status&gt;
+    invalid
+  &lt;/status&gt;
+  &lt;namespace&gt;
+    MyNameSpace
+  &lt;/namespace&gt;
+  &lt;duration unit="msec"&gt;
+    39
+  &lt;/duration&gt;
+  &lt;message level="Error" line="3" column="20"&gt;
+    cvc-datatype-valid.1.2.1: 'aaaaaaaa' is not a valid value for 'decimal'.
+  &lt;/message&gt;
+  &lt;message level="Error" line="3" column="20"&gt;
+    cvc-type.3.1.3: The value 'aaaaaaaa' of element 'c' is not valid.
+  &lt;/message&gt;
+&lt;/report&gt;</pre>
+        <p>When something goes wrong you might the following:</p>
+        <pre outputclass="xml">&lt;?xml version='1.0'?&gt;
+&lt;report&gt;
+  &lt;status&gt;invalid&lt;/status&gt;
+  &lt;duration unit="msec"&gt;2&lt;/duration&gt;
+  &lt;exception&gt;
+    &lt;class&gt;java.net.MalformedURLException&lt;/class&gt;
+    &lt;message&gt;unknown protocol: foo&lt;/message&gt;
+    &lt;stacktrace&gt;java.net.MalformedURLException: unknown protocol: foo at java.net.URL.&lt;init&gt;(URL.java:574) at java.net.URL.&lt;init&gt;(URL.java:464) at java.net.URL.&lt;init&gt;(URL.java:413) at
+      org.exist.xquery.functions.validation.Shared.getStreamSource(Shared.java:140) at org.exist.xquery.functions.validation.Shared.getInputSource(Shared.java:190) at org.exist.xquery.functions.validation.Parse.eval(Parse.java:179) at
+      org.exist.xquery.BasicFunction.eval(BasicFunction.java:68) at ......
+    &lt;/stacktrace&gt;
+  &lt;/exception&gt;
+&lt;/report&gt;
+</pre>
+    </section>
+        <section id="sect4">
+            <title>Grammar management</title>
+        
+
+        <p>The Xerces XML parser compiles all grammar files upon first use. For efficiency
+            reasons these compiled grammars are cached, resulting in a significant increase in
+            validation processing performance. However, sometimes it may be desirable to manually
+            clear this cache. For this purpose two grammar management functions are provided: </p>
+        <dl>
+                <dlentry>
+                    <dt> <ph>clear-grammar-cache()</ph> </dt>
+                    <dd>
+                    <p>Removes all cached grammar and returns the number of removed
+                        grammar</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>pre-parse-grammar(xs:anyURI)</ph> </dt>
+                    <dd>
+                    <p>Parses the referenced grammar and returns the namespace of the parsed
+                        XSD.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>show-grammar-cache()</ph> </dt>
+                    <dd>
+                    <p>Returns an XML report about all cached grammars. For instance:</p>
+                    <pre outputclass="xml">&lt;report&gt;
+  &lt;grammar type="http://www.w3.org/2001/XMLSchema"&gt;
+    &lt;Namespace&gt;
+      http://www.w3.org/XML/1998/namespace
+    &lt;/Namespace&gt;
+    &lt;BaseSystemId&gt;
+      file:/Users/guest/existdb/trunk/webapp//WEB-INF/entities/XMLSchema.xsd
+    &lt;/BaseSystemId&gt;
+    &lt;LiteralSystemId&gt;
+      http://www.w3.org/2001/xml.xsd
+    &lt;/LiteralSystemId&gt;
+    &lt;ExpandedSystemId&gt;
+      http://www.w3.org/2001/xml.xsd
+    &lt;/ExpandedSystemId&gt;
+  &lt;/grammar&gt;
+  &lt;grammar type="http://www.w3.org/2001/XMLSchema"&gt;
+    &lt;Namespace&gt;
+      http://www.w3.org/2001/XMLSchema
+    &lt;/Namespace&gt;
+    &lt;BaseSystemId&gt;
+      file:/Users/guest/existdb/trunk/schema/collection.xconf.xsd
+    &lt;/BaseSystemId&gt;
+  &lt;/grammar&gt;
+&lt;/report&gt;</pre>
+                    <p>The <ph>BaseSystemId</ph> element typically does
+                        <i>not</i> provide useful information.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+    </section>
+        <section id="sect4a">
+            <title>Interactive Client</title>
+        
+
+        <p>The interactive shell mode of the <xref href="java-admin-client" scope="external">Java Admin
+            Client</xref> provides a simple <i>validate</i> command that accepts the
+            similar explicit validation arguments.</p>
+    </section>
+        <section id="sect6">
+            <title>Special notes</title>
+        
+
+        <ul>
+                <li>
+                <p>To avoid potential deadlocking it is considered good practice to store XML
+                    instance documents and grammar documents in separate collections.</p>
+            </li>
+                <li>
+                <p>The explicit validation is performed by <xref href="https://xerces.apache.org/xerces2-j/javadocs/api/javax/xml/validation/package-summary.html" scope="external">Xerces</xref> (XML schema, DTD) and by <xref href="https://www.oxygenxml.com/onvdl.html" scope="external">oNVDL</xref>: oXygen XML NVDL
+                    implementation based on Jing (XSD, RelaxNG, Schematron and Namespace-based
+                    Validation Dispatching Language).</p>
+            </li>
+            </ul>
+    </section>
+        <section id="sect7">
+            <title>References</title>
+        
+
+        <ul>
+                <li>
+                <p>Apache <xref href="https://xml.apache.org/commons/components/resolver/" scope="external">xml-commons
+                    resolver</xref> </p>
+            </li>
+                <li>
+                <p>OASIS <xref href="https://www.oasis-open.org/committees/entity/" scope="external">XML Catalog
+                    Specification</xref> V1.1</p>
+            </li>
+                <li>
+                <p>Xerces <xref href="https://xerces.apache.org/xerces2-j/faq-grammars.html" scope="external">caching
+                    grammars</xref>.</p>
+            </li>
+                <li>
+                <p> <xref href="https://github.com/relaxng/jing-trang" scope="external">jing-trang</xref> Schema validation and conversion based on RELAX NG</p>
+            </li>
+                <li>
+                <p> <xref href="https://en.wikipedia.org/wiki/Namespace-based_Validation_Dispatching_Language" scope="external">NVDL</xref> (Namespace-based Validation Dispatching Language)</p>
+            </li>
+                <li>
+                <p> <xref href="https://en.wikipedia.org/wiki/Schematron" scope="external">Schematron</xref> </p>
+            </li>
+                <li>
+                <p> <xref href="https://en.wikipedia.org/wiki/RELAX_NG" scope="external">Relax NG</xref> </p>
+            </li>
+            </ul>
+    </section>
+    </body>
+</topic>

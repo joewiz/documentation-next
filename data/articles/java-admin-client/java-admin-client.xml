@@ -1,0 +1,440 @@
+<topic id="java-admin-client">
+    <title>Java Admin Client</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>eXist-db ships with the so-called "Java Admin Client". This application enables users to
+        perform administrative tasks, such as user management, security settings, batch import of
+        whole directories, and backup/restore of the database. It can be used either as a GUI or on
+        the command line.</p>
+        <section id="launching">
+            <title>Launching the Client</title>
+        
+
+        <p>You can launch the Java Admin Client using one of the following methods:</p>
+        <ul>
+                <li>
+                <p>Windows and Linux users: Click the eXist-db icon in the taskbar and choose the
+                    <ph>Open Java Admin Client</ph> menu entry.</p>
+            </li>
+                <li>
+                <p>Enter the following on your command line from the eXist installation directory
+                    (with the <ph>JAVA_HOME</ph> environment variable set correctly):</p>
+                <pre>bin\client.bat (DOS/Windows)</pre>
+                <pre>bin/client.sh (Unix)</pre>
+            </li>
+            </ul>
+    </section>
+        <section id="gui">
+            <title>Using the Graphical Client</title>
+        
+
+        <p>Once the Graphical Client is launched, you will see the "eXist Database Login"
+            window.</p>
+        <fig>
+                <image href="assets/client1.png" width="75%"/>
+            </fig>
+
+        <p>The Java Admin Client can connect to a database in two ways:</p>
+        <ul>
+                <li>
+                <p>Most common is to connect to a "remote" server. The client talks with the
+                    server using the XML RPC protocol.</p>
+            </li>
+                <li>
+                <p>It can also launch an "enbedded database", that is, a database embedded in an
+                    application which runs in the same process as the client. This embedded option
+                    is useful for backup/restore or mass uploads of data; writing to an embedded
+                    instance avoids the network overhead.</p>
+            </li>
+            </ul>
+
+
+
+        <p>To connect to a remote server, enter your eXist-db username and password, select
+            <ph>Remote</ph> from the <ph>Type</ph> dropdown
+            menu, and in the URL field enter the database's URI. This by default set to
+            <ph>xmldb:exist://localhost:8080/exist/xmlrpc</ph> (the URI for a database installed
+            with all the default settings).</p>
+        <p>After clicking <ph>OK</ph>, the main client window will open.</p>
+        <fig>
+                <image href="assets/client2.png"/>
+            </fig>
+        <p>This window is split into two panels. The top panel lists the database collections.
+            The bottom panel acts like a shell and has a command prompt. This shell allows you to
+            manually enter database commands.</p>
+        <p>Using the Java Admin Client as a GUI is like using any other GUI application. That is
+            why we do not explain it further.</p>
+
+        <note type="warning">
+                <p>If eXist-db is online, you expose it to exploitation if you use an empty admin
+                password. If you did not specify an admin password during installation, you are
+                strongly advised to set an admin password as soon as possible. You can do this in
+                the Java Admin Client:</p>
+                <ol>
+                    <li>
+                    <p>Open the <ph>Edit Users</ph> window by selecting the
+                        <ph>Manage Users</ph> icon (image of a pair of keys) in
+                        the toolbar</p>
+                </li>
+                    <li>
+                    <p>At the top, select the <ph>admin</ph> user in the table
+                        of users</p>
+                </li>
+                    <li>
+                    <p>Type in the new password into the password fields</p>
+                </li>
+                    <li>
+                    <p>Click the <ph>Modify User</ph> button to apply the
+                        changes</p>
+                </li>
+                </ol>
+            </note>
+    </section>
+        <section id="command-line">
+            <title>Using the Command-line Client</title>
+        
+
+        <p>It is sometimes faster or more convenient to use the Java Admin Client on the command
+            line. The following sections provide a quick introduction to the most common command
+            line parameters and their use. The client offers three modes of operation:</p>
+        <ol>
+                <li>
+                <p>If an action is specified on the command-line (when starting the client), it
+                    will be processed in non-interactive mode and the client will terminate after
+                    completion.</p>
+            </li>
+                <li>
+                <p>If option <ph>-s</ph> or <ph>--no-gui</ph> is specified
+                    without an action, the client switches to interactive shell-mode and prompts for
+                    user input. No graphical interface is displayed.</p>
+            </li>
+                <li>
+                <p>Otherwise the client switches to interactive mode and displays the graphical
+                    user interface.</p>
+            </li>
+            </ol>
+
+        
+
+        <section id="shell">
+                <title>Interactive Shell Mode</title>
+            
+
+            <p>While this tutorial will not describe the interactive shell mode in detail, most
+                commands work like their counterparts specified on the command line. On the shell,
+                just type <ph>help</ph> to get a list of supported commands.</p>
+            <p>The shell mode may support full command line history and command completion,
+                depending on the OS</p>
+            <ul>
+                    <li>
+                    <p> On Unix systems, the client will try to load the GNU
+                        <ph>readline</ph> library, which is part of most Unix installations.
+                        This gives you access to all the nice things you probably know from Linux
+                        shells. For example, pressing the tab-key will try to complete collection
+                        and document names. However, for this to work, the native library
+                        <ph>lib/core/libJavaReadline.so</ph> has to be found by the
+                        system's loader. On Linux, just add <ph>lib/core</ph> to your
+                        <ph>LD_LIBRARY_PATH</ph> (the client.sh script does this
+                        automatically).</p>
+                </li>
+                    <li>
+                    <p>On Windows OS, you should at least be able to use the
+                        cursor-up/cursor-down keys to browse through the command history.</p>
+                </li>
+                </ul>
+
+
+
+
+            <p>To explain the shell-mode we provide a short example, showing how to store the
+                sample files into the database.</p>
+            <ul>
+                    <li>
+                    <p>Typing <ph>mkcol shakespeare</ph> and pressing enter will create
+                        a Shakespeare collection into which we will put some of the sample documents
+                        provided with eXist-db.</p>
+                </li>
+                    <li>
+                    <p>To check if the new collection is present, enter <ph>ls</ph> to
+                        get a listing of the current collection contents. The listing below shows an
+                        example session of how to add the sample documents:</p>
+                    <pre>exist:/db&gt;mkcol shakespeare
+created collection.
+exist:/db&gt;cd shakespeare
+exist:/db/shakespeare&gt;mkcol plays
+created collection.
+exist:/db/shakespeare&gt;cd plays
+exist:/db/shakespeare/plays&gt;put samples/shakespeare/
+storing document hamlet.xml (1 of 4) ...done.
+storing document much_ado.xml (2 of 4) ...done.
+storing document r_and_j.xml (3 of 4) ...done.
+storing document shakes.xsl (4 of 4) ...done.
+exist:/db/shakespeare/plays&gt; cd
+exist:/db&gt;mkcol library
+created collection.
+exist:/db&gt;cd library
+exist:/db/library&gt;put samples/biblio.rdf
+storing document biblio.rdf (1 of 1) ...done.
+exist:/db/library&gt;cd
+exist:/db&gt;mkcol xinclude
+created collection.
+exist:/db&gt;cd xinclude
+exist:/db/xinclude&gt;put samples/xinclude</pre>
+                </li>
+                    <li>
+                    <p>Adding files to the database is done using <ph>put</ph>. This expects
+                        either a single file, a file-pattern or a directory name as argument. If a
+                        directory is specified, all XML and XSL files in that directory will be put
+                        into the database. </p>
+                    <p>To add the files in directory <ph>samples/shakespeare</ph> simply
+                        enter <ph>put samples/shakespeare</ph>. </p>
+                    <p> <ph>put</ph> also accepts file-patterns, i.e. a path with
+                        wildcards <ph>?</ph> or <ph>*</ph>. <ph>**</ph> means: any
+                        sub-directory. So the command <ph>put samples/**/*.xml</ph> will
+                        parse any XML files found in the <ph>samples</ph> directory and
+                        any of its sub-directories.</p>
+                </li>
+                    <li>
+                    <p>To see if the files have actually been stored use <ph>ls</ph>
+                        again.</p>
+                    <p/>
+                </li>
+                    <li>
+                    <p>To view a document, use the get command, for instance <ph>get
+                        hamlet.xml</ph> </p>
+                </li>
+                </ul>
+
+            <note type="note">
+                    <p>If you ever run into problems while experimenting with eXist-db and your
+                    database files get corrupt: just remove the data files created by eXist-db and
+                    everything should work again. The data files all end with
+                        <ph>.dbx</ph>. You will find them in directory
+                        <ph>$EXIST_HOME/data</ph>. It is ok to backup those data-files to
+                    be able to restore them in case of a database corruption.</p>
+                </note>
+        </section>
+
+        
+
+        <section id="param">
+                <title>Specifying Parameters</title>
+            
+
+            <p>The client uses the CLI library from Apache's Excalibur project to parse
+                command-line parameters. This means that the same conventions apply as for most GNU
+                tools. Most parameters have a short and a long form. </p>
+            <p>For example, the user can be specified in short with <ph>-u user</ph> or
+                in long with <ph>--user=user</ph>. You can combine argument-less
+                parameters: for example, <ph>-ls</ph> is short for <ph>-l
+                -s</ph>.</p>
+        </section>
+
+        
+
+        <section id="conf">
+                <title>General Configuration</title>
+            
+
+            <p>The client reads its default options from the properties file
+                <ph>client.properties</ph>. Most of the properties can be overwritten by
+                command-line parameters or by the <ph>set</ph> command in
+                shell-mode.</p>
+            <p>The client relies on the XML:DB API to communicate with the database. It will
+                therefore work with remote as well as embedded database instances. The correct
+                database instance is determined through the XML:DB base URI as specified in the
+                properties file or through command-line options. The <xref href="deployment" scope="external">deployment</xref> article describes how different
+                servers are addressed using the XML:DB URI.</p>
+            <p>The XML:DB base URI used by the client for connections is defined by the
+                <ph>uri=</ph> property. By default, this is set to
+                <ph>uri=xmldb:exist://localhost:8080/exist/xmlrpc</ph>. With this, the
+                client will try to connect to a database instance running inside the webserver at
+                port 8080 of the local host. </p>
+            <p>There are several ways to specify an alternate XML:DB base URI: </p>
+            <ul>
+                    <li>
+                    <p>Change the <ph>uri=</ph> property in
+                        <ph>client.properties</ph> </p>
+                </li>
+                    <li>
+                    <p>Use the <ph>-ouri</ph> parameter on the command-line</p>
+                    <p>For instance, to access a server running inside the Jetty webserver at
+                        port <ph>8080</ph> on a remote host, use</p>
+                    <pre>bin/client.sh -ouri=xmldb:exist://host:8080/exist/xmlrpc</pre>
+                </li>
+                    <li>
+                    <p>To start the client in <i>local</i> mode, use:</p>
+                    <pre>bin/client.sh -ouri=xmldb:exist://</pre>
+                    <p> Local mode means that an embedded database instance will be initialized
+                        and started by the client. It will have direct access to the database
+                        instance. Use this option if you want to batch-load a large document or a
+                        huge collection of documents.</p>
+                    <p>Since switching to local mode is required quite often, there's also a
+                        shortcut: </p>
+                    <pre>bin/client.sh -l</pre>
+                    <p>This is equivalent to the <ph>-ouri=xmldb:exist://</ph> option
+                        shown above.</p>
+                    <p>When launching the client with option <ph>-l</ph> or
+                            <ph>-ouri=xmldb:exist://</ph> the configuration for the
+                        database instance is read from <ph>conf.xml</ph> located in
+                            <ph>$EXIST_HOME/etc</ph>.</p>
+                    <p>Use the <ph>-C</ph> parameter to specify an alternate database
+                        location. For instance:</p>
+                    <pre>bin/client.sh -C /home/exist/test/conf.xml</pre>
+                    <p>This will temporarily launch a new database instance whose configuration
+                        is read from the provided file. Option <ph>-C</ph> implies option
+                        <ph>-l</ph>.</p>
+                </li>
+                </ul>
+
+            <p>If you have set a password for the admin user you must to authenticate yourself to
+                the database:</p>
+            <pre>bin/client.sh -l -u username -P password</pre>
+            <p>If the <ph>-P</ph> password option is missing, the client will prompt
+                for the password.</p>
+            <p>The graphical user interface will always prompt for username and password unless
+                you specify both on the command-line.</p>
+        </section>
+
+        
+
+        <section id="store">
+                <title>Storing documents</title>
+            
+
+            <p>To store a set of documents, use the <ph>-m</ph> and
+                <ph>-p</ph> parameters. For instance:</p>
+            <pre>bin/client.sh -c /db/shakespeare/plays -m /db/shakespeare/plays -p /home/exist/xml/shakespeare</pre>
+            <ul>
+                    <li>
+                    <p>The <ph>-m</ph> tells the client to implicitly create any
+                        missing collection.</p>
+                </li>
+                    <li>
+                    <p>The <ph>-p</ph> parameter means that all of the following
+                        arguments should be interpreted as a list of paths to XML documents (you may
+                        specify more than one document or directory).</p>
+                </li>
+                    <li>
+                    <p>If the passed path denotes a directory, the client will try to store all
+                        documents in that directory into the database. However, it will
+                        <i>not</i> recurse into subdirectories. For this, you have to
+                        pass the <ph>-d</ph> option. For example:</p>
+                    <pre>bin/client.sh -d -c /db/movies -m /db/movies -p /home/exist/xml/movies</pre>
+                    <p>This will recurse into all directories below
+                        <ph>/home/exist/xml/movies</ph>. For each subdirectory, a
+                        collection will be created below the <ph>/db/movies</ph>
+                        collection. Use this to recursively import an entire collection tree.</p>
+                </li>
+                </ul>
+
+            <p> eXist-db can also store binary resources in addition to XML files. The client
+                tries to determine if the current file is XML or not. The
+                <ph>mime-types.xml</ph> lookup table (in the eXist root installation
+                directory) is used for this. It associates: </p>
+            <ul>
+                    <li>
+                    <p>a MIME type</p>
+                </li>
+                    <li>
+                    <p>an eXist-db type ("xml" or "binary")</p>
+                </li>
+                    <li>
+                    <p>a file extension</p>
+                </li>
+                </ul>
+            <p> This mechanism is also used by the eXist-db servers . For example to specify that
+                <ph>.xmap</ph> extension is used for XML files: </p>
+            <pre outputclass="xml">&lt;mime-type name="application/xml" type="xml"&gt;
+  &lt;description&gt;
+    XML document
+  &lt;/description&gt;
+  &lt;extensions&gt;
+    .xml,.xsl,.xsd,.mods,.xmi,.xconf,.xslt,.wsdl,.x3d,.rdf,.owl,.xmap
+  &lt;/extensions&gt;
+&lt;/mime-type&gt;</pre>
+
+        </section>
+
+        
+
+        <section id="remove">
+                <title>Removing Collections/Documents</title>
+            
+
+            <p>The <ph>-r</ph> and <ph>-R</ph> parameters are used to remove
+                a document or collection. </p>
+            <ul>
+                    <li>
+                    <p> <ph>-r</ph> removes a single document from the collection
+                        specified in the <ph>-c</ph> parameter. For example:</p>
+                    <pre>bin/client.sh -c /db/shakespeare/plays -r hamlet.xml</pre>
+                    <p>This removes the document <ph>hamlet.xml</ph> from the
+                        <ph>/db/shakespeare/plays</ph> collection.</p>
+
+                </li>
+                    <li>
+                    <p>To remove the entire <ph>plays</ph> collection use the
+                        <ph>-R</ph> parameter:</p>
+                    <pre>bin/client.sh -c /db/shakespeare -R plays</pre>
+                </li>
+                </ul>
+
+        </section>
+
+        
+
+        <section id="execute">
+                <title>Executing Queries</title>
+            
+            <p>Executing queries can be done as follows:</p>
+            <ul>
+                    <li>
+                    <p>Use the <ph>-x</ph> parameter. This parameter accepts an
+                        optional argument, which specifies the query to execute. However, passing
+                        XQuery on the command-line is a problem on many operating systems, because
+                        the command shell usually interprets whitespace characters as command
+                        separators. Therefore if no argument is passed to <ph>-x</ph>, the
+                        client will try to read the query from standard input.</p>
+                    <p>For example, on Unix you may do the follwong:</p>
+                    <pre>echo "//SPEECH[contains(LINE, 'love')]" | bin/client.sh -x</pre>
+                    <p>Remember to type Ctrl-d when working without pipe:</p>
+                    <pre>bin/client.sh -x ENTER
+      //SPEECH[contains(LINE, 'love')] ENTER Ctrl-d</pre>
+                </li>
+                    <li>
+                    <p>Queries can also be read from a file using the <ph>-F</ph> parameter.
+                        For example,</p>
+                    <pre>bin/client.sh -F samples/xquery/fibo.xq</pre>
+                    <p>This executes the XQuery contained in <ph>fibo.xq</ph>.</p>
+                </li>
+                    <li>
+                    <p>As an addition use <ph>-n</ph> to specify the number of hits
+                        that should be printed to the standard output.</p>
+                </li>
+                </ul>
+
+        </section>
+
+        
+
+        <section id="xupdate">
+                <title>XUpdate</title>
+            
+
+            <p>You can update a stored document or multiple documents by passing an XUpdate file
+                on the command-line. For example: </p>
+            <pre>bin/client.sh -c /db/test -f address.xml -X samples/xupdate/xupdate.xml</pre>
+            <p>This will apply the modifications described in
+                <ph>samples/xupdate/xupdate.xml</ph> to the document
+                <ph>address.xml</ph> in collection <ph>/db/test</ph>.</p>
+            <p>If you don't specify the <ph>-f</ph> option, the modifications will be
+                applied to all documents in the collection.</p>
+        </section>
+
+    </section>
+    </body>
+</topic>

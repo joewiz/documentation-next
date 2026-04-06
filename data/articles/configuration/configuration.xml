@@ -1,0 +1,1129 @@
+<topic id="configuration">
+    <title>Application Server Configuration</title>
+    <prolog>
+        <data name="date" value="2Q21"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>This section deals with the configuration of the eXist-db Application Server in eXist-db's
+        main configuration file <ph>conf.xml</ph>.</p>
+        <section id="conf.xml">
+            <title>Main configuration file</title>
+        
+
+        <p>The main configuration file for <ph>eXist-db</ph> is called
+            <ph>conf.xml</ph>, which is loaded the root directory of the
+            distribution (as specified by the system property <ph>exist.home</ph>).</p>
+
+        <p>The configuration file <ph>conf.xml</ph> is divided into twelve
+            sections:</p>
+        <ol>
+                <li>
+            <p>
+                        <ph>db-connection</ph>: Configures the storage back-end.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>lock-manager</ph>: Configures the Lock Manager.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>repository</ph>: Settings for the package repository.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>binary-manager</ph>: Settings for the Binary Manager.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>indexer</ph>: Controls the indexing process.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>scheduler</ph>: Job scheduler for system or user jobs such as backups.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>parser</ph>: Default settings for parsing structured documents.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>serializer</ph>: Default settings for the serializer (external data representation).</p>
+          </li>
+                <li>
+            <p>
+                        <ph>transformer</ph>: Default settings for the XSLT Transformer.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>validation</ph>: Settings for XML validation.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>xquery</ph>: Enable and configure extension modules that contain XQuery
+                    functions.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>xupdate</ph>: Configuration options related to XUpdate processing.</p>
+          </li>
+                <li>
+            <p>
+                        <ph>rpc-server</ph>: Configuration options related to RPC result pooling.</p>
+          </li>
+            </ol>
+        <p>The following sections describe the most commonly modified of the above elements,
+            including how to change the default behavior of eXist-db's handling of whitespace
+            characters.</p>
+
+        
+        <section id="db-connection">
+                <title> <ph>db-connection</ph> element</title>
+            
+
+            <p>This element contains basic default storage settings for eXist-db, including
+                memory and system limits. Only one <ph>db-connection</ph> should be specified. An
+                example configuration for the native back-end is shown below:</p>
+
+            <pre outputclass="xml">&lt;db-connection cacheSize="48M" collectionCache="24M" database="native" files="../data" pageSize="4096" nodesBuffer="-1"&gt;
+  &lt;pool min="1" max="15" sync-period="240000" wait-before-shutdown="60000"/&gt;
+  &lt;!-- default-permissions collection="0775" resource="0775" / --&gt;
+  &lt;recovery enabled="yes" sync-on-commit="no" group-commit="no" size="100M" journal-dir="../data"/&gt;
+  &lt;watchdog query-timeout="-1" output-size-limit="10000"/&gt;
+  &lt;default-permissions collection="0775" resource="0775"/&gt;
+&lt;/db-connection&gt;</pre>
+
+            <section id="db-att">
+                    <title> <ph>db-connection</ph> attributes</title>
+                
+
+                <dl>
+                        <dlentry>
+                            <dt> <ph>database</ph> </dt>
+                            <dd>
+                            <p>This attribute selects a database system type. Since relational
+                                database back-ends are no longer supported by the current release of
+                                eXist, only <ph>native</ph> is available.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>files</ph> </dt>
+                            <dd>
+                            <p>This attribute specifies the directory where the native back-end
+                                will keep its database files, and so it is necessary that this
+                                directory exists. If a relative path is specified, it will be based
+                                on the root directory as defined in the
+                                <ph>exist.home</ph> system property. If this data
+                                directory does not have write permissions (see <xref href="security" scope="external">User Authentication and Access
+                                Control</xref>), eXist will internally switch to <i>read-only
+                                mode</i> such that any attempt to change the database will
+                                throw an exception.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>cacheSize</ph> </dt>
+                            <dd>
+                            <p>This attribute sets the maximum amount of main memory used by all
+                                page buffers (i.e. assuming all page buffers are at full capacity).
+                                The database uses this parameter to calculate the maximum size of
+                                each internal cache. You can increase this value if your system
+                                allows for greater memory use.</p>
+                            <p>While indexing documents, eXist will reserve the amount of memory
+                                specified in cacheSize - even if not all caches are filled - and
+                                will not use it for temporary data.</p>
+                            <p>The cacheSize should not be more than half of the size of the JVM
+                                heap size (set by the JVM <ph>-Xmx</ph> parameter). If the JVM
+                                heap is less than 512 megabyte, the cacheSize should even be
+                                smaller, e.g. 1/3.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>collectionCache</ph> </dt>
+                            <dd>
+                            <p>Determines the size of the collection cache, which is a separate
+                                caching space. Usually this setting does not need to be changed
+                                unless you really have more than a few thousand collections in the
+                                db. Increase it carefully, maybe up to 128M.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>pageSize</ph> </dt>
+                            <dd>
+                            <p>This specifies the number of bytes used for internal data and
+                                B-tree pages. This should be equal to or a multiple of the page size
+                                used by the filesystem (usually a multiple of 4096).</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>nodesBuffer</ph> </dt>
+                            <dd>
+                            <p>Size of the temporary buffer used by eXist for caching index data
+                                while indexing a document. If set to -1, eXist will use the entire
+                                free memory to buffer index entries and will flush the cache once
+                                the memory is full.</p>
+                            <p>If set to a value &gt; 0, the buffer will be fixed to the given
+                                size. The specified number corresponds to the number of nodes the
+                                buffer can hold, in thousands. Usually, a good default could be
+                                <ph>nodesBuffer="1000"</ph>.</p>
+                            <p>The default setting, nodesBuffer="-1", can be problematic if you
+                                frequently need to store large documents in a multi-user
+                                environment. In this case, the index operation may consume most of
+                                the memory resources, which means that concurrent threads will be
+                                slowed down or even come to a halt.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+            <section id="db-pool">
+                    <title> <ph>db-connection</ph>/<ph>pool</ph> element</title>
+                
+
+                <p>These settings control the internal database connection pool.</p>
+                <dl>
+                        <p>
+                            <b> pool Attributes</b>
+                        </p>
+                        <dlentry>
+                            <dt> <ph>min</ph> | <ph>max</ph> </dt>
+                            <dd>
+                            <p>These options specify the minimum and maximum size of the
+                                connection pool. This pool restricts the number of parallel (basic)
+                                operations that can be executed by the database. Settings should be
+                                somewhere between 1 and 20. </p>
+                            <p>Please note that this has nothing to do with the HTTP and XMLRPC
+                                server settings - these servers have their own connection
+                                pools.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>sync-period</ph> </dt>
+                            <dd>
+                            <p>This option defines how often the database will flush its internal
+                                buffers to disk (in milliseconds). The sync-thread will interrupt
+                                normal database operation after the specified time and write all
+                                dirty pages to disk. It also writes a checkpoint to the transaction
+                                log. In case of a database crash, only transactions which started
+                                after the last checkpoint have to be redone or rolled back. The
+                                sync-period should thus not be set too long.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>wait-before-shutdown</ph> </dt>
+                            <dd>
+                            <p>This option specifies the maximum amount of time (in milliseconds)
+                                that the database will allow for any running processes to complete
+                                upon database shutdown. After that, eXist will try to kill the
+                                remaining processes.</p>
+                            <p>If wait-before-shutdown is set to a positive number, eXist will
+                                stop the db after the specified timeout, even if there were still
+                                running database operations. In this case, no checkpoint will be
+                                written to the transaction log. If there were any open transactions,
+                                eXist will trigger a recovery run after restart.</p>
+                            <p>If wait-before-shutdown is set to -1, eXist will not shut down
+                                before all active database operations returned. This is a safe
+                                setting, but it may require a manual intervention to stop the
+                                JVM.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="db-query-pool">
+                    <title> <ph>db-connection</ph>/<ph>query-pool</ph> element</title>
+                
+
+                <p>This element configures the global pool for compiled XQuery expressions. For
+                    each XQuery, a maximum number of compiled expressions are kept in the pool, and
+                    is removed if it hasn't been used for the defined timeout. The XQuery pool is
+                    multi-threaded.</p>
+                <p> <ph>query-pool</ph> Attributes:</p>
+                <dl>
+                        <dlentry>
+                            <dt> <ph>max-stack-size</ph> </dt>
+                            <dd>
+                            <p>The maximum number of queries in the query-pool.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>size</ph> </dt>
+                            <dd>
+                            <p>The number of copies of the same query kept in the query-pool.
+                                Value <ph>"-1"</ph> effectively disables caching. Queries cannot
+                                be shared by threads, each thread needs a private copy of a
+                                query.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>timeout</ph> </dt>
+                            <dd>
+                            <p>The amount of time that a query will be cached in the query-pool
+                                in milliseconds.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>timeout-check-interval</ph> </dt>
+                            <dd>
+                            <p>The time between checking for timed out queries. For value
+                                <ph>"-1"</ph> the time out is switched off, resulting cached
+                                queries to remain in the cache forever.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="db-recovery">
+                    <title> <ph>db-connection</ph>/<ph>recovery</ph> element</title>
+                
+
+                <p>This element configures the journalling and recovery of the database. With
+                    recovery enabled, the database is able to recover from an unclean database
+                    shutdown due to, for example, power failures, OS reboots, and hanging processes.
+                    For this to work correctly, all database operations must be logged to a journal
+                    file. The location, size and other parameters for this file can be set using the
+                    <ph>recovery</ph> element.</p>
+                <p> <ph>recovery</ph> Attributes:</p>
+                <dl>
+                        <dlentry>
+                            <dt> <ph>enabled</ph> </dt>
+                            <dd>
+                            <p>If this attribute is set to <ph>yes</ph>, automatic
+                                recovery is enabled.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>size</ph> </dt>
+                            <dd>
+                            <p>This attributes sets the maximum allowed size of the journal file.
+                                Once the journal reaches this limit, a checkpoint will be triggered
+                                and the journal will be cleaned. However, the database waits for
+                                running transactions to return before processing this checkpoint. In
+                                the event one of these transactions writes a lot of data to the
+                                journal file, the file will grow until the transaction has
+                                completed. Hence, the size limit is not enforced in all
+                                cases.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>journal-dir</ph> </dt>
+                            <dd>
+                            <p>This attribute sets the directory where journal files are to be
+                                written. If no directory is specified, the default path is to the
+                                <ph>data</ph> directory.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>sync-on-commit</ph> </dt>
+                            <dd>
+                            <p>This attribute determines whether or not to protect the journal
+                                during operating system failures. That is, it determines whether the
+                                database forces a file-sync on the journal after every commit. If
+                                this attribute is set to <ph>yes</ph>, the journal is
+                                protected against operating system failures. However, this will slow
+                                performance - especially on Windows systems. If set to
+                                <ph>no</ph>, eXist will rely on the operating system to
+                                flush out the journal contents to disk. In the worst case scenario,
+                                in which there is a complete system failure, some committed
+                                transactions might not have yet been written to the journal, and so
+                                will be rolled back.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>group-commit</ph> </dt>
+                            <dd>
+                            <p>If set to <ph>yes</ph>, eXist will not sync the journal file
+                                immediately after every transaction commit. Instead, it will wait
+                                until the current file buffer (32kb) is really full. This can speed
+                                up eXist on some systems where a file sync is an expensive operation
+                                (mainly windows XP; not necessary on Linux).</p>
+                            <p>However, <ph>group-comit="yes"</ph> will increase the
+                                chance that an already committed operation is rolled back after a
+                                database crash.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>force-restart</ph> </dt>
+                            <dd>
+                            <p>Try to restart the db even if crash recovery failed. This is
+                                dangerous because there might be corruptions inside the data files.
+                                The transaction log will be cleared, all locks removed and the db
+                                re-indexed.</p>
+                            <p>Set this option to <ph>yes</ph> if you need to make sure that
+                                the db is online, even after a fatal crash. Errors encountered
+                                during recovery are written to the log files. Scan the log files to
+                                see if any problems occurred.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>consistency-check</dt>
+                            <dd>
+                            <p>If set to <ph>yes</ph>, a consistency check will be run on the
+                                database if an error was detected during crash recovery. This option
+                                requires force-restart to be set to <ph>yes</ph>, otherwise it
+                                has no effect.</p>
+                            <p>The consistency check outputs a report to the directory
+                                {files}/sanity and if inconsistencies are found in the db, it writes
+                                an emergency backup to the same directory.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="db-watchdog">
+                    <title> <ph>db-connection</ph>/<ph>watchdog</ph> element</title>
+                
+
+                <p>This is the global configuration for the <i>query watchdog</i>.
+                    The watchdog monitors all query processes, and can terminate any long-running
+                    queries if they exceed one of the predefined limits. These limits are as
+                    follows:</p>
+
+                <p> <ph>watchdog</ph> Attributes:</p>
+                <dl>
+                        <dlentry>
+                            <dt> <ph>query-timeout</ph> </dt>
+                            <dd>
+                            <p>This attribute sets the maximum amount of time (expressed in
+                                milliseconds) that the query can take before it is killed. The
+                                setting can be overwritten in an XQuery by specifying the option
+                                <ph>exist:timeout</ph>:</p>
+                            <pre outputclass="xquery">declare option exist:timeout "time-in-ms";</pre>
+                            <p>Please check the documentation on <xref href="xquery" scope="external">XQuery
+                                options</xref>.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>output-size-limit</ph> </dt>
+                            <dd>
+                            <p>This attribute limits the size of XML fragments constructed using
+                                XQuery, and thus sets the maximum amount of main memory a query is
+                                allowed to use. This limit is expressed as the maximum number of
+                                nodes allowed for an in-memory DOM tree. The purpose of this option
+                                is to avoid memory shortages on the server in cases where users are
+                                allowed to run queries that produce very large output fragments. The
+                                setting can be overwritten in an XQuery by specifying the option
+                                <ph>exist:output-size-limit</ph>:</p>
+                            <pre outputclass="xquery">declare option exist:output-size-limit "size-hint";</pre>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="db-perm">
+                    <title> <ph>db-connection</ph>/<ph>default-permissions</ph> element</title>
+                
+
+                <p>Specifies the default permissions for all resources and collections in eXist
+                    (see <xref href="security" scope="external">User Authentication and Access
+                    Control</xref>). When this is not configured, the default <ph>mod</ph>
+                    (similar to the Unix <ph>chmod</ph> command) is set to
+                    <ph>0775</ph> in the <ph>resources</ph> and
+                    <ph>collections</ph> attributes. A different default value may be set
+                    for a database instance. Local overrides are also possible.</p>
+            </section>
+        </section>
+
+
+        
+        <section id="lock-manager">
+                <title> <ph>lock-manager</ph> element</title>
+            
+            <p>This element contains settings for eXist-db's Lock Manager and Lock Table. The majority
+                of these Lock Manager settings should not be modified unless otherwise suggested by eXist-db Core Development Team.</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                            <ph>lock-table/@disabled</ph>
+                        </dt>
+                        <dd>
+                        <p>Disables the database Lock Table which tracks database locks. The Lock Table is enabled by default
+                            and allows reporting on database locking via JMX.</p>
+                        <p>Tracking locks via the Lock Table imposes a small overhead per-Lock. Once users
+                            have finished testing their system to ensure correct operation, they may wish to disable
+                            this in production to ensure the absolute best performance.</p>
+                        <note type="note">
+                                <p>Unless nessecary, it is recommened to leave this enabled.</p>
+                            </note>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>document/@use-path-locks</ph>
+                        </dt>
+                        <dd>
+                        <p>
+                                <i>Experimental:</i> Causes path locks to be used for documents as well as collection locks.</p>
+                        <p>This has a performance and concurrency impact, but will ensure that you cannot have deadlocks between Collections and Documents.</p>
+                        <note type="note">
+                                <p>Unless nessecary, it is recommened to leave this at its default value.</p>
+                            </note>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="indexer">
+                <title> <ph>indexer</ph> element </title>
+            
+
+            <p>This element sets parameters on how XML files are to be indexed by eXist. An
+                example configuration is shown below:</p>
+            <pre outputclass="xml">&lt;indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no" suppress-whitespace="none"&gt;
+  &lt;modules&gt;
+    &lt;module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/&gt;
+    &lt;!-- &lt;module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex"/&gt; --&gt;
+    &lt;module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex"/&gt;
+    &lt;!-- The following index can be used to speed up 'order by' expressions by pre-ordering a node set. --&gt;
+    &lt;module id="sort-index" class="org.exist.indexing.sort.SortIndex"/&gt;
+    &lt;!-- New range index based on Apache Lucene. Replaces the old range index which is hard-wired into eXist core. --&gt;
+    &lt;module id="range-index" class="org.exist.indexing.range.RangeIndex"/&gt;
+    &lt;!-- The following module is not really an index (though it sits in the index pipeline). It gathers relevant statistics on the distribution of elements in the database, which can be used by the query optimizer for additional optimizations. --&gt;
+    &lt;!-- &lt;module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" /&gt; --&gt;
+  &lt;/modules&gt;
+  &lt;!-- Default index settings. Default settings apply if there's no collection-specific configuration for a collection. --&gt;
+  &lt;index&gt;
+    &lt;!-- settings go here --&gt;
+  &lt;/index&gt;
+&lt;/indexer&gt;</pre>
+
+            <section id="indexer-att">
+                    <title> <ph>indexer</ph> attributes</title>
+                
+
+                <dl>
+                        <dlentry>
+                            <dt> <ph>caseSensitive</ph> </dt>
+                            <dd>
+                            <p>Specifies whether string comparisons are to be case-sensitive.
+                                This option applies to XPath equality tests (i.e. the
+                                <ph>=</ph> operator), as well as functions such as
+                                <ph>contains()</ph>, <ph>starts-with()</ph> and
+                                <ph>ends-with()</ph>. </p>
+                            <p>This setting does not apply to operators or functions of the
+                                full-text index (e.g. <ph>&amp;=</ph>,
+                                <ph>|=</ph>, <ph>near()</ph>) nor the n-gram
+                                index, which are <i>never</i> case-sensitive</p>
+                            <note type="warning">
+                                    <p>Setting <ph>caseSensitive="no"</ph> violates the
+                                    XQuery specs! The option should be regarded as a dirty
+                                    workaround, which will be removed in the future. Please use the
+                                    n-gram or full-text indexes for case-insensitive queries or - if
+                                    that is impossible - specify a <xref href="xquery#collations" scope="external">collation</xref>.</p>
+                                </note>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>suppress-whitespace</ph> </dt>
+                            <dd>
+                            <p>Specifies how the <ph>indexer</ph> is to treat whitespace at the
+                                start or end of a character sequence. This option
+                                <i>only</i> applies to newly stored files, and
+                                therefore changing it has no effect on previously stored documents.
+                                Possible values for this attribute are:</p>
+                            <ol>
+                                    <li>
+                                    <p> <ph>leading</ph> - Suppresses leading
+                                        whitespace.</p>
+                                </li>
+                                    <li>
+                                    <p> <ph>trailing</ph> - Suppresses trailing
+                                        whitespace.</p>
+                                </li>
+                                    <li>
+                                    <p> <ph>both</ph> - Suppresses leading and trailing
+                                        whitespace.</p>
+                                </li>
+                                    <li>
+                                    <p> <ph>none</ph> - Preserves all
+                                        whitespace.</p>
+                                </li>
+                                </ol>
+                            <p>Note that suppressing whitespace at the start or end of character
+                                sequences does effectively change the document!</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>preserve-whitespace-mixed-content</ph> </dt>
+                            <dd>
+                            <p>controls how ignorable whitespace is handled. If set to
+                                <ph>no</ph>, ignorable whitespace, e.g. between the end
+                                tag of an element and the start tag of another, will not be stored
+                                into the persistent DOM. This leads to a smaller DOM and usually
+                                increases the readability of the XML. Ignorable whitespace is not
+                                considered as a part of the logical document model, so removing it
+                                doesn't change the document.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>tokenizer</ph> </dt>
+                            <dd>
+                            <p>This attribute invokes the Java class used to tokenize a string
+                                into a sequence of single words or tokens, which are stored to the
+                                full-text index. Currently only <ph>SimpleTokenizer</ph>
+                                is available.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>index-depth</ph> </dt>
+                            <dd>
+                            <p>This attribute specifies the depth of the DOM index, or the tree
+                                level up to which elements will be added to the index. For example,
+                                a value of <ph>2</ph> results in the document root node
+                                and all its child elements being indexed; a value of
+                                <ph>1</ph> only indexes the root node.</p>
+                            <p>The DOM index maps unique node identifiers to the nodes' storage
+                                locations in the DOM file. Generating this index is time- and
+                                memory-consuming. It is furthermore primarily needed to access nodes
+                                by their unique node identifier, for example, when serializing XML
+                                data for query results or XUpdate - which are operations not
+                                normally considered time-critical. Moreover, most XPath expressions
+                                can do without this index since they use short-cuts to access the
+                                node directly.</p>
+                            <p>Normally only top-level elements are added to the DOM index,
+                                whereas attributes and text nodes are always excluded. This results
+                                in much smaller index sizes and, consequently, a smaller
+                                <ph>dom.dbx</ph> file size. Usually, setting the
+                                <ph>index-depth</ph> to a value of <ph>2</ph>
+                                offers a reasonable compromise of index size and performance.</p>
+                            <p>However, if your documents are
+                                <i>deeply-structured</i>, you might consider
+                                increasing this setting to a level of 3, 4 or 5. For example, if the
+                                longest path from the document root to an element node has greater
+                                than ten node levels, an <ph>index-depth</ph> setting of
+                                <ph>4</ph> or <ph>5</ph> would probably help to
+                                increase overall query performance for some types of queries.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>validation</ph> </dt>
+                            <dd>
+                            <p>This attribute defines the default setting for the validation of
+                                documents by the XML parser. If it is set to <ph>no</ph>,
+                                documents will never be validated against an existing DTD or schema.
+                                A value of <ph>auto</ph> will leave document validation to
+                                the SAX parser.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="indexer-modules">
+                    <title> <ph>indexer</ph>/<ph>modules</ph> element </title>
+                
+
+                <p>This section configures optional indexing modules. Beginning with version 1.2,
+                    eXist features a modularized indexing architecture, which allows new indexes to
+                    be plugged into the indexing pipeline. The <ph>modules</ph> section lists and
+                    configures the indexes that will be available to the database:</p>
+                <pre outputclass="xml">&lt;modules&gt;
+  &lt;module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" file="ngram.dbx" n="3"/&gt;
+  &lt;!-- &lt;module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex" connectionTimeout="10000" flushAfter="300" /&gt; --&gt;
+&lt;/modules&gt;</pre>
+                <p>The only common attributes for each <ph>module</ph> element are
+                    <ph>class</ph> and <ph>id</ph>. The other attributes, as
+                    well as any nested elements, are specific to the index implementation. Detailed
+                    information is available in the article on <xref href="indexing#moduleconf" scope="external">Configuring Database Indexes</xref>.</p>
+            </section>
+
+            <section id="indexer-stopwords">
+                    <title> <ph>indexer</ph>/<ph>stopwords</ph> element </title>
+                
+
+                <p>The <ph>file</ph> attribute for this element points to a file
+                    containing a list of <i>stop-words</i>. Stop-words are not added
+                    to the full-text index.</p>
+            </section>
+
+            <section id="indexer-index">
+                    <title> <ph>indexer</ph>/<ph>index</ph> element </title>
+                
+
+                <p>This configuration element specifies the default index settings. These
+                    settings are applied if neither the collection nor any of its ancestors provide
+                    a collection configuration.</p>
+                <p>Configuring indexes via the default settings is <i>not</i>
+                    recommended. If you need a global collection configuration, store one for the
+                    root collection <ph>/db</ph>. For more information, see <xref href="indexing" scope="external">Configuring Indexes</xref>.</p>
+            </section>
+        </section>
+
+        
+
+        <section id="scheduler">
+                <title> <ph>scheduler</ph> element </title>
+            
+
+            <p>This section is used to configure asynchronous jobs with eXist's internal
+                scheduler. Three types of jobs are supported:</p>
+            <dl>
+                    <dlentry>
+                        <dt>startup jobs</dt>
+                        <dd>
+                        <p>Startup jobs are executed once during database startup, but before the
+                            database becomes available. These jobs are synchronous. The database is
+                            blocked to outside requests and no other operations will run at the same
+                            time.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>system jobs</dt>
+                        <dd>
+                        <p>System jobs require the database to be in a consistent state. The
+                            scheduler will run them in an exclusive environment. Once the job is
+                            triggered, the database will block all new requests and wait for running
+                            operations to complete. It then executes the job. All other database
+                            operations will be stopped until the job returns or throws an exception.
+                            Any exception will be caught and a warning written to the log.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>user jobs</dt>
+                        <dd>
+                        <p>User jobs may be scheduled at any time and may be mutually exclusive
+                            or non-exclusive</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+            <p>Below is an example which configures a <xref href="backup" scope="external">BackupSystemTask</xref>: </p>
+            <pre outputclass="xml">&lt;job type="system" name="databackup" class="org.exist.storage.DataBackup" period="120000"&gt;
+  &lt;parameter name="output-dir" value="backup"/&gt;
+  &lt;parameter name="suffix" value=".zip"/&gt;
+  &lt;parameter name="prefix" value="backup-"/&gt;
+  &lt;parameter name="collection" value="/db"/&gt;
+  &lt;parameter name="user" value="admin"/&gt;
+  &lt;parameter name="password"/&gt;
+  &lt;parameter name="zip-files-max" value="28"/&gt;
+&lt;/job&gt;</pre>
+            <p>Each job is configured in a <ph>job</ph> element which accepts a number of
+                standard attributes:</p>
+            <section id="job-att">
+                    <title> <ph>job</ph> attributes</title>
+                
+
+                <dl>
+                        <dlentry>
+                            <dt> <ph>type</ph> </dt>
+                            <dd>
+                            <p>The type of the job to schedule. Must be either
+                                <ph>startup</ph>, <ph>system</ph> or
+                                <ph>user</ph>.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>class</ph> </dt>
+                            <dd>
+                            <p>If the job is written in Java this should be the name of the class
+                                that extends either</p>
+                            <ul>
+                                    <li>
+                                    <p> <ph>org.exist.scheduler.StartupJob</ph> </p>
+                                </li>
+                                    <li>
+                                    <p> <ph>org.exist.storage.SystemTask</ph> </p>
+                                </li>
+                                    <li>
+                                    <p> <ph>org.exist.scheduler.UserJavaJob</ph> </p>
+                                </li>
+                                </ul>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>xquery</ph> </dt>
+                            <dd>
+                            <p>If the job is written in XQuery (not suitable for system jobs)
+                                this should be a path to the XQuery stored in the database, e.g.
+                                <ph>/db/myCollection/myJob.xql</ph>. XQuery job's will be
+                                launched under the <ph>guest</ph> account initially. The running
+                                XQuery may switch permissions through calls to
+                                <ph>xmldb:login()</ph>.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>cron-trigger</ph> </dt>
+                            <dd>
+                            <p>To define a firing pattern for the Job using <ph>cron</ph>
+                                style syntax. Not applicable to start-up jobs.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>unschedule-on-exception</ph> </dt>
+                            <dd>
+                            <p>Either <ph>true</ph> (default) or <ph>false</ph>. If
+                                <ph>true</ph> and an exception is encountered the job is
+                                unscheduled for further execution until a restart. Otherwise, the
+                                exception is ignored.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>period</ph> </dt>
+                            <dd>
+                            <p>Can be used to define an explicit period for firing the job
+                                instead of a <ph>cron</ph> style syntax. Expressed in
+                                milliseconds. Not applicable to start-up jobs.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>delay</ph> </dt>
+                            <dd>
+                            <p>Can be used for periodic jobs to delay the start of a job. If
+                                unspecified jobs will start as soon as the database and scheduler
+                                are initialised.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>repeat</ph> </dt>
+                            <dd>
+                            <p>Can be used for periodic jobs to define how many periods a job
+                                should be executed. If unspecified, jobs will repeat
+                                indefinitely.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+                <p>Every job can take additional parameters, which are passed as name/value
+                    pairs.</p>
+            </section>
+        </section>
+
+        
+
+        <section id="serializer">
+                <title> <ph>serializer</ph> element </title>
+            
+
+            <p>The serializer is responsible for serializing XML documents or document fragments
+                back into XML. This configuration element defines default settings for various
+                parameters, which can also be specified programmatically. All settings can be
+                overwritten by XQuery <xref href="xquery#serialization" scope="external">serialization
+                options</xref>.</p>
+            <section id="serializer-att">
+                    <title> <ph>serializer</ph> attributes</title>
+                
+
+                <dl>
+                        <dlentry>
+                            <dt> <ph>enable-xinclude</ph> </dt>
+                            <dd>
+                            <p>This attribute determines whether <ph>xinclude</ph> tags are to
+                                be expanded during serialization. Setting the value to
+                                <ph>false</ph> will leave <ph>xinclude</ph> tags
+                                unexpanded.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>enable-xsl</ph> </dt>
+                            <dd>
+                            <p>Setting this attribute to <ph>true</ph> tells the
+                                serializer to pass its output to an XSL stylesheet when it
+                                encounters an XSL processing-instruction at the start of the
+                                document.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>add-exist-id</ph> </dt>
+                            <dd>
+                            <p>This attribute tells the serializer to add additional debug
+                                attributes to each element. This information includes the internal
+                                identifier of the node and source document. Values:</p>
+                            <ol>
+                                    <li>
+                                    <p> <ph>all</ph> - Adds debug information to every
+                                        node in the output.</p>
+                                </li>
+                                    <li>
+                                    <p> <ph>element</ph> - Adds debug information to
+                                        top-level elements only.</p>
+                                </li>
+                                    <li>
+                                    <p> <ph>none</ph> (default) - Disables debugging
+                                        feature.</p>
+                                </li>
+                                </ol>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>indent</ph> </dt>
+                            <dd>
+                            <p>The serializer defaults to pretty-print the resulting XML source
+                                code. Setingt this option to <ph>no</ph> disables
+                                pretty-printing.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>match-tagging-elements</ph> </dt>
+                            <dd>
+                            <p>The database can highlight matches in the text content of a node
+                                by tagging the matching text string with <ph>exist:match</ph>.
+                                This only works for XPath expressions using the full-text index. Set
+                                the parameter to <ph>yes</ph> to
+                                <i>disable</i> this feature.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+        </section>
+
+        
+
+        <section id="transformer">
+                <title> <ph>transformer</ph> element </title>
+            
+
+            <p>This section determines which XSLT processor will be used by eXist. By default,
+                eXist relies on Saxon.</p>
+        </section>
+
+        
+
+        <section id="validations">
+                <title> <ph>validation</ph> element </title>
+            
+
+            <p>Defines the default validation settings active when parsing XML and links to
+                catalog files. Catalog files are used to locate DTDs, schemas and resolve external
+                entities in general.</p>
+            <p>Please refer to the corresponding documentation on <xref href="validation" scope="external">XML Validation</xref>.</p>
+        </section>
+
+        
+
+        <section id="xupdate">
+                <title> <ph>xupdate</ph> element</title>
+            
+
+            <p>Inserting new nodes into a document can lead to fragmentation in the DOM storage
+                file. eXist will thus trigger a de-fragmentation run if the fragmentation exceeds a
+                certain limit. The frequency of such de-fragmentation runs can be configured in the
+                <ph>xupdate</ph> section. The main parameter is called
+                <ph>allowed-fragmentation</ph>:</p>
+
+            <pre outputclass="xml">&lt;xupdate allowed-fragmentation="20" enable-consistency-checks="no"/&gt;</pre>
+            <section id="xupdate-att">
+                    <title> <ph>xupdate</ph> attributes</title>
+                
+
+                <dl>
+                        <dlentry>
+                            <dt> <ph>allowed-fragmentation</ph> </dt>
+                            <dd>
+                            <p>This attribute defines the maximum number of page splits allowed
+                                within a document before a de-fragmentation run is triggered.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>enable-consistency-checks</ph> </dt>
+                            <dd>
+                            <p>This attribute is for or debugging purposes only. If the parameter
+                                is set to <ph>yes</ph>, a <i>consistency
+                                check</i> will be run on modified documents after every
+                                XUpdate request. This checks whether the persistent DOM is complete,
+                                and all pointers in the structural index point to valid storage
+                                addresses that contain valid nodes.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+        </section>
+
+        
+
+        <section id="xq-el">
+                <title> <ph>xquery</ph> element</title>
+            
+
+            <pre outputclass="xml">&lt;xquery enable-java-binding="no" enable-query-rewriting="no" enforce-index-use="always" disable-deprecated-functions="no" raise-error-on-failed-retrieval="no" backwardCompatible="no"&gt;
+  &lt;builtin-modules&gt;
+    &lt;!-- Default Modules --&gt;
+    &lt;module class="org.exist.xquery.functions.util.UtilModule" uri="http://exist-db.org/xquery/util"/&gt;
+    &lt;!-- ... more modules ... --&gt;
+  &lt;/builtin-modules&gt;
+&lt;/xquery&gt;</pre>
+            <p>The <ph>xquery</ph> section is used to enable/disable certain core features of
+                the XQuery engine. It also lists the XQuery extension modules that will be known to
+                the query engine by default.</p>
+
+            <section id="xq-att">
+                    <title> <ph>xquery</ph> attributes</title>
+                
+
+                <dl>
+                        <dlentry>
+                            <dt> <ph>enable-java-binding</ph> </dt>
+                            <dd>
+                            <p>Set to <ph>yes</ph> to enable the <xref href="xquery" scope="external">java binding</xref>. Giving users full access to all Java classes
+                                should be considered a security risk and the feature is thus
+                                disabled by default.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>disable-deprecated-functions</ph> </dt>
+                            <dd>
+                            <p>Set to <ph>yes</ph> to enable XQuery functions marked as
+                                deprecated.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>enforce-index-use</ph> </dt>
+                            <dd>
+                            <p>controls if available range indexes should be used if only some
+                                collections in the context set define a matching index. Available
+                                settings are: </p>
+                            <ul>
+                                    <li>
+                                    <p> <ph>always</ph> to always use an index, even if it
+                                        does not apply to the entire set of collections being
+                                        queried.</p>
+                                </li>
+                                    <li>
+                                    <p> <ph>strict</ph> to only use indexes if they are
+                                        defined for the entire collection set.</p>
+                                </li>
+                                </ul>
+
+                            <p> </p>
+                            <p>For example, if you have two collections: <ph>/db/one</ph> and
+                                <ph>/db/two</ph>, and you define a range index on a certain
+                                element <ph>node</ph> in <ph>/db/one</ph>, but not in
+                                <ph>/db/two</ph>, the query engine would not use the index with
+                                setting <ph>strict</ph> if you query both collections. At
+                                compile time, eXist doesn't know if <ph>node</ph> exists in both
+                                collections and will not use the index if it determines that an
+                                index definition does only apply to a part of the collection set
+                                being queried. To use the index, you would need to start your XPath
+                                expression with a call to <ph>collection()</ph>, selecting the
+                                correct collection with the index defined.</p>
+                            <p>If <ph>enforce-index-use</ph> is set to <ph>always</ph>,
+                                the query engine only checks if one collection in the collection set
+                                has a matching index defined on it. This may lead to an incomplete
+                                query result if one forgets certain collections.</p>
+                            <p>In other words, when <ph>enforce-index-use</ph> is set to
+                                "always", it is the query writer's responsibility to make sure
+                                indexes are defined properly. But experience has shown it is easier
+                                for users to understand that a certain result is incomplete because
+                                an index is missing, whereas they have problems to see that a
+                                performance issue is caused by inconsistent indexing. </p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>raise-error-on-failed-retrieval</ph> </dt>
+                            <dd>
+                            <p>Set to <ph>yes</ph> if a call to
+                                <ph>doc()</ph>, <ph>xmldb:document()</ph>,
+                                <ph>collection()</ph> or
+                                <ph>xmldb:xcollection()</ph> should raise an error
+                                (FODC0002) when an XML resource can not be retrieved.</p>
+                            <p>Set to <ph>no</ph> if a call to
+                                <ph>doc()</ph>, <ph>xmldb:document()</ph>,
+                                <ph>collection()</ph> or
+                                <ph>xmldb:xcollection()</ph> should return an empty
+                                sequence when an XML resource can not be retrieved.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>enable-query-rewriting</ph>o</dt>
+                            <dd>
+                            <p>the query engine can often achieve considerable performance
+                                improvements by rewriting an XQuery expression into a more efficient
+                                form (see the documentation about <xref href="indexing" scope="external">indexing</xref>). However, these features are relatively new. If
+                                you have doubts about the correctness of a query result, you may
+                                temporarily set <ph>enable-query-rewriting</ph> to
+                                <ph>no</ph> and see if the result changes in any way. If
+                                it does, you have hit a bug which should be reported. </p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>backwardCompatible</ph> </dt>
+                            <dd>
+                            <p>|Set to <ph>yes</ph> to enable XPath 1.0 backwards
+                                compatibility. The setting mainly effects automatic type
+                                conversions, which were less strict in XPath 1.0 than in later
+                                versions.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="xq-builtin">
+                    <title> <ph>xquery</ph>/<ph>builtin-modules</ph> element </title>
+                
+
+                <p>This section lists the XQuery extension modules which will be known to the
+                    query engine. The modules in this list can be imported into a query without
+                    specifying a location. For example:</p>
+                <pre outputclass="xml">&lt;module class="org.exist.xquery.modules.file.FileModule" uri="http://exist-db.org/xquery/file"/&gt;</pre>
+                <p>This establishes a static mapping between the module URI for the file module
+                    and the Java class which implements it. When using that module, it is sufficient
+                    to provide the correct URI in the import. Specifying a location is not needed,
+                    like in:</p>
+                <pre outputclass="xquery">import module namespace file="http://exist-db.org/xquery/file";</pre>
+                <p>Instead of providing a Java class, one can also specify a <ph>src</ph> URI
+                    which must point to the XQuery source code of the module, for instance:</p>
+                <pre outputclass="xml">&lt;module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/&gt;</pre>
+                <p>For the <ph>src</ph> attribute, eXist understands the <xref href="xquery#module-system" scope="external">same types of URIs</xref> as in an
+                    ordinary XQuery import statement.</p>
+            </section>
+        </section>
+
+        
+
+        <section id="rpc-server">
+                <title> <ph>rpc-server</ph> element </title>
+            
+
+            <p>Defines the RPC server backend specific options used to process the requests and caching
+                result values.</p>
+
+            <section id="content-file">
+                    <title> <ph>rpc-server</ph>/<ph>content-file</ph> element</title>
+                
+
+                <p>This element configures the maximum amount of data in bytes held in the heap space before
+                    the data is moved to the temporary disk space. While using memory improves the performance
+                    and not triggering eventually existing virus scanners it comes with the cost of heap size usage.
+                    The location, size and other parameters for this file can be set using the
+                    <ph>content-file</ph> element.</p>
+                <p> <ph>content-file</ph> Attributes:</p>
+                <dl>
+                        <dlentry>
+                            <dt> <ph>max-in-memory-size</ph> </dt>
+                            <dd>
+                            <p>Defines the maximum amount of data in bytes to hold in memory, before storing on
+                                temporary disk space.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="content-file-pool">
+                    <title> <ph>rpc-server</ph>/<ph>content-file-pool</ph> element</title>
+                
+
+                <p>This element configures the pool used to hold the content file entries in order to reuse the once
+                    initialized instances to further improve the performance and to limit the amount of used heap size.
+                    To calculate the maximum size of used memory the maximum in memory size of a single content file has
+                    to be multiplied by the size of the pool.
+                    The location, size and other parameters for this file can be set using the
+                    <ph>content-file-pool</ph> element.</p>
+                <p> <ph>content-file</ph> Attributes:</p>
+                <dl>
+                        <dlentry>
+                            <dt> <ph>size</ph> </dt>
+                            <dd>
+                            <p>Specifies the maximum amount of content file objects that can be in use concurrently.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt> <ph>max-idle</ph> </dt>
+                            <dd>
+                            <p>Defines the maximum amount of idle pool entries that will not be removed for later reuse.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+        </section>
+
+
+    </section>
+    </body>
+</topic>

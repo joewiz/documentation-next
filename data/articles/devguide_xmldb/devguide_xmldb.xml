@@ -1,0 +1,470 @@
+<topic id="devguide_xmldb">
+    <title>Writing Java Applications with the XML:DB API</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="java-development"/>
+    </prolog>
+    <body>
+        <p>This article explains how to work with eXist-db from Java code using the XML:DB API. This
+        API provides a common interface to native or XML-enabled databases and supports the
+        development of portable, reusable applications.</p>
+        <section id="intro">
+            <title>Introduction</title>
+        
+
+        <p>The preferred way to work with eXist-db when developing Java applications is to use
+            the XML:DB API. eXist-db's implementation of the XML:DB standard conforms to the latest
+            working drafts put forth by the <xref href="https://github.com/xmldb-org/xmldb-api" scope="external">XML:DB Initiative</xref>. For
+            more information, refer to the Javadocs for this API.</p>
+        <p>The basic components employed by the XML:DB API are <i>drivers</i>,
+            <i>collections</i>, <i>resources</i> and
+            <i>services</i>.</p>
+        <p> <i>Drivers</i> are implementations of the database interface that
+            encapsulate the database access logic for specific XML database products. They are
+            provided by the product vendor and must be registered with the database manager.</p>
+        <p>A <i>collection</i> is a hierarchical container for
+            <i>resources</i> and further sub-collections. Currently two different
+            resources are defined by the API: <ph>XMLResource</ph> and
+            <ph>BinaryResource</ph>. An <ph>XMLResource</ph> represents an XML
+            document or a document fragment, selected by a previously executed XPath query.</p>
+        <p>Finally, <i>services</i> are requested for special tasks such as
+            querying a collection with XPath, or managing a collection.</p>
+        <p>There are also several XML:DB examples provided in the
+            <xref href="https://github.com/eXist-book/book-code/tree/master/chapters/integration" scope="external">sample code</xref>
+            that accompanies the Integration chapter of the <xref href="http://shop.oreilly.com/product/0636920026525.do" scope="external">eXist-db book</xref>.
+        </p>
+    </section>
+        <section id="use-xmldb">
+            <title>Using the XML:DB API</title>
+        
+
+        <p>For working with eXist-db via XML:DB API, you will need two dependencies, one for the XML:DB API
+        and one for eXist-db's implementation of the API. These dependencies are available from Maven and should
+        be added to your Maven <ph>pom.xml</ph> or project's dependency tool like so:</p>
+        <pre outputclass="xml">&lt;dependency&gt;
+    &lt;groupId&gt;net.sf.xmldb-org&lt;/groupId&gt;
+    &lt;artifactId&gt;xmldb-api&lt;/artifactId&gt;
+    &lt;version&gt;1.7.0&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+    &lt;groupId&gt;org.exist-db&lt;/groupId&gt;
+    &lt;artifactId&gt;exist-core&lt;/artifactId&gt;
+    &lt;version&gt;5.0.0&lt;/version&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</pre>
+        <p>In the following simple example, a document is retrieved from the eXist server and
+            printed to standard output.</p>
+
+        <pre outputclass="java">import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
+import org.xmldb.api.*;
+import javax.xml.transform.OutputKeys;
+import org.exist.xmldb.EXistResource;
+
+public class RetrieveExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the name of the resource to read from the collection
+     */
+    public static void main(String args[]) throws Exception {
+        
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        
+        Collection col = null;
+        XMLResource res = null;
+        try {    
+            // get the collection
+            col = DatabaseManager.getCollection(URI + args[0]);
+            col.setProperty(OutputKeys.INDENT, "no");
+            res = (XMLResource)col.getResource(args[1]);
+            
+            if(res == null) {
+                System.out.println("document not found!");
+            } else {
+                System.out.println(res.getContent());
+            }
+        } finally {
+            //dont forget to clean up!
+            
+            if(res != null) {
+                try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+            
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+        }
+    }
+}</pre>
+
+        <p>With this example, the database driver class for eXist
+            (<ph>org.exist.xmldb.DatabaseImpl</ph>) is registered first with the
+            <ph>DatabaseManager</ph>. </p>
+        <p>Next we obtain a <ph>Collection</ph> object from the database manager by
+            calling the static method <ph>DatabaseManger.getCollection()</ph>. This method
+            expects a fully qualified URI for its parameter value, which identifies the desired
+            collection. The format of this URI must be:</p>
+        <pre>xmldb:[DATABASE-ID]://[HOST-ADDRESS]/db/collection</pre>
+        <p>Because more than one database driver can be registered with the database manager, the
+            first part of the URI (<ph>xmldb:exist</ph>) is required to determine which
+            driver class to use. The <i>database-id</i> is used by the database
+            manager to select the correct driver from its list of available drivers. To use
+            eXist-db, this ID should always be <ph>exist</ph> (unless you have set up multiple
+            database instances; additional instances may have other names).</p>
+        <p>The final part of the URI identifies the collection path, and optionally the host
+            address of the database server on the network. Internally, eXist uses two different
+            driver implementations: The first talks to a remote database engine using XML-RPC calls,
+            the second has direct access to a local instance of eXist-db. The root collection is
+            always identified by <ph>/db</ph>. For example:</p>
+        <pre>xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays</pre>
+        <p>This references the Shakespeare collection on a remote server running the XML-RPC
+            interface as a servlet at <ph>localhost:8080/exist/xmlrpc</ph>. </p>
+
+        <p>If we leave out the host address, the XML:DB driver will try to connect to a locally
+            attached database instance. For instance:</p>
+        <pre>xmldb:exist:///db/shakespeare/plays</pre>
+        <p>In this case, we have to tell the XML:DB driver that it should create a new database
+            instance if none has been started. This is done by setting the
+            <ph>create-database</ph> property of class <ph>Database</ph> to
+            <ph>true</ph> (more information on embedded use of eXist-db can be found in the
+            <xref href="deployment" scope="external">deployment guide</xref>).</p>
+        <p>The <ph>setProperty</ph> calls are used to set database-specific parameters.
+            In this case, pretty-printing of XML output is turned on for the collection. eXist uses
+            the property keys defined in the standard Java package
+            <ph>javax.xml.transform</ph>. Thus, in Java you can simply use class
+            <ph>OutputKeys</ph> to get the correct keys.</p>
+        <p>Calling <ph>col.getResource()</ph> finally retrieves the document, which is
+            returned as an <ph>XMLResource</ph>. All resources have a method
+            <ph>getContent()</ph>, which returns the resource's content, depending on it's
+            type. In this case we retrieve the content as type <ph>String</ph>.</p>
+        <p>To query the repository, we may either use the standard
+            <ph>XPathQueryService</ph> or eXist's <ph>XQueryService</ph> class.
+            The XML:DB API defines different kinds of services, which may or may not be provided by
+            the database. The <ph>getService</ph> method of class
+            <ph>Collection</ph> calls a service if it is available. The method expects the
+            service name as the first parameter, and its version (as a string) as the second.</p>
+
+        <p>The following is an example of using the XML:DB API to execute a database
+            query:</p>
+        <pre outputclass="java">import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
+import org.xmldb.api.*;
+import org.exist.xmldb.EXistResource;
+
+public class XPathExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the XPath expression to execute
+     */
+    public static void main(String args[]) throws Exception {
+        
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        
+        Collection col = null;
+        try { 
+            col = DatabaseManager.getCollection(URI + args[0]);
+            XPathQueryService xpqs = (XPathQueryService)col.getService("XPathQueryService", "1.0");
+            xpqs.setProperty("indent", "yes");
+
+            ResourceSet result = xpqs.query(args[1]);
+            ResourceIterator i = result.getIterator();
+            Resource res = null;
+            while(i.hasMoreResources()) {
+                try {
+                    res = i.nextResource();
+                    System.out.println(res.getContent());
+                } finally {
+                    //dont forget to cleanup resources
+                    try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+                }
+            }
+        } finally {
+            //dont forget to cleanup
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+        }
+    }
+}</pre>
+        <p>To execute the query, method <ph>service.query(xpath)</ph> is called. This
+            method returns a <ph>ResourceSet</ph>, containing the Resources found by the
+            query. <ph>ResourceSet.getIterator()</ph> gives us an iterator over these
+            resources. Every Resource contains a single document fragment or value, selected by the
+            XPath expression.</p>
+        <p>Internally, eXist does not distinguish between XPath and XQuery expressions.
+            <ph>XQueryService</ph> thus maps to the same implementation class as
+            <ph>XPathQueryService</ph>. However, it provides a few additional methods.
+            Most important, when talking to an embedded database, <ph>XQueryService</ph>
+            allows for the XQuery expression to be <i>compiled</i> to an internal
+            representation, which can then be reused. With compilation, the previous example code
+            would look as follows:</p>
+
+        <pre outputclass="java">import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
+import org.xmldb.api.*;
+import org.exist.xmldb.EXistResource;
+
+public class XQueryExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the XQuery to execute
+     */
+    public static void main(String args[]) throws Exception {
+        
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        
+        Collection col = null;
+        try { 
+            col = DatabaseManager.getCollection(URI + args[0]);
+            XQueryService xqs = (XQueryService) col.getService("XQueryService", "1.0");
+            xqs.setProperty("indent", "yes");
+        
+            CompiledExpression compiled = xqs.compile(args[1]);
+            ResourceSet result = xqs.execute(compiled);
+            ResourceIterator i = result.getIterator();
+            Resource res = null;
+            while(i.hasMoreResources()) {
+                try {
+                    res = i.nextResource();
+                    System.out.println(res.getContent());
+                } finally {
+                    //dont forget to cleanup resources
+                    try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+                }
+            }
+        } finally {
+            //dont forget to cleanup
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+        }
+    }
+}</pre>
+        <p>The XML-RPC server automatically caches compiled expressions, and so calling
+            <ph>compile</ph> through the remote driver produces no effect if the
+            expression is already cached.</p>
+        <p>Next, we would like to store a new document into the repository. This is done by
+            creating a new <ph>XMLResource</ph>, assigning it the content of the new
+            document, and calling the <ph>storeResource</ph> method of class
+            <ph>Collection</ph>. </p>
+        <p>First, a new Resource is created by method
+            <ph>Collection.createResource()</ph>, and expects two parameters: the id and
+            type of resource being created. If the id parameter is <ph>null</ph>, a unique
+            resource-id will be automatically generated .</p>
+        <p>In some cases, the collection may not yet exist, and so we must create it. To create a
+            new collection, call the <ph>createCollection</ph> method of the
+            <ph>CollectionManagementService</ph> service. In the following example, we
+            simply start at the root collection object to get the
+            <ph>CollectionManagementService</ph> service.</p>
+
+        <pre outputclass="java">import java.io.File;
+import org.exist.xmldb.EXistResource;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
+import org.xmldb.api.*;
+
+public class StoreExample {
+    
+    private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    
+    /**
+     * args[0] Should be the name of the collection to access
+     * args[1] Should be the name of the file to read and store in the collection
+     */
+    public static void main(String args[]) throws Exception {
+       
+        if(args.length &lt; 2) {
+            System.out.println("usage: StoreExample collection-path document");
+            System.exit(1);
+        }
+
+        final String driver = "org.exist.xmldb.DatabaseImpl";
+        
+        // initialize database driver
+        Class cl = Class.forName(driver);
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+
+        Collection col = null;
+        XMLResource res = null;
+        try { 
+            col = getOrCreateCollection(args[0]);
+            
+            // create new XMLResource; an id will be assigned to the new resource
+            res = (XMLResource)col.createResource(null, "XMLResource");
+            File f = new File(args[1]);
+            if(!f.canRead()) {
+                System.out.println("cannot read file " + args[1]);
+                return;
+            }
+            
+            res.setContent(f);
+            System.out.print("storing document " + res.getId() + "...");
+            col.storeResource(res);
+            System.out.println("ok.");
+        } finally {
+            //dont forget to cleanup
+            if(res != null) {
+                try { ((EXistResource)res).freeResources(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+            
+            if(col != null) {
+                try { col.close(); } catch(XMLDBException xe) {xe.printStackTrace();}
+            }
+        }
+    }
+    
+    private static Collection getOrCreateCollection(String collectionUri) throws XMLDBException {
+        return getOrCreateCollection(collectionUri, 0);
+    }
+    
+    private static Collection getOrCreateCollection(String collectionUri, int pathSegmentOffset) throws XMLDBException {
+        
+        Collection col = DatabaseManager.getCollection(URI + collectionUri);
+        if(col == null) {
+            if(collectionUri.startsWith("/")) {
+                collectionUri = collectionUri.substring(1);
+            }
+
+            String pathSegments[] = collectionUri.split("/");
+            if(pathSegments.length &gt; 0) {
+
+                StringBuilder path = new StringBuilder();
+                for(int i = 0; i &lt;= pathSegmentOffset; i++) {
+                    path.append("/" + pathSegments[i]);
+                }
+
+                Collection start = DatabaseManager.getCollection(URI + path);
+                if(start == null) {
+                    //collection does not exist, so create
+                    String parentPath = path.substring(0, path.lastIndexOf("/"));
+                    Collection parent = DatabaseManager.getCollection(URI + parentPath);
+                    CollectionManagementService mgt = (CollectionManagementService) parent.getService("CollectionManagementService", "1.0");
+                    col = mgt.createCollection(pathSegments[pathSegmentOffset]);
+                    col.close();
+                    parent.close();
+                } else {
+                    start.close();
+                }
+            }
+            return getOrCreateCollection(collectionUri, ++pathSegmentOffset);
+        } else {
+            return col;
+        }
+    }
+}</pre>
+
+        <note type="note">
+                <p>The <ph>XMLResource.setContent()</ph> method takes a Java object as its
+                parameter. The eXist driver checks if the object is a File. Otherwise, the object is
+                transformed into a String by calling the object's <ph>toString()</ph>
+                method. Passing a File has one big advantage: If the database is running in embedded
+                mode, the file will be directly passed to the indexer. Thus, the file's content does
+                not have to be loaded into memory. This is handy if your files are very
+                large.</p>
+            </note>
+
+    </section>
+        <section id="extend-xmldb">
+            <title>Extensions to XML:DB</title>
+        
+
+        <p>eXist provides extensions on top of the XML:DB specification.
+            If you wish to use these extensions, you should make sure that the scope for your <ph>exist-core</ph>
+            dependency is set to <ph>compile</ph>.
+        </p>
+
+        
+
+        <section id="services">
+                <title>Additional Services</title>
+            
+
+            <p>The <ph>UserManagementService</ph> service contains methods to manage users
+                and handle permissions. These methods resemble common Unix commands such as
+                <ph>chown</ph> or <ph>chmod</ph>. As with other services,
+                <ph>UserManagementService</ph> can be retrieved from a collection
+                objectn:</p>
+            <pre>UserManagementService service = 
+                    (UserManagementService)collection.getService("UserManagementService", "1.0");</pre>
+            <p>Another service called <ph>DatabaseInstanceManager</ph> provides a single
+                method to shut down the database instance accessed by the driver. You have to be a
+                member of the <ph>dba</ph> user group to use this method or an exception
+                will be thrown. </p>
+            <p>Finally, interface <ph>IndexQueryService</ph> supports access to the terms and
+                elements contained in eXist's internal index. Method
+                <ph>getIndexedElements()</ph> returns a list of element occurrences for the
+                current collection. For each occurring element, the element's name and a frequency
+                count is returned.</p>
+            <p>Method <ph>scanIndexTerms()</ph> allows for a retrieval of the list of
+                occurring words for the current collection. This can be useful to provide users a
+                list of searchable terms together with their frequency.</p>
+        </section>
+
+        
+
+        <section id="multidb">
+                <title>Multiple Database Instances</title>
+            
+
+            <p>As explained above, passing a local XML:DB URI to the
+                <ph>DatabaseManager</ph> means that the driver will try to start or access
+                an embedded database instance. You can configure more than one database instance by
+                setting the location of the central configuration file.</p>
+            <p> The configuration file is set through the <ph>configuration</ph>
+                property of the <ph>DatabaseImpl</ph> driver class. If you would like to
+                use different drivers for different database instances, specify a name for the
+                created instance through the <ph>database-id</ph> property. You may later
+                use this name in the URI to refer to a database instance. The following fragment
+                sets up two instances:</p>
+
+            <pre outputclass="java">// initialize driver
+String driver = "org.exist.xmldb.DatabaseImpl";
+Class cl = Class.forName(driver);			
+Database database1 = (Database)cl.newInstance();
+database1.setProperty("create-database", "true");
+database1.setProperty("configuration", "/home/exist/test/conf.xml");
+database1.setProperty("database-id", "test");
+DatabaseManager.registerDatabase(database1);
+
+Database database2 = (Database)cl.newInstance();
+database2.setProperty("create-database", "true");
+database2.setProperty("configuration", "/home/exist/production/conf.xml");
+database2.setProperty("database-id", "exist");
+DatabaseManager.registerDatabase(database1);</pre>
+            <p>With this example, the URI<ph> xmldb:test:///db</ph> selects the test database
+                instance. Both instances should have their own data and log directory as specified
+                in the configuration files.</p>
+        </section>
+    </section>
+    </body>
+</topic>

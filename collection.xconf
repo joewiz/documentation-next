@@ -1,0 +1,58 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0"
+            xmlns:xqdoc="http://www.xqdoc.org/1.0">
+    <index>
+        <!-- Lucene full-text indexes for function documentation -->
+        <lucene>
+            <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+
+            <!-- Function name: boosted, keyword analyzer for substring-like matching -->
+            <text qname="xqdoc:name" boost="2.0">
+                <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+            </text>
+
+            <!-- Function signature: keyword analyzer for exact matching -->
+            <text qname="xqdoc:signature">
+                <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+            </text>
+
+            <!-- Description: standard analyzer for natural language search -->
+            <text match="//xqdoc:comment/xqdoc:description"/>
+
+            <!-- Parameters and return type -->
+            <text match="//xqdoc:comment/xqdoc:param"/>
+            <text match="//xqdoc:comment/xqdoc:return"/>
+
+            <!-- Module URI -->
+            <text match="//xqdoc:module/xqdoc:uri">
+                <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+            </text>
+
+            <!-- Site-wide search fields for exist-api / site-shell integration -->
+            <text qname="xqdoc:xqdoc">
+                <field name="site-content"
+                       expression="string-join((
+                           xqdoc:module/xqdoc:name,
+                           xqdoc:module/xqdoc:uri,
+                           xqdoc:module/xqdoc:comment/xqdoc:description,
+                           xqdoc:functions/xqdoc:function/xqdoc:name,
+                           xqdoc:functions/xqdoc:function/xqdoc:comment/xqdoc:description
+                       ), ' ')"/>
+                <field name="site-title"
+                       expression="xqdoc:module/xqdoc:uri"/>
+                <field name="site-app"
+                       expression="'docs'"/>
+                <field name="site-section"
+                       expression="'functions'"/>
+                <field name="site-url"
+                       expression="xqdoc:control/xqdoc:site-url"/>
+            </text>
+        </lucene>
+
+        <!-- Range indexes for exact lookups -->
+        <range>
+            <create qname="xqdoc:uri" type="xs:string"/>
+            <create qname="xqdoc:name" type="xs:string"/>
+            <create qname="xqdoc:location" type="xs:string"/>
+        </range>
+    </index>
+</collection>

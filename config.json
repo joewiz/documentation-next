@@ -1,0 +1,22 @@
+{
+    "label": "eXist-db Documentation",
+    "id": "http://exist-db.org/apps/docs",
+    "description": "Documentation and function reference for eXist-db",
+    "extends": ["exist-site"],
+    "pkg": {
+        "abbrev": "docs",
+        "version": "0.1.0",
+        "dependencies": [
+            { "package": "http://tei-publisher.com/library/jinks-templates", "semver": "1" },
+            { "package": "http://existsolutions.com/apps/tei-publisher-lib", "semver": "4" }
+        ]
+    },
+    "nav": {
+        "items": [
+            { "abbrev": "dashboard", "title": "Dashboard" },
+            { "abbrev": "docs", "title": "Documentation" },
+            { "abbrev": "notebook", "title": "Notebook" },
+            { "abbrev": "blog", "title": "Blog" }
+        ]
+    }
+}

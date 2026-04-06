@@ -1,0 +1,84 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  validate:
+    name: Validate DocBook
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Validate articles (RelaxNG + Schematron)
+        run: mvn validate
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xar
+          path: dist/*.xar
+          retention-days: 5
+
+  test:
+    name: Test (eXist ${{ matrix.exist-version }})
+    needs: [validate, build]
+    strategy:
+      fail-fast: false
+      matrix:
+        exist-version: [latest, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: xar
+          path: dist
+
+      - name: Start eXist-db
+        run: |
+          docker run -dit -p 8080:8080 \
+            --name exist --rm \
+            --health-cmd="curl -f http://localhost:8080/exist/ || exit 1" \
+            --health-interval=4s --health-start-period=60s \
+            duncdrum/existdb:${{ matrix.exist-version }}
+
+      - name: Wait for eXist-db
+        timeout-minutes: 5
+        run: |
+          while ! docker inspect --format='{{.State.Health.Status}}' exist 2>/dev/null | grep -q healthy; do
+            sleep 2
+          done
+
+      - name: Install documentation-next XAR
+        run: npx @existdb/xst package install dist/docs-*.xar
+
+      - name: Run smoke tests
+        run: bats --tap test/bats/smoke-test.bats
+
+      - name: Run application tests
+        run: bats --tap test/bats/app-test.bats
+
+      - name: Run Cypress E2E tests
+        run: npx cypress run

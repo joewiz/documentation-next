@@ -1,0 +1,227 @@
+<?xml-model href="teipublisher_odds.xsd"?>
+<?teipublisher output="web"?>
+<TEI xmlns:pb="http://teipublisher.com/1.0" xmlns="http://www.tei-c.org/ns/1.0" xml:lang="en">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title>Processing Model for XDITA (Lightweight DITA)
+                    <desc>Rendering of XDITA topic documents</desc>
+                </title>
+                <title type="short">XDITA</title>
+            </titleStmt>
+            <publicationStmt>
+                <publisher>The eXist-db Authors</publisher>
+                <availability>
+                    <licence target="https://www.gnu.org/licenses/lgpl-2.1.html">LGPL-2.1-or-later</licence>
+                </availability>
+            </publicationStmt>
+            <sourceDesc>
+                <p>Created for documentation-next XDITA article rendering.</p>
+            </sourceDesc>
+        </fileDesc>
+        <encodingDesc>
+            <tagsDecl>
+                <rendition source="xdita.css"/>
+            </tagsDecl>
+        </encodingDesc>
+    </teiHeader>
+    <text>
+        <body>
+            <schemaSpec start="topic" ident="xdita" ns="">
+                <!-- ============ Document structure ============ -->
+                <elementSpec ident="topic">
+                    <model behaviour="document"/>
+                </elementSpec>
+                <elementSpec ident="title">
+                    <model predicate="parent::fig" behaviour="heading">
+                        <param name="level" value="5"/>
+                    </model>
+                    <model predicate="parent::topic" behaviour="heading">
+                        <param name="level" value="1"/>
+                    </model>
+                    <model behaviour="heading">
+                        <param name="level"
+                            value="min((count(ancestor::section) + 1, 6))"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="shortdesc">
+                    <model behaviour="paragraph" cssClass="shortdesc"/>
+                </elementSpec>
+                <elementSpec ident="body">
+                    <model behaviour="block"/>
+                </elementSpec>
+                <elementSpec ident="section">
+                    <model behaviour="block" cssClass="section"/>
+                </elementSpec>
+                <elementSpec ident="prolog">
+                    <model behaviour="omit"/>
+                </elementSpec>
+                <elementSpec ident="data">
+                    <model behaviour="omit"/>
+                </elementSpec>
+
+                <!-- ============ Block content ============ -->
+                <elementSpec ident="p">
+                    <model behaviour="paragraph"/>
+                </elementSpec>
+                <elementSpec ident="pre">
+                    <model output="web" behaviour="webcomponent">
+                        <param name="name" value="'pb-code-highlight'"/>
+                        <param name="language" value="(@outputclass, 'xml')[1]"/>
+                        <param name="content" value="text()"/>
+                        <param name="line-numbers" value="false()"/>
+                    </model>
+                    <model behaviour="block" cssClass="programlisting"/>
+                </elementSpec>
+                <elementSpec ident="note">
+                    <model behaviour="block" cssClass="note">
+                        <param name="content"
+                            value="(if (@type) then &lt;span class='note-label'&gt;{upper-case(substring(@type, 1, 1)) || substring(@type, 2)}&lt;/span&gt; else (), *)"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="fig">
+                    <model predicate="title" behaviour="figure" cssClass="figure">
+                        <param name="title" value="title/node()"/>
+                        <param name="content" value="*[not(self::title)]"/>
+                    </model>
+                    <model behaviour="figure" cssClass="figure"/>
+                </elementSpec>
+
+                <!-- ============ Lists ============ -->
+                <elementSpec ident="ul">
+                    <model behaviour="list">
+                        <param name="content" value="li"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="ol">
+                    <model behaviour="list">
+                        <param name="type" value="'ordered'"/>
+                        <param name="content" value="li"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="li">
+                    <model behaviour="listItem"/>
+                </elementSpec>
+                <elementSpec ident="dl">
+                    <model behaviour="block">
+                        <pb:template xml:space="preserve">
+                            <dl xmlns="">[[content]]</dl>
+                        </pb:template>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="dlentry">
+                    <model behaviour="block">
+                        <pb:template xml:space="preserve">
+                            <dt xmlns="">[[term]]</dt>
+                            <dd xmlns="">[[content]]</dd>
+                        </pb:template>
+                        <param name="term" value="dt/node()"/>
+                        <param name="content" value="dd/node()"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="dt">
+                    <model behaviour="inline"/>
+                </elementSpec>
+                <elementSpec ident="dd">
+                    <model behaviour="block"/>
+                </elementSpec>
+
+                <!-- ============ Tables ============ -->
+                <elementSpec ident="simpletable">
+                    <model behaviour="table" cssClass="table">
+                        <param name="content" value="(sthead, strow)"/>
+                        <param name="columns"
+                            value="max((sthead, strow) ! count(stentry))"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="sthead">
+                    <model behaviour="row"/>
+                </elementSpec>
+                <elementSpec ident="strow">
+                    <model behaviour="row"/>
+                </elementSpec>
+                <elementSpec ident="stentry">
+                    <model predicate="parent::sthead" behaviour="cell">
+                        <outputRendition xml:space="preserve">
+                        font-weight: bold;
+                        </outputRendition>
+                    </model>
+                    <model behaviour="cell"/>
+                </elementSpec>
+
+                <!-- ============ Inline ============ -->
+                <elementSpec ident="b">
+                    <model behaviour="inline">
+                        <outputRendition xml:space="preserve">
+                        font-weight: bold;
+                        </outputRendition>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="i">
+                    <model behaviour="inline">
+                        <outputRendition xml:space="preserve">
+                        font-style: italic;
+                        </outputRendition>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="u">
+                    <model behaviour="inline">
+                        <outputRendition xml:space="preserve">
+                        text-decoration: underline;
+                        </outputRendition>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="sub">
+                    <model behaviour="inline">
+                        <outputRendition xml:space="preserve">
+                        vertical-align: sub;
+                        font-size: smaller;
+                        </outputRendition>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="sup">
+                    <model behaviour="inline">
+                        <outputRendition xml:space="preserve">
+                        vertical-align: super;
+                        font-size: smaller;
+                        </outputRendition>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="ph">
+                    <model behaviour="inline"/>
+                </elementSpec>
+
+                <!-- ============ Links and media ============ -->
+                <elementSpec ident="xref">
+                    <model predicate="@scope='external'" behaviour="link">
+                        <param name="uri" value="@href"/>
+                        <param name="target" value="'_blank'"/>
+                    </model>
+                    <model behaviour="link">
+                        <param name="uri" value="@href"/>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="image">
+                    <model behaviour="graphic">
+                        <param name="url" value="@href"/>
+                        <param name="width" value="@width"/>
+                        <outputRendition xml:space="preserve">
+                        max-width: 100%;
+                        </outputRendition>
+                    </model>
+                </elementSpec>
+                <elementSpec ident="alt">
+                    <model behaviour="omit"/>
+                </elementSpec>
+                <elementSpec ident="desc">
+                    <model behaviour="inline" cssClass="fig-desc"/>
+                </elementSpec>
+
+                <!-- ============ Fallback ============ -->
+                <elementSpec ident="*">
+                    <model behaviour="inline"/>
+                </elementSpec>
+            </schemaSpec>
+        </body>
+    </text>
+</TEI>

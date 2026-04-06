@@ -1,0 +1,487 @@
+<topic id="production_good_practice">
+    <title>Production Use - Good Practice</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>Based on our experiences of developing and using eXist-db in production environments we
+        learned a number of lessons. This Good Practice guide is an attempt to cover some of the
+        considerations that should be taken into account when deploying eXist-db for use in a
+        production environment.</p>
+        <p>The concepts laid out within this document should not be considered absolute or accepted
+        wholesale - they should rather be used as suggestions to guide users in their eXist-db
+        deployments.</p>
+        <section id="server">
+            <title>The Server</title>
+        
+
+        <ul>
+                <li>
+                <p>Ensure that your server is up-to-date and patched with any necessary security
+                    fixes.</p>
+            </li>
+                <li>
+                <p>eXist-db is written in Java - so for performance and security reasons, please
+                    ensure that you have the latest and greatest Java JDK release that is compatible
+                    with your version of eXist. The latest version can always be found here at:
+                    <xref href="https://java.sun.com" scope="external">http://java.sun.com</xref> and the recommended major version for a given eXist
+                    release can be found at: <xref href="https://bintray.com/existdb/releases/exist#read" scope="external">https://bintray.com/existdb/releases/exist#read</xref> </p>
+            </li>
+                <li>
+                <p>For dockerized production systems we strongly recommend to use
+                    semantic-version tags of official release, e.g. <ph>5.3.0</ph> instead
+                    of <ph>release</ph> or <ph>latest</ph>.</p>
+            </li>
+            </ul>
+    </section>
+        <section id="install">
+            <title>Install from Source or Release?</title>
+        
+
+        <p>Most users will install an officially released version of eXist-db on their production
+            systems and usually this is perfectly fine. However, for production systems there can be
+            advantages to installing eXist-db from source code.</p>
+        <p>eXist-db may be installed and build (see <xref href="exist-building" scope="external">Building
+            eXist-db</xref>) from source code to a production system in one of two ways:</p>
+        <dl>
+                <dlentry>
+                    <dt>Via Local Build Machine (preferred)</dt>
+                    <dd>
+                    <p>You checkout the eXist-db code for a release branch (or trunk) from our
+                        GitHub repository to a local machine. From here you build a distribution
+                        which you test and then deploy to your live server.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Directly from GitHub</dt>
+                    <dd>
+                    <p>In this case you don't use a local machine for building an eXist-db
+                        distribution, but you checkout the code from a release branch (or the
+                        develop branch) directly from our GitHub repository on your server and build
+                        it in-situ.</p>
+                </dd>
+                </dlentry>
+            </dl>
+        <p>Some advantages of installing eXist-db from source code are:</p>
+        <dl>
+                <dlentry>
+                    <dt>Patches</dt>
+                    <dd>
+                    <p>If patches or fixes are developed that are relevant to your specific
+                        needs, you can update your code and re-build eXist.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Features</dt>
+                    <dd>
+                    <p>If you are following trunk and new features are developed which you are
+                        interested in, you can update your code and re-build to take advantage of
+                        these. </p>
+                </dd>
+                </dlentry>
+            </dl>
+        <note type="warning">
+                <p> eXist's code trunk is generally <i>not</i> recommended for
+                production use! Although it should always compile and be relatively stable, it may
+                also contain as yet unrecognised regressions or result in unexpected behaviour.
+            </p>
+            </note>
+
+        
+
+        <section id="upgrade">
+                <title>Upgrading</title>
+            
+
+            <p>If you are upgrading the version of eXist-db that you use in your production
+                system, please always follow these two points:</p>
+            <dl>
+                    <dlentry>
+                        <dt>Backup</dt>
+                        <dd>
+                        <p> Always make sure you have a full database backup before you
+                            upgrade.</p>
+                        <p/>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Test</dt>
+                        <dd>
+                        <p> Always test your application in the new version of eXist-db in a
+                            development environment to ensure expected behaviour before you upgrade
+                            your production system.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+
+        </section>
+    </section>
+        <section id="config">
+            <title>Configuring eXist</title>
+        
+
+        <p>There are four main things to consider here:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <xref href="#sect-permissions" scope="local"/>
+                    </dt>
+                    <dd>
+                    <p>Ensure that eXist-db is installed in a secure manner.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <xref href="#sect-attack-surface" scope="local"/>
+                    </dt>
+                    <dd>
+                    <p> Configure eXist-db so it provides <i>only</i> what you need
+                        for your application.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <xref href="#resources" scope="local"/>
+                    </dt>
+                    <dd>
+                    <p> Configure your system and eXist-db so that eXist-db has access to enough
+                        resources and the system starts and stops eXist-db in a clean manner.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <xref href="#performance" scope="local"/>
+                    </dt>
+                    <dd>
+                    <p> Configure your system and eXist-db so that you get the maximum
+                        performance possible.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        
+
+        <section id="sect-permissions">
+                <title>Security - Permissions</title>
+            
+            <p>The permission requirements for development and deployment servers are rather different. Here we explain what to look out for starting with the default configuration.</p>
+            <section id="exist-perm">
+                    <title>eXist-db Permissions</title>
+                
+
+                <p>eXist-db ships with fairly relaxed permissions to facilitate rapid application
+                    development. However, for production systems these should be constrained:</p>
+                <dl>
+                        <dlentry>
+                            <dt>
+                                <ph>admin</ph> account</dt>
+                            <dd>
+                            <p>The password of the admin account is blank by default! Ensure that
+                                you set a decent password.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>
+                                <ph>default permissions</ph>
+                            </dt>
+                            <dd>
+                            <p>The default permissions for creating resources and collections in
+                                eXist-db are <ph>0666</ph> for resources, and <ph>0777</ph>
+                                for collections. From these default permissions, the user's umask is
+                                subtracted to give the permissions assigned to new resources and
+                                collections. By default each new user has the umask
+                                <ph>022</ph>, which leads to new resources having the mode
+                                <ph>0644</ph>, and collections <ph>0755</ph>. You may wish
+                                to modify the umask of some of your users to further restrict the
+                                default permisions when they create resources and
+                                collections.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>
+                                <ph>/db</ph> permissions</dt>
+                            <dd>
+                            <p>The default permissions for <ph>/db</ph> are
+                                <ph>0755</ph>, which should be sufficient in most cases. In case
+                                you needed to change this, you could do that with (here for
+                                <ph>0775</ph>):</p>
+                            <pre outputclass="xquery">sm:chmod(xs:anyURI("/db"), "rwxrwxr-x")</pre>
+                        </dd>
+                        </dlentry>
+                    </dl>
+            </section>
+
+            <section id="os-perm">
+                    <title>Operating System Permissions</title>
+                
+
+                <p>eXist-db should be deployed and configured to run whilst following the
+                    security best practices of the operating system on which it is deployed.</p>
+                <p>Typically we would recommend creating an <ph>exist</ph> user account and
+                    <ph>exist</ph> user group with <i>no</i> login privileges (no
+                    shell and empty password), changing the permissions of the eXist-db installation
+                    to be owned by that user and group. Then run eXist-db using those credentials.
+                    An example of this on OpenSolaris might be:</p>
+                <pre outputclass="bash">$ pfexec groupadd exist
+$ pfexec useradd -c "eXist Native XML Database" -d /home/exist -g exist -m exist
+$ pfexec chown -R exist:exist /opt/eXist</pre>
+            </section>
+        </section>
+
+        
+
+        <section id="sect-attack-surface">
+                <title>Security - Attack Surface</title>
+            
+
+            <p>For any live application it is best practice to keep the attack surface of the
+                application as small as possible. There are three aspects to this:</p>
+            <ol>
+                    <li>
+                    <p>Limiting means of arbitrary code execution.</p>
+                </li>
+                    <li>
+                    <p>Reducing the application itself to the absolute essentials.</p>
+                </li>
+                    <li>
+                    <p>Limiting access routes to the application.</p>
+                </li>
+                </ol>
+
+            <p>eXist-db is no exception and should be configured for your production systems so
+                that it provides only what you need and no more. For example, the majority of
+                applications will be unlikely to require the WebDAV or SOAP Admin features for
+                operation in a live environment. These and other services can be disabled
+                easily.</p>
+            <p>Means for anonymous users to execute arbitrary code require special attention.
+                There are three means of code execution in eXist, which make sense during
+                development, but should be reconsidered for production systems:</p>
+            <dl>
+                    <dlentry>
+                        <dt>Java binding</dt>
+                        <dd>
+                        <p>The ability to execute java code from inside the XQuery processor is
+                            disabled by default in <ph>conf.xml</ph>:</p>
+                        <pre outputclass="xml">&lt;xquery enable-java-binding="no"/&gt;</pre>
+                        <p> It is strongly recommended to keep it disabled on production
+                            systems.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>XML external entities</dt>
+                        <dd>
+                        <p>In order to ensure a secure environment, the
+                            <ph>external-general-entities</ph>,
+                            <ph>external-parameter-entities</ph>, and
+                            <ph>secure-processing</ph> feature flags should be set in
+                            <ph>conf.xml</ph>:</p>
+                        <pre outputclass="xml">&lt;parser&gt;
+  &lt;xml&gt;
+    &lt;features&gt;
+      &lt;feature name="http://xml.org/sax/features/external-general-entities" value="false"/&gt;
+      &lt;feature name="http://xml.org/sax/features/external-parameter-entities" value="false"/&gt;
+      &lt;feature name="http://javax.xml.XMLConstants/feature/secure-processing" value="true"/&gt;
+    &lt;/features&gt;
+  &lt;/xml&gt;
+&lt;/parser&gt;</pre>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>REST server</dt>
+                        <dd>
+                        <p>We recommend to prevent eXist's REST server from directly receiving
+                            web requests, and use URL Rewriting <i>only</i> to control
+                            code execution. The REST server feature is enabled by default in
+                            <ph>$EXIST_HOME/etc/webapp/WEB-INF/web.xml</ph>. Changing the
+                            <ph>param-value</ph> to <ph>true</ph>, allows you to filter
+                            request via your own XQuery controller.</p>
+                        <pre outputclass="xml">&lt;init-param&gt;
+  &lt;param-name&gt;
+    hidden
+  &lt;/param-name&gt;
+  &lt;param-value&gt;
+    true
+  &lt;/param-value&gt;
+&lt;/init-param&gt;</pre>
+                        <p>The following options allow a more fine-grained control over the REST
+                            server's functionality:</p>
+                        <dl>
+                                <dlentry>
+                                    <dt>XQuery submissions</dt>
+                                    <dd>
+                                    <p>We recommend to restrict the REST servers ability to
+                                        execute XQuery code to authenticated users, by modifying:
+                                        <ph>$EXIST_HOME/etc/webapp/WEB-INF/web.xml</ph>:</p>
+                                    <pre outputclass="xml">&lt;init-param&gt;
+  &lt;param-name&gt;
+    xquery-submission
+  &lt;/param-name&gt;
+  &lt;param-value&gt;
+    authenticated
+  &lt;/param-value&gt;
+&lt;/init-param&gt;</pre>
+                                </dd>
+                                </dlentry>
+                                <dlentry>
+                                    <dt>XUpdate statements</dt>
+                                    <dd>
+                                    <p>In addition, we recommend to restrict the REST servers
+                                        ability to execute XUpdate statements. Simply modify
+                                        <ph>$EXIST_HOME/etc/webapp/WEB-INF/web.xml</ph>by
+                                        changing the <ph>param-value</ph> from
+                                        <ph>enabled</ph> to <ph>disabled</ph>:</p>
+                                    <pre outputclass="xml">&lt;init-param&gt;
+  &lt;param-name&gt;
+    xupdate-submission
+  &lt;/param-name&gt;
+  &lt;param-value&gt;
+    disabled
+  &lt;/param-value&gt;
+&lt;/init-param&gt;</pre>
+                                </dd>
+                                </dlentry>
+                            </dl>
+                    </dd>
+                    </dlentry>
+                </dl>
+            <p>Further considerations for a live environment:</p>
+            <dl>
+                    <dlentry>
+                        <dt>Services</dt>
+                        <dd>
+                        <p>eXist-db provides services for accessing the database. You should
+                            reduce these to the absolute minimum you need for your production
+                            application.This is done via <ph>etc/webapp/WEB-INF/web.xml</ph>.
+                            You should look at each configured service, servlet or filter and ask
+                            yourself: do we use this? Most production environments are unlikely to
+                            need WebDAV.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Extension Modules</dt>
+                        <dd>
+                        <p>eXist-db loads several XQuery and Index extension modules by default.
+                            You should modify the <ph>builtin-modules</ph> section of
+                            <ph>etc/conf.xml</ph> and <i>only</i> load what
+                            you need for your application.</p>
+                            <p>If you make use of the Cache Module, you should make sure that it has either
+                                a <ph>maximumSize</ph> or <ph>expireAfterAccess</ph> bound configured,
+                            this ensures that the Cache can consume all memory.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="resources">
+                <title>Resources</title>
+            
+
+            <p>You should ensure that you have enough memory and disk space in your system so
+                that eXist-db can cope with peak demands.</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                            <ph>-Xmx</ph>
+                        </dt>
+                        <dd>
+                        <p>However you decide to deploy and start eXist, please ensure that you
+                            allocate enough maximum memory to eXist-db uwing the Java
+                            <ph>-Xmx</ph> setting. See <ph>bin/backup.sh</ph> and
+                            <ph>bin/startup.sh</ph>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>cacheSize</ph> and <ph>collectionCache</ph>
+                        </dt>
+                        <dd>
+                        <p>These two settings in <ph>db-connection</ph> of
+                            <ph>etc/conf.xml</ph> should be adjusted appropriately based
+                            on your <ph>-Xmx</ph> setting (see above). See the <xref href="tuning" scope="external">tuning guide</xref> for advice on sensible
+                            values.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Disk space</dt>
+                        <dd>
+                        <p>Please ensure that you have plenty of space for your database to grow.
+                            Unsurprisingly, running out of disk space can result in database
+                            corruptions or having to rollback the database to a known state.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="performance">
+                <title>Performance</title>
+            
+
+            <p>Keeping the eXist-db application, data and journal on separate disks, connected to
+                different I/O channels, can have a positive impact on performance. The location of
+                the data files and journals can be changed in
+                <ph>etc/conf.xml</ph>.</p>
+            <p>In addition to gain the absolute best performance, for eXist-db 5.0.0 or newer, it
+                may be beneficial to disable Lock Event Tracking in the Lock Table. The Lock Table
+                can be disabled in the <ph>etc/conf.xml</ph> configuration file.</p>
+        </section>
+    </section>
+        <section id="backups">
+            <title>Backups</title>
+        
+
+        <p> <i>This is fundamental</i>: Make sure you have them, that they are
+            up-to-date and that a restore is possible!</p>
+        <p>eXist-db provides 3 different mechanisms for performing backups - </p>
+        <ol>
+                <li>
+                <p>Full database backup.</p>
+            </li>
+                <li>
+                <p>Differential database backup.</p>
+            </li>
+                <li>
+                <p>Snapshot of the database data files.</p>
+            </li>
+            </ol>
+        <p>Each of these backup mechanisms can be scheduled, either with eXist-db or with your
+            operating system scheduler. See the <xref href="backup" scope="external">backup</xref> article and
+            <ph>conf.xml</ph> for further details.</p>
+    </section>
+        <section id="web-deploy">
+            <title>Web Deployments</title>
+        
+
+        <p>eXist-db, like any Web Application Server, should not be directly exposed to the Web.
+            Instead, we strongly recommend proxying eXist-db through a Web Server such as <xref href="https://wiki.nginx.org/Main" scope="external">Nginx</xref> or <xref href="https://httpd.apache.org/" scope="external">Apache HTTPD</xref>. See <xref href="production_web_proxying" scope="external">here</xref> for further details.</p>
+        <p>If you proxy eXist-db through a Web Server, you can also configure your firewall to
+            allow external access directly to the Web Server only. If done correctly this means that
+            web users will not be able to access any eXist-db services directly, except your
+            application, which is proxyied into the Web Servers namespace.</p>
+
+        
+
+        <section id="gzip">
+                <title>Enable GZip Compression</title>
+            
+
+            <p>eXist-db by default operates inside the Jetty Application Server. Jetty (and most
+                other Java Application Servers) provides a mechanism for enabling dynamic GZip
+                compression of resources. In other words: Jetty can be configured to dynamically
+                GZip compress any resource received from the server by HTTP. Enabling dynamic GZip
+                compression can reduce the size of transfers, and as such reduce the transfer time
+                of resources from the server to the client, hopefully resulting in a faster
+                experience for the end-user.</p>
+            <p>GZip Compression can be enabled in <ph>web.xml</ph>, which can be found in
+                either <ph>$EXIST_HOME/etc/webapp/WEB-INF/web.xml</ph> for default deployments
+                or <ph>$EXIST_HOME/etc/jetty/standalone/WEB-INF/web.xml</ph> for standalone
+                deployments.</p>
+        </section>
+    </section>
+    </body>
+</topic>

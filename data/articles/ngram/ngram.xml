@@ -1,0 +1,35 @@
+<topic id="ngram">
+    <title>N-Gram Index</title>
+    <prolog>
+        <data name="date" value="1Q18"/>
+        <data name="keyword" value="indexing"/>
+    </prolog>
+    <body>
+        <p>This article will provide some information on how to configure eXist-db's
+        <ph>ngram</ph> index.</p>
+        <section id="ngram-conf">
+            <title>Index Configuration</title>
+        
+
+        <p>To create an n-gram index, add a <ph>ngram</ph> element directly below the root
+            <ph>index</ph> node of a <ph>collection.xconf</ph> document:</p>
+        <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;index&gt;
+    &lt;lucene&gt;
+      &lt;text qname="SPEECH"&gt;
+        &lt;ignore qname="SPEAKER"/&gt;
+      &lt;/text&gt;
+      &lt;text qname="TITLE"/&gt;
+    &lt;/lucene&gt;
+    &lt;ngram qname="SPEAKER"/&gt;
+  &lt;/index&gt;
+&lt;/collection&gt;</pre>
+
+        <p> The <ph>ngram</ph> index only supports index definitions by
+            <ph>qname</ph>. The <ph>path</ph> attribute is not supported. There
+            are no additional parameters to be specified.</p>
+
+
+    </section>
+    </body>
+</topic>

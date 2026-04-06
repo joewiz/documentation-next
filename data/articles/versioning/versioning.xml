@@ -1,0 +1,216 @@
+<topic id="versioning">
+    <title>Versioning Extensions</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db provides a basic document versioning extension. This extension tracks all changes
+        to a document by storing the differences between the revisions. Older versions can be
+        restored on the fly and even queried in memory. There's also basic support to detect and
+        intercept conflicting writes.</p>
+        <p>The versioning extension was created with human editors in mind. These will typically
+        change documents through an editor or some form-based front-end. It should work well with
+        documents up to several megabytes in size. </p>
+        <note type="note">
+            <p>eXist-db has no control over the client. It does not know where a document update
+            comes from and cannot directly communicate with the user. The versioning extension
+            should therefore be seen more like a toolbox than a complete solution. Advanced
+            functionality (merging, conflict resolution, etc.) will require support from the
+            end-user applications.</p>
+        </note>
+        <note type="warning">
+            <p>The versioning will not track machine-generated node-level edits using XUpdate or
+            XQuery update extensions.</p>
+        </note>
+        <section id="versioning-components">
+            <title>Components</title>
+        
+
+        <p>The versioning extensions has the following components:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>VersioningTrigger</ph>
+                    </dt>
+                    <dd>
+                    <p>A trigger (to be registered with a collection) that implements the core
+                        versioning functionality</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>VersioningFilter</ph>
+                    </dt>
+                    <dd>
+                    <p>A serialization filter which adds special version attributes to every
+                        document. These attributes are used to detect conflicting writes.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>versioning.xqm</ph> </dt>
+                    <dd>
+                    <p>An XQuery module which provides a function library for end-user
+                        applications, including functions like <ph>v:doc</ph> (restore a given
+                        revision on the fly).</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="setup">
+            <title>Setup</title>
+        
+
+        <p>Versioning can be enabled for separate collections in the collection hierarchy. To
+            enable versioning, a trigger must be registered with the top-level collection. This is
+            done through the same collection configuration files, <ph>collection.xconf</ph>,
+            that are used for defining indexes.</p>
+
+        
+
+        <section id="register">
+                <title>Register the versioning trigger</title>
+            
+
+            <p>To enable versioning for a collection, you have to edit the collection's
+                <ph>collection.xconf</ph> configuration file. This file must be stored
+                below the <ph>/db/system/config</ph> collection. As described in the <xref href="indexing" scope="external">Configuring Indexes</xref> document, the
+                <ph>/db/system/config</ph> collection mirrors the hierarchical structure
+                of the main collection tree.</p>
+            <p>Within <ph>collection.xconf</ph>, you must register the trigger class
+                <ph>org.exist.versioning.VersioningTrigger</ph> for the
+                <ph>create</ph>, <ph>update</ph>, <ph>delete</ph>, <ph>copy</ph> and
+                <ph>move</ph> events:</p>
+            <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;index/&gt;
+  &lt;triggers&gt;
+    &lt;trigger event="create,delete,update,copy,move" class="org.exist.versioning.VersioningTrigger"&gt;
+      &lt;parameter name="overwrite" value="yes"/&gt;
+    &lt;/trigger&gt;
+  &lt;/triggers&gt;
+&lt;/collection&gt;</pre>
+
+            <p>If you store above document into
+                <ph>/db/system/config/db/collection.xconf</ph>, it will enable versioning
+                for the entire database.</p>
+            <note type="warning">
+                    <p>A <ph>collection.xconf</ph> at a lower level in the hierarchy will
+                    <i>overwrite</i> any configuration on higher levels, including
+                    these trigger definitions. Triggers are not inherited from ancestor
+                    configurations. If the new configuration doesn't define a trigger, the trigger
+                    map will be empty.</p>
+                    <p>When working with nested collection configurations, you need to make sure that
+                    the trigger definitions are present in all <ph>collection.xconf</ph>
+                    files.</p>
+                </note>
+            <p>
+                    <ph>VersioningTrigger</ph> accepts one parameter,
+                <ph>overwrite</ph>: if this is set to <ph>no</ph>, the trigger will
+                check for potential write conflicts. For example, if two users opened the same
+                document and are editing it, it may happen that the first user saves his changes
+                without the second user recognizing it. The second user also made changes and if
+                eXist did allow him to store his version, he would just overwrite the modifications
+                already committed by the first user.</p>
+            <p>The <ph>overwrite="no"</ph> setting prevents this. However, eXist has no
+                control over the client. It does not know where the conflicting document came from.
+                All it can do is reject the write attempt and raise an error. The error should then
+                be handled by the client. Right now there are no clients to support this. More work
+                will be required in this area. However, clients can already use the supplied XQuery
+                functions to check for write conflicts (see below).</p>
+        </section>
+
+        
+
+        <section id="enable">
+                <title>Enabling the serialization filter</title>
+            
+
+            <p>In order to detect conflicting writes, the versioning extension needs to keep
+                track of the base revision to which changes were applied. It does this by inserting
+                special metadata attributes into a document when it is retrieved from the database.
+                For this purpose, a <i>custom filter</i> has to be registered with
+                eXist's serializer. </p>
+            <p>This is done in the <ph>serializer</ph> section in the main configuration file,
+                <ph>conf.xml</ph>. Add a <ph>custom-filter</ph> child tag to the
+                <ph>serializer</ph> element and set its <ph>class</ph> attribute to
+                <ph>org.exist.versioning.VersioningFilter</ph>:</p>
+            <p>eXist must be restarted for the versioning filter to become active.</p>
+        </section>
+    </section>
+        <section id="access">
+            <title>Accessing the versioning information</title>
+        
+
+        <p>The versioning extension uses the collection <ph>/db/system/versions</ph> to
+            store base revisions and differences. The collection hierarchy below
+            <ph>/db/system/versions</ph> mirrors the main collection tree. For each
+            versioned resource, you'll find a document with suffix <ph>.base</ph>, which
+            contains the base revision (the first version of the document). Each revision is stored
+            in a document which starts with the original document name and ends with the revision
+            number, for instance <ph>hamlet.xml.35</ph>.</p>
+
+        <p>eXist provides an XQuery module to access the revision history or restore a given
+            revision. For example, to view the history of a resource:</p>
+        <pre outputclass="xquery">import module namespace v="http://exist-db.org/versioning";
+v:history(doc("/db/shakespeare/plays/hamlet.xml"))</pre>
+        <p>This returns an XML fragment like this:</p>
+        <pre outputclass="xml">&lt;v:history&gt;
+  &lt;v:document&gt;
+    /db/shakespeare/plays/hamlet.xml
+  &lt;/v:document&gt;
+  &lt;v:revisions&gt;
+    &lt;v:revision rev="35"&gt;
+      &lt;v:date&gt;
+        2009-08-22T22:19:33.777+02:00
+      &lt;/v:date&gt;
+      &lt;v:user&gt;
+        admin
+      &lt;/v:user&gt;
+    &lt;/v:revision&gt;
+    &lt;v:revision rev="36"&gt;
+      &lt;v:date&gt;
+        2009-08-22T22:38:41.629+02:00
+      &lt;/v:date&gt;
+      &lt;v:user&gt;
+        admin
+      &lt;/v:user&gt;
+    &lt;/v:revision&gt;
+  &lt;/v:revisions&gt;
+&lt;/v:history&gt;
+</pre>
+        <p>The most important function is <ph>v:doc</ph>, which is used to restore an
+            arbitrary revision of a document on the fly. You can use this function similar to the
+            standard <ph>fn:doc</ph> to query the revision. For example:</p>
+        <pre outputclass="xquery">import module namespace v="http://exist-db.org/versioning";
+v:doc(doc("/db/shakespeare/plays/hamlet.xml"), 35)//SPEECH[SPEAKER="HAMLET"]</pre>
+        <p>This will restore revision 35 of <ph>hamlet.xml</ph> and then find all
+            <ph>SPEECH</ph> elements with a <ph>SPEAKER</ph> called "HAMLET". No indexes are
+            available to the query engine when processing a restore document.</p>
+    </section>
+        <section id="detect">
+            <title>Detecting write conflicts</title>
+        
+
+        <p>To avoid a user overwriting the changes made by another user, eXist needs to know upon
+            which revision the user's changes are based. To make this possible, the versioning
+            filter adds a number of metadata attributes to the root element of a document when it is
+            serialized (for instance when opening it in an editor). The inserted metadata attributes
+            are all in a separate versioning namespace and will never be stored in the database. The
+            following fragment shows the added attributes:</p>
+        <pre outputclass="xml">&lt;PLAY xmlns:v="http://exist-db.org/versioning" v:revision="36" v:key="12343e4940b24" v:path="/db/shakespeare/plays/hamlet.xml"&gt;
+  ...
+&lt;/PLAY&gt;</pre>
+        <p>When eXist detects a potential write conflict, it cannot do more than reject the
+            update and raise an error. However, there's an XQuery function to check if newer
+            revisions exist. You pass it the revision number and the unique key as given in the
+            versioning attributes of the document root element. If the function returns the empty
+            sequence, no newer revisions exist in the database. Otherwise, the function returns the
+            version documents for each newer revision. </p>
+        <pre outputclass="xquery">import module namespace v="http://exist-db.org/versioning";
+v:find-newer-revision(doc("/db/shakespeare/plays/hamlet.xml"), 36, "12343e4940b24")</pre>
+        <p>Once you made sure that you really want to store the document and overwrite any
+            revisions, simply remove the version attributes from the root element.</p>
+
+    </section>
+    </body>
+</topic>

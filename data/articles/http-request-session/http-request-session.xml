@@ -1,0 +1,64 @@
+<topic id="http-request-session">
+    <title>HTTP-Related Functions in the Request and Session Modules</title>
+    <prolog>
+        <data name="date" value="1Q18"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>This article describes the functions for handling HTTP session parameters and
+        variables.</p>
+        <section id="introduction">
+            <title>Introduction</title>
+        
+
+        <p>The request module (in the <ph>http://exist-db.org/xquery/request</ph>
+            function namespace) contains functions for handling HTTP request parameters. The session
+            module (in the <ph>http://exist-db.org/xquery/session</ph> function namespace)
+            contains functions for handling HTTP session variables. Functions in these namespaces
+            are only usable if the query is executed through the <ph>XQueryGenerator</ph> or the
+            <ph>XQueryServlet</ph>.</p>
+    </section>
+        <section id="functions">
+            <title>Available functions</title>
+        
+
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>request:get-parameter(name, default value)</ph>
+                    </dt>
+                    <dd>
+                    <p>This HTTP function expects two arguments: the first denotes the name of
+                        the parameter, the second specifies a default value, which is returned if
+                        the parameter is not set. This function returns a sequence containing the
+                        values for the parameter. </p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>request:get-uri()</ph>
+                    </dt>
+                    <dd>
+                    <p>This function returns the URI of the current request. To encode this URI
+                        using the current session identifier, use the following function:</p>
+                    <pre>session:encode-url(request:get-uri())</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>session:create()</ph>
+                    </dt>
+                    <dd>
+                    <p>This function creates a new HTTP session if none exists.</p>
+
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>Other session functions read and set session attributes, among other operations. For
+            example, an XQuery or Java object value can be stored in a session attribute, to cache
+            query results.</p>
+
+    </section>
+    </body>
+</topic>

@@ -1,0 +1,1159 @@
+<topic id="xquery">
+    <title>XQuery in eXist-db</title>
+    <prolog>
+        <data name="date" value="1Q26"/>
+        <data name="keyword" value="xquery"/>
+    </prolog>
+    <body>
+        <p>eXist-db provides strong support for the W3C's family of recommendations for the XQuery
+        language. eXist-db also supports a rich family of extension functions and capabilities,
+        enabling XQuery developers to create powerful applications.</p>
+        <p>This document is intended for advanced developers and explains eXist-db's implementation
+        of XQuery. For readers who are new to XQuery or programming in general we recommend you
+        start with the resources listed in <xref href="learning-xquery" scope="external">Learning XQuery with
+        eXist-db</xref> or <xref href="development-starter" scope="external">Getting Started with Web
+        Application Development</xref>.</p>
+        <section id="current-status-of-xquery-support">
+            <title>Current Status of XQuery Support</title>
+        
+
+        <p>eXist-db implements <xref href="https://www.w3.org/TR/xquery/" scope="external">XQuery 3.1: An XML Query Language</xref>
+            and <xref href="https://www.w3.org/TR/xpath-functions/" scope="external">"XPath and XQuery Functions and
+            Operators 3.1"</xref>, with the exception of certain <xref href="#unsupported-features" scope="external">unsupported features and functions</xref>. </p>
+        <note type="note">
+                <p>For complete documentation on functions in eXist-db, see <xref href="{${fundocs.pkg.abbrev}}" scope="external">XQuery Function Documentation</xref>.</p>
+            </note>
+        <p>eXist-db's XQuery implementation has been tested against the official <xref href="https://dev.w3.org/2006/xquery-test-suite/" scope="external">XML Query
+            Test
+                Suite (XQTS)</xref>. An updated test suite runner to test conformance against the
+            official <xref href="https://dev.w3.org/2011/QT3-test-suite/" scope="external">XQuery/XPath/XSLT
+            3.* Test Suite (QT3)</xref> is being planned.</p>
+
+        
+
+        <section id="supported-optional-features">
+                <title>Supported Optional Features</title>
+            
+
+            <p>In addition to the standard features, eXist-db provides extended support for <xref href="#module-system" scope="external">
+                    <i>modules</i>
+                </xref>.</p>
+            <p>It implements the <i>full axis</i> feature, providing support for
+                the following <i>optional axes</i>: <ph>ancestor::</ph>, <ph>
+                ancestor-or-self::</ph>, <ph>following::</ph>, <ph>
+                following-sibling::</ph>, <ph>preceding::</ph> and <ph>
+                preceding-sibling::</ph>. The only optional axis not supported is the <ph>
+                namespace</ph> axis.</p>
+        </section>
+
+        
+
+        <section id="unsupported-features">
+                <title>Unsupported features</title>
+            
+            <p>eXist-db supports strong typing whenever the expected type of an expression,
+                function argument, or function return value is explicitly specified or can be known
+                otherwise. However, the following schema- and data type-related features are not
+                supported:</p>
+            <ul>
+                    <li>
+                    <p>
+                        eXist-db does not support the static typing feature as described in
+                        <xref href="https://www.w3.org/TR/xquery-31/#id-static-typing-feature" scope="external">XQuery specification version 3.1 §5.2.3</xref>
+                    </p>
+                </li>
+                    <li>
+                    <p>
+                        <xref href="https://www.w3.org/TR/xquery/#id-schema-import-feature" scope="external">schema
+                        import</xref> and <xref href="https://www.w3.org/TR/xquery/#id-schema-validation-feature" scope="external">schema
+                        validation features</xref> (defined as <xref href="https://www.w3.org/TR/xquery/#id-conform-optional-features" scope="external">
+                        optional</xref> in the XQuery specification). Instead, eXist-db provides a <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/validation" scope="external">validation
+                        module</xref> containing extension functions to perform XML validation.</p>
+                </li>
+                    <li>
+                    <p>When storing XML documents, eXist-db does not store type information along
+                        with the nodes. It therefore doesn't know the typed value of a node and has
+                        to assume <ph>xs:untypedAtomic</ph> (as defined by the XQuery
+                        specification).</p>
+                </li>
+                    <li>
+                    <p>eXist-db does not support specifying a data type in an element or
+                        attribute test. The node test <ph>element(test-node)</ph> is
+                        supported, but the type portion of the test <ph>element(test-node,
+                        xs:integer)</ph> is ignored.</p>
+                </li>
+                </ul>
+
+            <p>eXist-db supports standard XQuery FLWOR clause constructs except for the
+                following:</p>
+            <ul>
+                    <li>
+                    <p>"tumbling window" and "sliding window" clauses</p>
+                </li>
+                    <li>
+                    <p>"count" clause</p>
+                </li>
+                </ul>
+
+            <p>eXist-db supports all standard XQuery functions except for the following known
+                issues:</p>
+            <ul>
+                    <li>
+                    <p>
+                        <ph>map:merge</ph> should default to "use-first" but eXist-db
+                        defaults to "use-last." The developers plan to <xref href="https://github.com/eXist-db/exist/pull/3738" scope="external">adopt the
+                        standard option</xref> in the next major version of eXist. </p>
+                </li>
+                </ul>
+
+            <p>eXist-db supports all standard serialization parameters, but some bugs remain in
+                the implementation, as reported by XQuery Test Suite (XQTS). For the internal tests
+                that pass, see the <xref href="https://github.com/eXist-db/exist/blob/develop/exist-core/src/test/xquery/xquery3/serialize.xql" scope="external">eXist-db
+                serialization tests</xref>. </p>
+        </section>
+
+    </section>
+        <section id="full-text">
+            <title>Full Text Search</title>
+        
+
+        <p>eXist-db has an implementation-specific <xref href="lucene" scope="external">Full Text Search
+            facility</xref>, built on the <xref href="https://lucene.apache.org/" scope="external">Apache Lucene</xref> library (see the full
+            documentation on <xref href="indexing" scope="external">indexing</xref> in eXist-db). eXist-db does
+            not currently support the official W3C <xref href="https://www.w3.org/TR/xpath-full-text/" scope="external">"XQuery and XPath Full Text
+                3.0"</xref> specification.</p>
+
+    </section>
+        <section id="update">
+            <title>XQuery Update</title>
+        
+
+        <p>eXist-db has an implementation-specific <xref href="update_ext" scope="external">XQuery
+                Update facility</xref>, which predates the development of the official W3C XQuery
+            Update facility. eXist-db does currently not support the official <xref href="https://www.w3.org/TR/xquery-update/" scope="external">"XQuery Update Facility 3.0"</xref>
+            specification. The main difference between the eXist-db implementation and the official
+            specification is that the eXist-db implementation supports in-place updates. Switching
+            to the W3C recommendation would break backwards compatibility.</p>
+
+    </section>
+        <section id="function-library">
+            <title>Function Library</title>
+        
+
+        <p>A complete list of XQuery functions supported by eXist-db can be found in the <xref href="{${fundocs.pkg.abbrev}}" scope="external">XQuery Function
+                Documentation</xref>. </p>
+        <p>Each module's documentation is generated from a different sources, depending on
+            whether the module is implemented in Java or XQuery. For modules implemented in Java,
+            the documentation is taken directly from the signature provided by the class
+            implementing the <ph>Function</ph> interface. For modules implemented in
+            XQuery, the function descriptions are taken from <xref href="xqdoc" scope="external">XQDoc-formatted
+            comments and annotations</xref>.</p>
+    </section>
+        <section id="module-system">
+            <title>The Module System</title>
+        
+
+        <p>eXist-db supports the creation of <xref href="development-starter" scope="external">web
+            applications in XQuery</xref>. This can result in complex XQuery scripts, consisting of
+            several thousand lines of code. Packaging related functions in modules is therefore an
+            important feature. eXist-db allows modules to be imported from a variety of sources:</p>
+        <ul>
+                <li>
+                <p>an URI</p>
+            </li>
+                <li>
+                <p>a collection in the database</p>
+            </li>
+                <li>
+                <p>a jar file, usually a Java archive</p>
+            </li>
+                <li>
+                <p>a Java class, if the module is implemented in Java itself</p>
+            </li>
+            </ul>
+
+        <p>For example, a typical import statement in an XQuery will look like this:</p>
+        <pre outputclass="xquery">import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
+at "http://exist-db.org/modules/test.xqm";</pre>
+        <p>Provided the module namespace does not point to one of the preloaded standard modules
+            (see below), the query engine will try to locate the module source by looking at the URI
+            given after the <ph>at</ph> keyword. In the example above, the module was
+            specified using a full URI and the query engine will attempt to load the module source
+            from there. </p>
+        <p>However, the module could also be stored in a database collection:</p>
+        <pre outputclass="xquery">import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
+at "xmldb:exist:///db/modules/test.xqm";</pre>
+        <p>The query engine recognizes the module is stored in the local database instance and
+            tries to load it from there.</p>
+        <p>If the XQuery module is part of a Java application, it is also an option to pack the
+            module into a Java archive (<ph>.jar</ph> file) along with the Java classes. Then
+            use the following <ph>import</ph> to load it:</p>
+        <pre outputclass="xquery">import module namespace status="http://exist-db.org/xquery/admin-interface/status"
+    at "resource:org/exist/xquery/lib/test.xqm";</pre>
+        <p>Finally, XQuery modules can also be implemented in Java (see <xref href="#calling-java" scope="external">below</xref>).You can import them by specifying the class
+            path of the Module class:</p>
+        <pre outputclass="xquery">import module namespace xdiff="http://exist-db.org/xquery/xmldiff"
+    at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</pre>
+        <p>The <ph>extensions/modules</ph> directory in the eXist-db distribution
+            contains a number of useful modules. These can also serve as examples for implementing
+            your own.</p>
+
+        
+
+        <section id="rel-uri">
+                <title>Using Relative URIs</title>
+            
+
+            <p>If the location specified in an import statement is a relative URI, the query
+                engine tries to load the module relatively to the current module load path. The
+                module load path is determined as follows:</p>
+            <ol>
+                    <li>
+                    <p>If the main XQuery was loaded from a database collection, the module load
+                        path is the URI of that collection. For example if you access an XQuery via
+                        the REST server:</p>
+                    <pre>http://localhost:8080/exist/servlet/db/modules/test.xq</pre>
+                    <p>Now all relative module paths will be resolved relative to the <ph>
+                        /db/modules</ph> collection.</p>
+                </li>
+                    <li>
+                    <p>If the main XQuery was retrieved from the file system, the module load
+                        path points to that directory. This applies to queries executed through the
+                        XQueryServlet, XQueryGenerator or the Java admin client.</p>
+                </li>
+                </ol>
+        </section>
+
+        
+
+        <section id="preload">
+                <title>Preloaded Modules</title>
+            
+
+            <p>Preloaded modules do not need to be explicitly imported or declared in the prolog
+                of queries. The <ph>builtin-modules</ph> element in <ph>conf.xml</ph>
+                lists the namespaces and the corresponding Java class that implements all modules to
+                be preloaded:</p>
+            <pre outputclass="xml">&lt;xquery enable-java-binding="no"&gt;
+  &lt;builtin-modules&gt;
+    &lt;module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule"/&gt;
+    &lt;module uri="http://exist-db.org/xquery/transform" class="org.exist.xquery.functions.transform.TransformModule"/&gt;
+  &lt;/builtin-modules&gt;
+&lt;/xquery&gt;</pre>
+        </section>
+
+        
+
+        <section id="expath-pkg">
+                <title>EXPath Packages</title>
+            
+
+            <p>The eXist-db package repository makes it easy to manage and deploy external
+                packages (<ph>.xar</ph> archives) containing Java or XQuery libraries and even
+                full eXist-db applications. See the <xref href="repo" scope="external">Package
+                    Repository</xref> documentation.</p>
+        </section>
+
+    </section>
+        <section id="xquery-caching">
+            <title>XQuery Caching</title>
+        
+
+        <p>XQuery modules executed via the REST interface, the XQueryServlet or XQueryGenerator
+            are <i>automatically</i> cached. The compiled expression will be added to
+            an internal pool of prepared queries. The next time a query or module is loaded from the
+            same location, the already compiled code is reused. The code will only be recompiled if
+            eXist-db decides that the source was modified or when it wasn't used for a longer period
+            of time.</p>
+        <p>If a query is accessed by more than one thread concurrently, each new thread will
+            create a new copy of the compiled query. The copies will be added to the query pool
+            until it reaches a pre-defined limit.</p>
+        <p>Modules are cached along with the main query that imported them.</p>
+    </section>
+        <section id="calling-java">
+            <title>Calling Java Methods from XQuery</title>
+        
+
+        <p>eXist-db supports calls to arbitrary Java methods from within XQuery. The binding
+            mechanism follows the short-cut technique introduced by <xref href="http://saxon.sourceforge.net/" scope="external">Saxon</xref>.</p>
+        <p>The class of the external function is identified by the namespace URI of the function
+            call. This namespace URI must start with the prefix <ph>java:</ph>, followed
+            by the fully qualified class name of the class. For example, the following code snippet
+            calls the static method <ph>sqrt</ph> (square-root) of class <ph>
+            java.lang.Math</ph>:</p>
+        <pre outputclass="xquery">declare namespace math="java:java.lang.Math";
+math:sqrt(2)</pre>
+
+        <p>If the function name contains a hyphen, the letter following the hyphen is converted
+            to upper-case and the hyphen is removed (to conform to the Java CamelCase naming
+            convention). So for example, <ph>to-string()</ph> will call the Java method <ph>
+            toString()</ph>.</p>
+        <p>If more than one method in the class matches the given name and parameter count,
+            eXist-db tries to select the method that best fits the passed parameter types at
+            runtime. </p>
+        <p>The result of the method call can be assigned to an XQuery variable. If possible, it
+            will be mapped to the corresponding XML schema type. Otherwise, it's type is the
+            eXist-db built-in type <ph>object</ph>.</p>
+        <p>
+            <i>Java constructors</i> are called using the function <ph>new</ph>.
+            Again, a matching constructor is selected by looking at the parameter count and types.
+            The returned value is a new Java object with the built-in type <ph>object</ph>
+            .</p>
+        <p>
+            <i>Instance methods</i> are called by supplying a valid Java object as
+            first parameter. The Java object has to be an instance of the given class. For example,
+            the following snippet lists all files and directories in the current directory:</p>
+        <pre outputclass="xquery">declare namespace file="java:java.io.File";
+
+&lt;files&gt;
+  {
+    for $f in file:list-files( file:new(".") )
+    let $n := file:get-name($f)
+    order by $n
+    return
+      if (file:is-directory($f)) then
+        &lt;directory name="{ $n }"/&gt;
+      else
+        &lt;file name="{ $n }" size="{ file:length($f) }"/&gt;
+  }
+&lt;/files&gt;
+</pre>
+
+        <note type="note">
+                <p>For security reasons, the Java binding is disabled by default. To enable it, the
+                attribute <ph>enable-java-binding</ph> in the central configuration file
+                has to be set to <ph>yes</ph>: </p>
+                <pre>&lt;xquery enable-java-binding="yes"&gt;</pre>
+                <p>Enabling the Java binding bears some risks: if you allow users to directly pass
+                XQuery code to the database, for instance through the sandbox application, they can
+                use Java methods to inspect your system or execute potentially destructive code on
+                the server.</p>
+            </note>
+    </section>
+        <section id="modules">
+            <title>Creating XQuery Modules</title>
+        
+
+        <p>eXist-db supports XQuery library modules, collections of function definitions and
+            global variable declarations. eXist-db supports two types: <i>External
+                Modules</i>, written in XQuery, and <i>Internal Modules</i>,
+            implemented in Java. The standard XPath/XQuery functions and all standard eXist-db
+            extension functions are implemented as internal modules. This section describes how to
+            create XQuery modules using XQuery and Java.</p>
+
+        
+
+        <section id="xquery-modules">
+                <title>Creating Modules in XQuery</title>
+            
+
+            <p>You can declare an XQuery file as a module and import it using the standard <ph>import
+                module</ph> directive. The XQuery engine imports each module only once during
+                compilation. The compiled module is made available through the static XQuery
+                context.</p>
+        </section>
+
+        
+
+        <section id="java-modules">
+                <title>Creating Modules in Java</title>
+            
+
+            <p>To register Java-based XQuery modules, eXist-db requires a namespace URI to
+                identify it and the list of functions it supplies. For this, you need to pass a
+                driver class to the XQuery engine. This class must implement the interface <ph>
+                org.exist.xpath.InternalModule</ph>.</p>
+            <note type="note">
+                    <p>Besides the basic methods for creating a Java-based XQuery module described
+                    here, eXist-db provides a pluggable module interface that allows extension
+                    modules to be easily developed in Java. See <xref href="extensions" scope="external">XQuery
+                    Extension Modules</xref> for the full documentation on this eXist-db development
+                    best practice. Also, see the <xref href="repo" scope="external">Package
+                        Repository</xref> documentation for information on distributing and
+                    deploying XQuery and Java libraries for eXist-db.</p>
+                </note>
+            <p>The class <ph>org.exist.xpath.AbstractInternalModule</ph> already
+                provides an implementation skeleton. The class constructor expects an array of
+                function definitions for all functions to registered. A function definition (class <ph>
+                FunctionDef</ph>) has two properties: the static signature of the function (as
+                an instance of <ph>FunctionSignature</ph>) and the Java Class that
+                implements the function.</p>
+            <p>A function is a class extending <ph>org.exist.xquery.Function</ph> or <ph>
+                org.exist.xquery.BasicFunction</ph>. Functions without special requirements
+                (like overloading) should subclass BasicFunction. To illustrate this a simple
+                function definition:</p>
+            <pre outputclass="java">public class EchoFunction extends BasicFunction {
+
+public final static FunctionSignature signature =
+new FunctionSignature(
+	new QName("echo", ExampleModule.NAMESPACE_URI, ExampleModule.PREFIX),
+	"A useless example function. It just echoes the input parameters.",
+	new SequenceType[] { 
+	    new FunctionParameterSequenceType("text", Type.STRING, Cardinality.ZERO_OR_MORE, "The text to echo")
+    },
+	new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the echoed text"));
+
+public EchoFunction(XQueryContext context) {
+	super(context, signature);
+}
+
+public Sequence eval(Sequence[] args, Sequence contextSequence)
+throws XPathException {
+	// is argument the empty sequence?
+	if (args[0].getLength() == 0)
+		return Sequence.EMPTY_SEQUENCE;
+	// iterate through the argument sequence and echo each item
+	ValueSequence result = new ValueSequence();
+	for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
+		String str = i.nextItem().getStringValue();
+		result.add(new StringValue("echo: " + str));
+	}
+	return result;
+}
+}</pre>
+            <ul>
+                    <li>
+                    <p>Note that every function class has to provide a function <i>
+                        signature</i>. This defines the <i>QName</i> by which
+                        the function is identified, a documentation string, the sequence types of
+                        all arguments and the sequence type of the returned value. </p>
+                    <p>In the example above, we accept a single argument named "text" of type <ph>
+                        xs:string</ph> and a cardinality of <ph>ZERO_OR_MORE</ph>
+                        with the description "The text to echo". In other words, we accept any
+                        sequence of strings containing zero or more items. The return value is of
+                        type <ph>xs:string</ph> and a cardinality of <ph>ZERO_OR_MORE</ph>
+                        with the description "the echoed text". </p>
+                    <p>A parameter description should be normal sentence starting with a capital
+                        letter. The return value description is always prefixed with "Returns ", so
+                        make sure the text matches. </p>
+                </li>
+                    <li>
+                    <p>The subclass overwrites the <ph>eval</ph> method, which has two
+                        arguments: the first contains the values of all arguments passed to the
+                        function, the second passes the current context sequence (which might be <ph>
+                        null</ph>). </p>
+                    <p>Note that the argument values in the array <ph>args</ph> have
+                        already been checked to match the sequence types defined in the function
+                        signature. We therefore do not have to recheck the length of the array: if
+                        more or less than one argument were passed to the function, an exception
+                        would have been thrown before <ph>eval</ph> gets called.</p>
+                    <p>In XQuery, all values are passed as sequences. A sequence consists of one
+                        or more items, and every item is either an atomic value or a node.
+                        Furthermore, a single item is also a sequence. The function signature
+                        specifies that any sequence containing zero or more strings is acceptable
+                        for our method. We therefore have to check if the empty sequence has been
+                        passed. Here the function call returns immediately. Otherwise, we iterate
+                        through each item in the sequence, prefix <ph>echo:</ph> to its
+                        string value, and add it to the result sequence.</p>
+                </li>
+                </ul>
+
+            <p>Now we want to add the function to a new module, so we have to provide a <i>driver
+                class</i>. The driver class defines the namespace URI and default prefix for
+                the module. Functions are registered by passing an array of <ph>FunctionDef</ph>
+                to the constructor. The following is an example driver class definition:</p>
+            <pre outputclass="java">public class ExampleModule extends AbstractInternalModule {
+
+public final static String NAMESPACE_URI = 
+    "http://exist-db.org/xquery/examples";
+	
+public final static String PREFIX = "example";
+	
+private final static FunctionDef[] functions = {
+	new FunctionDef(EchoFunction.signature, EchoFunction.class)
+};
+	
+public ExampleModule() {
+	super(functions);
+}
+
+public String getNamespaceURI() {
+	return NAMESPACE_URI;
+}
+
+public String getDefaultPrefix() {
+	return PREFIX;
+}
+
+}</pre>
+
+            <p>To use this in XQuery:</p>
+            <pre outputclass="xquery">xquery version "1.0";
+
+import module namespace example="http://exist-db.org/xquery/examples"
+at "java:org.exist.examples.xquery.ExampleModule";
+
+example:echo(("Hello", "World!"))</pre>
+            <p>The query engine recognizes the <ph>java:</ph> prefix in the location
+                URI and treats the remaining part <ph>org.exist.examples.xquery.ExampleModule</ph>
+                as a fully qualified class name leading to the driver class of the module.</p>
+
+        </section>
+    </section>
+        <section id="collations">
+            <title>Collations</title>
+        
+
+        <p>Collations are used to compare strings in a <i>locale-sensitive</i>
+            fashion. XQuery allows to specify collations by means of a collation URI. For example, a
+            collation can be specified in the <ph>order by</ph> clause of a XQuery FLWOR
+            expression as well as in string-related functions. </p>
+
+        <p>eXist-db recognizes the following standard collation URIs:</p>
+
+        <dl>
+                <dlentry>
+                    <dt>
+                    <ph>http://www.w3.org/2005/xpath-functions/collation/codepoint</ph>
+                </dt>
+                    <dd>
+                    <p>This URI selects the Unicode Codepoint Collation. This is default if no
+                        collation is specified. eXist implements this using standard Java comparison
+                        and string search functions.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>http://www.w3.org/2013/collation/UCA</ph>
+                </dt>
+                    <dd>
+                    <p>This URI selects the standard <xref href="https://www.w3.org/TR/xpath-functions-31/#uca-collations" scope="external">Unicode
+                        Collation Algorithm (UCA)</xref>, which accepts all standard parameters.
+                        eXist implements this using the ICU4J library.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>
+                        http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive</ph>
+                </dt>
+                    <dd>
+                    <p>This URI selects the standard <xref href="https://www.w3.org/TR/xpath-functions-31/#html-ascii-case-insensitive-collation" scope="external">HTML
+                        ASCII Case-Insensitive Collation</xref>.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>http://www.w3.org/2010/09/qt-fots-catalog/collation/caseblind</ph>
+                </dt>
+                    <dd>
+                    <p>This URI selects the Collation used by the XQTS (XQuery Test Suite) 3.1.
+                        It is not recommended to use this for general purposes.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>In addition, eXist-db supports a legcacy implementation-specific collation. This
+            should no longer be used, instead the Unicode Collation Algorithm (UCA) or Unicode
+            Codepoint Collation should be used. For reference the legacy collation URI is:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                    <ph>
+                        http://exist-db.org/collation?lang=xxx&amp;strength=xxx&amp;decomposition=xxx</ph>
+                </dt>
+                    <dd>
+
+                    <p>The <ph>lang</ph> parameter selects a locale, and should have
+                        the same form as in <ph>xml:lang</ph>. For example, "de" or
+                        "de-DE" to select the German locale.</p>
+                    <p>The optional <ph>strength</ph> parameter must be one of <ph>
+                        primary</ph>, <ph>secondary</ph>, <ph>tertiary</ph> or <ph>
+                        identical</ph>.</p>
+                    <p>The optional <ph>decomposition</ph> parameter (optional) has the value
+                        of <ph>none</ph>, <ph>full</ph> or <ph>standard</ph>.</p>
+                    <p>Instead of supplying the full URI, an abbreviated URI can be supplied
+                        instead: <ph>?lang=xxx&amp;strength=xxx&amp;decomposition=xxx</ph>
+                    </p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>The following example selects the German locale for sorting:</p>
+        <pre outputclass="xquery">for $w in ("das", "daß", "Buch", "Bücher", "Bauer", "Bäuerin", "Jagen", "Jäger") 
+order by $w collation "?lang=de-DE" 
+return $w</pre>
+        <p>It returns the following:</p>
+        <pre>Bauer, Bäuerin, Buch, Bücher, das, daß, Jagen, Jäger</pre>
+        <p>You can change the default collation in the XQuery prolog:</p>
+        <pre outputclass="xquery">declare default collation "?lang=de-DE"; 
+"Bäuerin" &lt; "Bier"</pre>
+        <p>This now returns <ph>true</ph> (the default collation would have returned <ph>
+            false</ph>).</p>
+
+        <p>Finally, you can also use Java class specified collators. They should be subclasses of <ph>
+            java.text.RuleBasedCollator</ph>. For example:</p>
+        <pre outputclass="xquery">for $w in ("das", "daß", "Buch", "Bücher", "Bauer", "Bäuerin", "Jagen", "Jäger") 
+order by $w collation "java:f.c.d.n.MyRuleBasedGermanCollator" 
+return $w</pre>
+        <p>The <ph>.jar</ph> with the <ph>.class</ph> file(s) of the collator needs to be
+            placed in <ph>${EXIST_HOME}/lib</ph> and added to the appropriate classpath
+            config file in <ph>${EXIST_HOME}/etc</ph>, for standard server deployments
+            this is <ph>${EXIST_HOME}/etc/startup.xml</ph>.</p>
+
+    </section>
+        <section id="serialization">
+            <title>Serialization</title>
+        
+
+        <p>Serialization is the transformation of query results into a string representation or
+            binary stream. eXist-db implements the <xref href="https://www.w3.org/TR/xquery/" scope="external">"XSLT and XQuery Serialization 3.1"</xref>
+            specification with one exception, the <ph>item-separator</ph>.</p>
+        <p>
+            For example, the following serialization declaration instructs eXist-db to serialize
+            query results as JSON and to supply a JSON media-type:</p>
+        <pre outputclass="xquery">declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+declare option output:method "json";
+declare option output:media-type "application/json";</pre>
+        <p>As this example shows, serialization parameters can be set within the query itself.
+            However, the interpretation of serialization parameters depends on the context in which
+            the query is called. For instance, the JSON media-type declaration in the example above
+            in only relevant in the context of an HTTP response header. Most output parameters are
+            applicable only if the query is executed using the XQueryGenerator/XQueryServlet servlet
+            or the REST server.</p>
+
+        
+
+        <section id="exist-specific-options">
+                <title>eXist-db specific options</title>
+            
+            <p> These options are added in addition to the W3C options and can be set in the
+                prolog, in <ph>fn:serialize#2</ph> or <ph>file:sync#3</ph> alongside the
+                standard W3C ones. Their names have to be prefixed with "exist:" when used in <ph>
+                fn:serialize#2</ph> or <ph>file:sync#3</ph> option maps. See also the
+                fn:serialize section below. </p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                        <ph>jsonp : function-name (string)</ph>
+                    </dt>
+                        <dd>
+                        <p>Only relevant when the serialization method is set to <ph>json</ph>.
+                            Causes the JSON output to be wrapped in the named JSONP function. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>output-doctype : ( "yes" | "no" )</ph>
+                    </dt>
+                        <dd>
+                        <p>Serializes the document's Document Type Declaration if one is present.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>expand-xincludes : ( "yes" | "no" )</ph>
+                    </dt>
+                        <dd>
+                        <p>Must the serializer expand XInclude elements?</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>highlight-matches : [ both | elements | attributes | none ]</ph>
+                    </dt>
+                        <dd>
+                        <p>When querying text with the full text or n-gram extensions, the query
+                            engine tracks the exact position of all matches inside text content. The
+                            serializer can later use this information to mark those matches by
+                            wrapping them into an <ph>exist:match</ph> element.</p>
+                        <p>Setting <ph>highlight-matches=both</ph> will enable this
+                            feature for every kind of indexable node.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>process-xsl-pi : ( "yes" | "no" )</ph>
+                    </dt>
+                        <dd>
+                        <p>If a document is serialized and it has an XSL processing instruction,
+                            eXist-db can try to load the referenced stylesheet and apply it to the
+                            document.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>add-exist-id : [ element | all | none ]</ph>
+                    </dt>
+                        <dd>
+                        <p>Shows the internal node ids of an element by adding an attribute <ph>
+                            exist:id="internal-node-id"</ph>. Setting add-exist-id to <ph>
+                            element</ph> will only show the node id of the top-level element, <ph>
+                            all</ph> will show the ids of all elements.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>json-ignore-whitespace-text-nodes : ( "yes" | "no" )</ph>
+                    </dt>
+                        <dd>
+                        <p>To discard white-space text nodes when serializing XML/XDM to
+                            JSON.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>insert-final-newline : ( "yes" | "no" )</ph>
+                    </dt>
+                        <dd>
+                        <p>Add a final newline at the end of an XML or JSON document. This is
+                            especially useful when serializing to a git repository.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>media-type</ph>
+                    </dt>
+                        <dd>
+                        <p>The MIME content type of the output. It will be used to set the HTTP <ph>
+                            Content-Type</ph> header if the query is running in an HTTP context.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>encoding</ph>
+                    </dt>
+                        <dd>
+                        <p>Specifies the character encoding to be used for outputting the
+                            instance of the data model</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>doctype-public</ph> and <ph>doctype-system</ph>
+                    </dt>
+                        <dd>
+                        <p>a doctype declaration will be output if <ph>doctype-public</ph>
+                            and/or <ph>doctype-system</ph> are set. The corresponding identifier
+                            is taken from the value of the parameter.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>indent= yes | no</ph>
+                    </dt>
+                        <dd>
+                        <p>Indent the document to make it easier to read. Indenting adds
+                            whitespace characters to element nodes, restricted by the rules given in
+                            the XQuery serialization specification.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>omit-xml-declaration= yes | no</ph>
+                    </dt>
+                        <dd>
+                        <p>Output an XML declaration if the parameter is set to <ph>no</ph>
+                        </p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        <section id="legacy-serialization">
+                <title>Legacy options:</title>
+            
+            <p>Before serialization parameters were standardized in XQuery 3.0, eXist-db
+                developed
+                its own set of parameters. These are kept for backwards compatibility but should be
+                considered deprecated as they can be replaced with W3C standard options.</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                        <ph>method : [ xml | xhtml | json | text ]</ph>
+                    </dt>
+                        <dd>
+                        <p>Determines the serialization method. Should be one of <ph>xml</ph>
+                            , <ph>xhtml</ph>, <ph>json</ph> or <ph>text</ph>. </p>
+                        <p>The <ph>xhtml</ph> method makes sure that XHTML elements with an
+                            empty content model are serialized in minimized form. For instance <ph>
+                            img</ph> will be output as <ph>img/</ph>. </p>
+                        <p>Unlike the <ph>xml</ph> method, the <ph>xhtml</ph> setting
+                            uses only the short form for the elements declared empty in the xhtml
+                            DTD. For example, the <ph>br</ph> tag is always returned as <ph>
+                            &lt;br/&gt;</ph>. </p>
+                        <p>The <ph>text</ph> method returns the contents of elements only.
+                            For instance, <ph>&lt;A&gt;Content&lt;/A&gt;</ph> is returned as <ph>
+                            Content</ph>. Attribute values, processing instructions and
+                            comments are ignored.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        <section id="existdb-serialization-prolog">
+                <title>Declaring eXist-db specific serialization parameters in prolog</title>
+            
+            <p>Before serialization parameters were standardized in XQuery 3.0, eXist-db
+                developed
+                its own set of parameters, as described in below. These legacy parameters remain
+                supported for backwards compatibility. For example, the eXist-db legacy approach to
+                the
+                JSON serialization declaration above is:</p>
+            <pre outputclass="xquery">declare option exist:serialize "method=json media-type=application/json";</pre>
+            <p>Most of the exist-db specific serialization parameters have an equivalent in the
+                standard
+                serialization parameters, but others are truly specific to eXist-db.</p>
+
+            <p>To declare them in the prolog of a XQuery module use the <ph>declare
+                    option</ph> statement. The syntax differs from the W3C that all options are
+                declared in a single statement. <ph>parameter=value</ph> pairs are separated by
+                whitespace in a single string. For instance:</p>
+            <pre>declare option exist:serialize "method=xhtml media-type=application/xhtml+html";</pre>
+
+
+            <p>The option's QName must be <ph>exist:serialize</ph>. The <ph>exist</ph>
+                prefix is bound to the namespace <ph>http://exist.sourceforge.net/NS/exist</ph>.
+                This is declared by default and need not be specified explicitly.</p>
+            <p>Options are specified within the option's string literal, separated by
+                whitespace.</p>
+
+
+            <p>For example, to disable XInclude expansion and indent the output, use the
+                following syntax:</p>
+            <pre>declare option exist:serialize "expand-xincludes=no indent=yes";</pre>
+
+
+        </section>
+
+        
+
+        <section id="fn-serialize">
+                <title>Using <ph>fn:serialize()</ph>
+                </title>
+            
+            <p>Another Serialization method that can be used is in-built function <ph>
+                fn:serialize()</ph>.</p>
+            <p>
+                You can apply eXist-db specific serialization parameters as well as W3C
+                serialization parameters via a map.
+            </p>
+            <pre outputclass="xquery">fn:serialize($node, map { "exist:expand-xincludes": false() })</pre>
+            <note type="note">
+                    <p> For eXist-db serialization parameters the option's name must be prefixed with <ph>
+                    exist:</ph> as shown in the example above </p>
+                </note>
+
+            <p>For W3C serialization parameters check:<xref href="https://www.w3.org/TR/xslt-xquery-serialization-31/" scope="external">W3C</xref>
+            </p>
+            <p>eXist-db specific options:</p>
+            <p>Check <xref href="https://github.com/eXist-db/exist/blob/develop/exist-core/src/test/xquery/xquery3/serialize.xql" scope="external">Serialize
+                Tests</xref> to see the options in action</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                        <ph>jsonp: function-name as xs:string </ph>
+                    </dt>
+                        <dd>
+                        <pre outputclass="xquery">fn:serialize($node, map {"method":"json", "media-type":"application/json", "exist:jsonp":"functionName"})</pre>
+                        <p>output: <ph>'functionName({})'</ph>
+                        </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>expand-xincludes: xs:boolean</ph>
+                    </dt>
+                        <dd>
+                        <pre outputclass="xquery">fn:serialize($doc, map { "exist:expand-xincludes": true() })</pre>
+                        <p>expand XInclude elements</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>highlight-matches: "both" | "elements" | "attributes" | "none"</ph>
+                    </dt>
+                        <dd>
+                        <pre outputclass="xquery">fn:serialize($hit, map { "exist:highlight-matches": "both" })</pre>
+                        <p>A complete example <xref href="https://github.com/eXist-db/exist/tree/develop/extensions/indexes/lucene/src/test/xquery/lucene/serialize.xql" scope="external">Serialize
+                            Test with <ph>ft:query()</ph>
+                                </xref>
+                            </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>process-xsl-pi: xs:boolean</ph>
+                    </dt>
+                        <dd>
+                        <pre outputclass="xquery">fn:serialize($doc, map { "exist:process-xsl-pi": true() })</pre>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>add-exist-id: "element" | "all" | "none"</ph>
+                    </dt>
+                        <dd>
+                        <pre outputclass="xquery">fn:serialize($doc, map { "exist:add-exist-id": "all" })</pre>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>insert-final-newline: xs:boolean</ph>
+                    </dt>
+                        <dd>
+                        <pre outputclass="xquery">fn:serialize($doc, map { "exist:add-exist-id": "all" })</pre>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+        </section>
+
+
+    </section>
+        <section id="options">
+            <title>Options</title>
+        
+
+        <p>eXist-db provides a number of useful options for controlling the query
+            environment.</p>
+
+        <section id="query-blocking">
+                <title>Query Blocking</title>
+            
+            <p>To prevent the server from being blocked by a badly formulated query, eXist-db
+                watches all query threads. A blocking query can be killed if it takes longer than a
+                specified amount of time or consumes too many memory resources on the server. There
+                are two options to control this behaviour:</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                        <ph>declare option exist:timeout "time-in-ms";</ph>
+                    </dt>
+                        <dd>
+                        <p>Specifies the maximum amount of query processing time (in
+                            milliseconds) before it is cancelled by the XQuery engine.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>declare option exist:output-size-limit "size-hint";</ph>
+                    </dt>
+                        <dd>
+                        <p>Defines a limit for the maximum size of a document fragment created
+                            within an XQuery. The limit is just an estimation, specified in terms of
+                            the accumulated number of nodes contained in all generated fragments.
+                            This can be used to prevent users from consuming too much memory if they
+                            are allowed to pass in their own XQueries.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="overriding-default-context">
+                <title>Overriding the default XQuery Context</title>
+            
+
+            <p>eXist-db provides the following options to override the default XQuery
+                context:</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                        <ph>declare option exist:implicit-timezone "duration";</ph>
+                    </dt>
+                        <dd>
+                        <p>Specifies the <xref href="https://www.w3.org/TR/xquery/#dt-timezone" scope="external">implicit
+                            timezone</xref> for the XQuery context.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>declare option exist:current-dateTime "dateTime";</ph>
+                    </dt>
+                        <dd>
+                        <p>Specifies the <xref href="https://www.w3.org/TR/xquery/#GLdt-date-time" scope="external">current
+                            dateTime</xref> for the XQuery context.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>declare option exist:optimize "enable=yes|no";</ph>
+                    </dt>
+                        <dd>
+                        <p>Temporarily disables the query rewriting optimizer for the current
+                            query. Use for testing/debugging.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+    </section>
+        <section id="pragmas">
+            <title>Pragmas</title>
+        
+
+        <p>XQuery <xref href="https://www.w3.org/TR/xquery/#id-extension-expressions" scope="external">
+            pragmas</xref> are a way to pass implementation-specific information to the query
+            engine. Pragmas can be wrapped around an arbitrary XQuery expression.</p>
+
+        <p>eXist-db recognizes the following pragmas:</p>
+
+        <dl>
+                <dlentry>
+                    <dt>
+                    <ph>exist:timer</ph>
+                </dt>
+                    <dd>
+                    <p>Provides a simple way to measure the time executing a given expression.
+                        For example:</p>
+                    <pre>(# exist:timer #) { //some/path/expression }</pre>
+                    <p>This creates a timer for the expression enclosed in curly braces and
+                        prints timing information to the trace logger. Tracing needs to be enabled
+                        in <ph>log4j.xml</ph>:</p>
+                    <pre outputclass="xml">&lt;root&gt;
+  &lt;priority value="trace"/&gt;
+  &lt;appender-ref ref="console"/&gt;
+&lt;/root&gt;</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>exist:profiling</ph>
+                </dt>
+                    <dd>
+                    <p>Enables profiling for a query and logs the results.
+                        For example:</p>
+                    <pre>(# exist:profiling enabled=yes verbosity=10 logger=xquery.profiling #) { //some/path/expression }</pre>
+                    <p>This enables the profiler for the expression enclosed in curly braces and
+                        prints profiling information to the xquery.profiling logger (e.g.
+                        profile.log):</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>exist:batch-transaction</ph>
+                </dt>
+                    <dd>
+                    <p>
+                        <i>Currently for XQuery Update Extensions only.</i> Provides a
+                        method for batching updates on the database into a single transaction,
+                        allowing a set of updates to be atomically guaranteed. </p>
+                    <p>For each affected document or collection, any configured Triggers will
+                        only be called once, the <ph>prepare()</ph> method will be fired
+                        before the first update to the configured resource and the <ph>finish()</ph>
+                        method fired after the last update to the configured resource.</p>
+                    <pre>(# exist:batch-transaction #) {
+  update value //some/path/expressionA width "valueA",
+  update value //some/path/expressionB width "valueB"
+}</pre>
+                    <p>Uses a single Transaction and Trigger events for the expressions enclosed
+                        in curly braces.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>exist:force-index-use</ph>
+                </dt>
+                    <dd>
+                    <p>
+                        <i>For debugging purposes</i>. Apply on an expression that
+                        uses indexes: comparisons, <ph>fn:matches()</ph>, etc. Will raise
+                        an error if, for any reason, the index cannot be used. This helps checking
+                        whether indexes are correctly defined or not.</p>
+                    <pre>(# exist:force-index-use #) {
+  //group[. = "dba"]
+}</pre>
+                    <p>Raises an error if the general comparison doesn't use a range or a QName
+                        index (<ph>XPDYxxxx</ph>).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>exist:no-index</ph>
+                </dt>
+                    <dd>
+                    <p>Prevents the query engine using any index. Useful if the searched value
+                        isn't very selective or if it is cheaper to traverse the previous step of a
+                        path expression than querying the index.</p>
+                    <pre>(# exist:no-index #) {
+  //group[. = "dba"]
+}</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>exist:optimize</ph>
+                </dt>
+                    <dd>
+                    <p>This pragma is inserted automatically by the query rewriter to optimize an
+                        expression that implements the <ph>org.exist.xquery.Optimizable</ph>
+                        interface.</p>
+                    <pre>//((#exist:optimize#) { item[stock = 10] })</pre>
+                </dd>
+                </dlentry>
+            </dl>
+
+    </section>
+        <section id="community-specs">
+            <title>Community Specifications</title>
+        
+        <p>In addition to providing robust support for the XPath and XQuery family of
+            specifications, eXist-db has also implemented a number of <xref href="http://expath.org/" scope="external">EXPath</xref> and <xref href="http://exquery.org/" scope="external">EXQuery</xref> community specifications and modules
+            that extend XPath and XQuery with cross-platform functions and capabilities. (Only those
+            built into eXist are listed below; see eXist-db's Package Repository for others.)</p>
+
+        <section id="http-client-module">
+                <title>HTTP Client</title>
+            
+            <p>eXist-db implements the <xref href="http://expath.org/spec/http-client" scope="external">HTTP Client Module</xref>, an
+                EXPath specification for interacting with HTTP servers.</p>
+        </section>
+        <section id="packaging-system">
+                <title>Packaging System</title>
+            
+            <p>eXist-db implements the <xref href="http://expath.org/spec/pkg" scope="external">Packaging
+                System</xref>, an EXPath community specification for library and application
+                packages. See the <xref href="repo" scope="external">Package Repository</xref> documentation.</p>
+        </section>
+
+        <section id="restxq">
+                <title>RESTXQ</title>
+            
+            <p>eXist-db implements <xref href="http://exquery.github.io/exquery/exquery-restxq-specification/restxq-1.0-specification.html" scope="external">RESTXQ</xref>,
+                an EXQuery community effort to develop a clean approach for the
+                deployment of RESTful services based on XQuery code annotations. This is in addition
+                to eXist-db's native function libraries for performing HTTP <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/request" scope="external">
+                requests</xref> and <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/response" scope="external">
+                responses</xref>.</p>
+            <p>Starting with eXist-db v7 the configuration entry for the RESTXQ feature in <ph>/db/collection.xconf</ph> has been
+                commented out. The recommendation is only to enable the RESTXQ configuration in the collection (hierarchy)
+                that actually requires this function.</p>
+            <p>To enable RESTXQ support for a collection and its descendant collections, ensure your collection configuration file
+                (e.g., <ph>collection.xconf</ph>) has a <ph>trigger</ph> element matching the structure of the following template:
+            </p>
+            <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;triggers&gt;
+    &lt;trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/&gt;
+  &lt;/triggers&gt;
+&lt;/collection&gt;</pre>
+        </section>
+
+        <section id="zip-module">
+                <title>ZIP</title>
+            
+            <p>eXist-db implements the <xref href="http://expath.org/spec/zip" scope="external">ZIP
+                    Module</xref>, an EXPath community specification and module for performing
+                compression. This is in addition to eXist-db's native function libraries for
+                performing <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/compression" scope="external">
+                compression</xref>.</p>
+        </section>
+    </section>
+        <section id="legacy-features">
+            <title>Legacy Features Maintained for Backward Compatibility</title>
+        
+        <p>The following legacy features are maintained for backwards compatibility
+            reasons:</p>
+        <ul>
+                <li>
+                <p>Collations: Some functions in eXist support collations, which are no longer in
+                    the specification.</p>
+            </li>
+                <li>
+                <p>Serialization: Certain <xref href="#legacy-serialization" scope="external">Legacy
+                    Serialization Parameters</xref>.</p>
+            </li>
+            </ul>
+    </section>
+    </body>
+</topic>

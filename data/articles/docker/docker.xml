@@ -1,0 +1,262 @@
+<topic id="docker">
+    <title>Containerization via Docker</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="application-development"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>This article covers the configuration and use cases of the official
+    <xref href="https://hub.docker.com/r/existdb/existdb/" scope="external">docker images</xref>
+    for eXist-db</p>
+        <section id="container-intro">
+            <title>Running exist inside a container</title>
+    
+    <p>Containers have become a popular means of distributing software without the need to worry hardware and software requirements other then the ability to run containers. Containers offer powerful features for continious deployment of production
+      systems, and convenient ways for testing software without interference from external dependencies. How it looks on my computer is how it looks on yours.</p>
+
+    <section id="official-images">
+                <title>The official images</title>
+      
+      <p>We offer minimal images of eXist-db which are automatically updated as part of the build-test life-cycle. The images are based on Google Cloud Platform's
+        <xref href="https://github.com/GoogleCloudPlatform/distroless" scope="external">
+          Distroless Docker Images</xref>. You can find the source code
+        <xref href="https://github.com/eXist-db/exist/tree/develop/exist-docker" scope="external">here</xref>.</p>
+      <p>Next to fully tagged version, we have two rolling release channels:</p>
+      <ol>
+                    <li>
+          <p>
+            <ph>release</ph>: for the latest stable releases based on the master branch.</p>
+        </li>
+                    <li>
+          <p>
+            <ph>latest</ph>: for last commit to the develop branch (within minutes of each commit).</p>
+        </li>
+                </ol>
+      <note type="note">
+                    <p>For technical details about building your own images, and build time arguments please consult the
+          <ph>README.md</ph>
+          of each release. In cases where the information in this document contradicts that in the
+          <xref href="https://github.com/eXist-db/exist/tree/develop/exist-docker/src/main/resources-filtered" scope="external">source-code repo</xref>
+          the latter is authoritative. To inform us of conflicts please open an issue via the button on the right.
+        </p>
+                </note>
+    </section>
+  </section>
+        <section id="container-how-to">
+            <title>How to get started</title>
+    
+    <p>First you need to download an images:</p>
+    <p>
+      <ph>docker pull existdb/existdb:latest</ph>
+    </p>
+    <p>Then you can start the container using that image:</p>
+    <p>
+      <ph>docker run -it -d -p 8080:8080 -p 8443:8443 --name exist existdb/existdb:latest</ph>
+    </p>
+    <section id="docker-what">
+                <title>What does this do?</title>
+      
+      <p>You have just download and started eXist-db without launching an installer or having to provide java. More specifically:</p>
+      <ul>
+                    <li>
+          <p>
+            <ph>-it</ph>: allocates a
+            <ph>TTY</ph>
+            and keeps
+            <ph>STDIN</ph>
+            open. This allows you to interact with the running Docker container via your console.
+          </p>
+        </li>
+                    <li>
+          <p>
+            <ph>-d</ph>: detaches the container from the terminal that started it. So your container won't stop when you close the terminal.</p>
+        </li>
+                    <li>
+          <p>
+            <ph>-p</ph>: maps the Containers internal and external port assignments (we recommend sticking with matching pairs). This allows you to connect to the eXist-db Web Server running in the Docker container.</p>
+        </li>
+                    <li>
+          <p>
+            <ph>--name</ph>: lets you provide a name (instead of using a randomly generated one)</p>
+        </li>
+                </ul>
+      <p>The only required parts are
+        <ph>docker run existdb/existdb</ph>.</p>
+      <p>For a full list of available options see the official
+        <xref href="https://docs.docker.com/engine/reference/commandline/run/" scope="external">Docker documentation</xref>. You can now access your running instance by going go
+        <ph>localhost:8080
+        </ph>
+        inside your browser. To stop the container:</p>
+      <p>
+        <ph>docker stop exist</ph>
+      </p>
+    </section>
+  </section>
+        <section id="container-interact">
+            <title>Interacting with the running container</title>
+    
+    <p>You can interact with a running container as if it were a regular Linux host.</p>
+      <note type="notice">
+                <p>GCR base images do not contain a shell by design. You can issue shell-like commands to the
+          <xref href="java-admin-client" scope="external">Java Admin Client</xref>, as we do throughout this readme, but you can't open the shell in interactive mode.</p>
+            </note>
+      <p>We'll continue to use
+      <ph>exist</ph>
+      as the name of our container:</p>
+    <pre># Using java syntax on a running eXist-db instances
+docker exec exist java org.exist.start.Main client --no-gui --xpath "system:get-version()"
+
+# Interacting with the JVM
+docker exec exist java -version</pre>
+    <p>Containers build from this image run a periodical health-check to make sure that eXist-db is operating normally. If
+      <ph>docker ps</ph>
+      reports unhealthy you can get a more detailed report with this command:</p>
+    <p>
+      <ph>docker inspect --format='{{json .State.Health}}' exist</ph>
+    </p>
+    <p>To check exist's logs:
+      <ph>docker logs exist</ph>
+    </p>
+  </section>
+        <section id="base-image">
+            <title>Use as Base Image</title>
+    
+    <p>A common usage of these images is as a base image for your own applications. We'll take a quick look at three scenarios of increasing complexity, to demonstrate how to achieve common tasks from inside
+      <ph>Dockerfile</ph>.</p>
+    <section id="base-simple">
+                <title>A simple base image</title>
+      
+      <p>The simplest case assumes that you have a
+        <ph>.xar</ph>
+        app inside a build folder on the same level as your own
+        <ph>Dockerfile</ph>. To get an image of an eXist-db instance with your app installed and running, you would then:</p>
+      <pre outputclass="docker">FROM existdb/existdb:6.3.0
+
+COPY build/*.xar /exist/autodeploy</pre>
+      <p>You should see something like this:</p>
+      <pre>Sending build context to Docker daemon  4.337MB
+Step 1/2 : FROM existdb/existdb:6.3.0
+ ---&gt; 3f4dbbce9afa
+Step 2/2 : COPY build/*.xar /exist/autodeploy
+ ---&gt; ace38b0809de</pre>
+      <p>The result is a new image of your app installed into eXist-db. Since you didn't provide further instructions it will simply reuse the
+        <ph>EXPOSE, CMD, HEALTHCHECK,</ph>
+        etc instructions defined by the base image. You can now publish this image to a docker registry and share it with others.</p>
+    </section>
+    <section id="single-stage">
+                <title>Single Stage Image</title>
+      
+      <p>The following slightly more complex example will install your app, but also modify the underlying eXist-db instance in which your app is running. Instead of a local build directory, we'll download the
+        <ph>.xar</ph>
+        from the web, and copy a modified
+        <ph>conf.xml</ph>
+        from a
+        <ph>src/</ph>
+        directory along side your
+        <ph>Dockerfile</ph>.
+      </p>
+      <p>To execute any of the
+        <ph>docker exec …
+        </ph>style commands from this readme, use
+        <ph>RUN</ph>.</p>
+      <pre outputclass="docker">FROM existdb/existdb
+
+# NOTE: this is for syntax demo purposes only
+RUN [ "java", "org.exist.start.Main", "client", "--no-gui",  "-l", "-u", "admin", "-P", "", "-x", "sm:passwd('admin','123')" ]
+
+# use a modified conf.xml
+COPY src/conf.xml /exist/etc
+
+ADD https://github.com/eXist-db/documentation/releases/download/4.0.4/exist-documentation-4.0.4.xar /exist/autodeploy</pre>
+      <p>The above demonstrates different kind of operations available to you in a single stage build. You have just executed the
+        <xref href="java-admin-client" scope="external">Java Admin Client</xref>
+        from inside a Dockerfile, which in turn allows you to run any XQuery code you want when modifying the eXist-db instance that will ship with your images. You can also chain multiple RUN commands.</p>
+      <note type="warning">
+                    <p>For security reasons more elaborate
+          <xref href="https://docs.docker.com/engine/swarm/secrets/" scope="external">techniques</xref>
+          for not sharing your password in the clear are highly recommended, such as the use of secure variables inside your CI environment.</p>
+                </note>
+    </section>
+    <section id="multi-stage">
+                <title>Multi-stage Images</title>
+      
+      <p>Lastly, you can eliminate external dependencies even further by using a multi-stage build. To ensure compatibility between different Java engines we recommend sticking with debian based images for the builder stage.</p>
+      <p>The following two-stage build will download and install
+        <ph>ant</ph>
+        and
+        <ph>nodeJS</ph>
+        into a builder stage which then downloads frontend dependencies before building the
+        <ph>.xar</ph>
+        file. The second stage (each
+        <ph>FROM</ph>
+        begins a stage) is the simple example again from before. Such a setup ensures that non of your collaborators has to have
+        <ph>java, nodeJS, ect</ph>
+        installed, and is great for fully automated builds and deployment.</p>
+      <pre outputclass="docker"># START STAGE 1
+FROM openjdk:8-jdk-slim as builder
+
+USER root
+
+ENV ANT_VERSION 1.10.5
+ENV ANT_HOME /etc/ant-${ANT_VERSION}
+
+WORKDIR /tmp
+
+RUN wget http://www-us.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz \
+    &amp;&amp; mkdir ant-${ANT_VERSION} \
+    &amp;&amp; tar -zxvf apache-ant-${ANT_VERSION}-bin.tar.gz \
+    &amp;&amp; mv apache-ant-${ANT_VERSION} ${ANT_HOME} \
+    &amp;&amp; rm apache-ant-${ANT_VERSION}-bin.tar.gz \
+    &amp;&amp; rm -rf ant-${ANT_VERSION} \
+    &amp;&amp; rm -rf ${ANT_HOME}/manual \
+    &amp;&amp; unset ANT_VERSION
+
+ENV PATH ${PATH}:${ANT_HOME}/bin
+
+WORKDIR /home/my-app
+COPY . .
+RUN apk add --no-cache --virtual .build-deps \
+ nodejs \
+ nodejs-npm \
+ git \
+ &amp;&amp; npm i npm@latest -g \
+ &amp;&amp; ant
+
+
+# START STAGE 2
+FROM existdb/existdb:release
+
+COPY --from=builder /home/my-app/build/*.xar /exist/autodeploy
+
+EXPOSE 8080 8443
+
+CMD [ "java", "org.exist.start.Main", "jetty" ]</pre>
+      <p>The basic idea behind multi-staging is that everything you need for building your software should be managed by docker, so that all collaborators can rely on one stable environment. In the end, and after how ever many stages you need, only the
+        files necessary to run your app should go into the final stage. The possibilities are virtually endless, but with this example and the Dockerfile in this repo you should get a pretty good idea of how you might apply this idea to your own projects.</p>
+    </section>
+  </section>
+        <section id="container-caveat">
+            <title>Caveats</title>
+    
+    <ul>
+                <li>
+        <p>
+          <ph>JVM</ph>
+          inside a container require some special considerations regarding memory allocation. You should familiarize yourself with our images use of
+          <ph>JAVA_TOOL_OPTIONS</ph>, and avoid the traditional way of setting the heap size via
+          <ph>-Xmx</ph>.</p>
+      </li>
+                <li>
+        <p>Containers rely on advanced
+          <ph>CPU</ph>artichetture features to do their magic. You should always consult the official docker documentation for your operation system to see if containers are supported on your hardware and/or software.</p>
+      </li>
+            </ul>
+    <note type="note">
+                <p>Apple's macOS uses its own version of
+        <ph>hypervisor</ph>
+        which can result in poor i/o performance compared to running on other platforms</p>
+            </note>
+  </section>
+    </body>
+</topic>

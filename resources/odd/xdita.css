@@ -1,0 +1,68 @@
+/* XDITA ODD-generated styles — supplements docs.css */
+
+.shortdesc {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 1.5em;
+}
+
+.note {
+    border-left: 4px solid #4a90d9;
+    padding: 0.75em 1em;
+    margin: 1em 0;
+    background: #f0f6ff;
+}
+
+.note .note-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.25em;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.05em;
+}
+
+.note[data-type="warning"],
+.note.warning {
+    border-left-color: #e6a700;
+    background: #fff8e0;
+}
+
+.note[data-type="notice"],
+.note.notice {
+    border-left-color: #c0392b;
+    background: #fdf2f2;
+}
+
+.note[data-type="tip"],
+.note.tip {
+    border-left-color: #27ae60;
+    background: #f0faf4;
+}
+
+.note[data-type="caution"],
+.note.caution {
+    border-left-color: #e67e22;
+    background: #fef5ec;
+}
+
+.fig-desc {
+    font-style: italic;
+    color: #666;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+
+.table td,
+.table th {
+    border: 1px solid #ddd;
+    padding: 0.5em 0.75em;
+}
+
+.table th {
+    background: #f5f5f5;
+}

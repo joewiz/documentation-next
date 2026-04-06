@@ -1,0 +1,41 @@
+---json
+{
+    "templating": {
+        "extends": "templates/base-page.html"
+    }
+}
+---
+[% template title %][[ $page-title ]] -- Documentation[% endtemplate %]
+
+[% template head %]
+<link rel="icon" href="[[ $context-path ]]/resources/favicon.ico"/>
+<link rel="stylesheet" href="[[ $context-path ]]/resources/odd/xdita.css"/>
+[% if $tabs?admin = "active" %]
+<link rel="stylesheet" href="[[ $context-path ]]/resources/vendor/jinntap/jinn-tap.css"/>
+<link rel="stylesheet" href="[[ $context-path ]]/resources/vendor/jinntap/editor-styles.css"/>
+[% endif %]
+[% endtemplate %]
+
+[% template content %]
+<div class="docs-app">
+    <nav class="docs-tabs" aria-label="Documentation navigation">
+        <ul>
+            <li><a href="[[ $context-path ]]/articles/" class="[[ $tabs?articles ]]">Articles</a></li>
+            <li><a href="[[ $context-path ]]/functions/" class="[[ $tabs?functions ]]">Functions</a></li>
+            <li><a href="[[ $context-path ]]/search" class="[[ $tabs?search ]]">Search</a></li>
+            <li><a href="[[ $context-path ]]/admin/" class="[[ $tabs?admin ]]">Admin</a></li>
+        </ul>
+    </nav>
+    <section class="docs-content">
+        [[ $tab-content ]]
+    </section>
+</div>
+<script src="[[ $context-path ]]/resources/js/highlight-bundle.js"></script>
+<script src="[[ $context-path ]]/resources/js/docs.js"></script>
+[% if $has-api %]
+<script src="[[ $context-path ]]/resources/js/tryit.js"></script>
+[% endif %]
+[% if $tabs?admin = "active" %]
+<script type="module" src="[[ $context-path ]]/resources/vendor/jinntap/jinn-tap.es.js"></script>
+[% endif %]
+[% endtemplate %]

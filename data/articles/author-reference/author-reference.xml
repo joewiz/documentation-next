@@ -1,0 +1,793 @@
+<topic id="author-reference">
+    <title>Author Reference</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="authoring"/>
+        <data name="keyword" value="exist"/>
+    </prolog>
+    <body>
+        <p>This article describes the conventions for writing articles for the eXist-db documentation
+        set. The eXist-db documentation set is (since beginning 2018) based on a subset of the
+        DocBook 5 content model. If you want to contribute an article (please do) it must conform to
+        the standards described here.</p>
+        <section id="writing-guidelines">
+            <title>General guidelines</title>
+        
+
+        <p>Here are some general writing (and tagging) guidelines:</p>
+        <ul>
+                <li>
+                <p>Please start of with a short introduction of your article in one or a few
+                    paragraphs before diving in. These paragraphs must be placed
+                    <i>before</i> the first <ph>sect1</ph>.</p>
+                <p>Describe what the article is about and for whom. What is the subject? Is it
+                    for total novices, beginners, advanced programming gurus in Java hyperspace?
+                    Prevent readers from diving in and find out that it's not for them.</p>
+            </li>
+                <li>
+                <p>Presenting longer listings can best be done by storing these in separate
+                    documents and linking them (see <xref href="#listings" scope="local"/>). This makes
+                    maintenance easier (ever edited a large CDATA section with XML inside?).</p>
+                <p>An additional reason is that somewhere in the future we intend to enable
+                    running code-examples directly from the documentation app. For this these
+                    examples must be in separate documents. So make sure that at least runnable
+                    examples are separated from your text.</p>
+            </li>
+                <li>
+                <p>Of course all the normal technical writing guidelines apply: Keep your target
+                    group in mind (what do they know and, more importantly, what not), write correct
+                    English, use plenty of examples, split the article in sections and sub-sections
+                    that make sense, etc.</p>
+            </li>
+            </ul>
+
+        <section id="patterns">
+                <title>Patterns to avoid</title>
+            
+
+            <p>The following patterns tend to occur again and again in writing documentation.
+                Please try to avoid them…</p>
+            <p>The examples exaggerated, but that's for illustration purposes, not to offend
+                anyone.</p>
+
+            <section id="avoid">
+                    <title>Avoid the difficult and explain the easy</title>
+                
+
+                <p>It is very tempting to skip quickly over some hard parts of the documentation
+                    and instead describe some of the easy parts in length. For instance:</p>
+                <section>
+                        <title/>
+                        <p>To configure the <i>xyz</i> extension you have to create an
+                        XML configuration file. Here is an example:</p>
+                        <pre>(some skimpy example of a complicated configuration file that is supposed to speak for itself
+but does not because its too simple)</pre>
+                        <p>To work with the user interface open this, click here, enter the password
+                        twice, click ok, bla bla bla, going on for multiple paragraphs…</p>
+                    </section>
+
+                <p>Well, your reader isn't stupid and hasn't seen a GUI for the first time. So
+                    telling him/her that a password needs to be entered twice and that ok must be
+                    clicked is completely superfluous. Just point your reader to the GUI and maybe
+                    to the right menu but that's all. Believe me, they know how to fill in a dialog
+                    box.</p>
+                <p>But they do not know what all these elements and attributes in the
+                    configuration file mean. Even if the names speak for themselves, some
+                    explanation will be necessary. Best to describe them all, mention defaults,
+                    examples, etc.</p>
+                <p>And yes, that's hard work, both in thinking and writing. But if you want your
+                    xyz extension to be used and useful (that's what you wrote it for, right?) its
+                    part of the job.</p>
+            </section>
+
+            <section id="polite">
+                    <title>Being overly polite</title>
+                
+
+                <p>Sometimes writers try to be very polite to both the reader and, strangely
+                    enough, the system. Since the reader wants it clear and you can't offend a
+                    system, don't.</p>
+
+                <p>
+                        <b>Table title</b>
+                    </p>
+                    <simpletable>
+                        <sthead>
+                            <stentry> Polite version </stentry>
+                            <stentry> Straight version </stentry>
+                        </sthead>
+                        <strow>
+                            <stentry> The logfile should appear. </stentry>
+                            <stentry> The logfile appears. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> You may enter ... </stentry>
+                            <stentry> Enter ... </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> If you wish you can also... </stentry>
+                            <stentry> It is also possible to ... Also:
+                                    ... </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Please navigate to... </stentry>
+                            <stentry> Navigate to ... </stentry>
+                        </strow>
+                    </simpletable>
+            </section>
+
+            <section id="thus">
+                    <title>Using thus instead of therefore</title>
+                
+                <p>Somehow there seems to be a preference among eXist-db's documentation writers
+                    for the word "thus" when "therefore" is meant. Thus is almost always wrong in
+                    this kind of prose, so please default to therefore. If you want to know more
+                    read on <xref href="https://painintheenglish.com/case/4452/" scope="external">here</xref>.</p>
+            </section>
+
+            <section id="java">
+                    <title>Java isn't always interesting</title>
+                
+                <p>Some articles that explain stuff about things in the XQuery realm keep
+                    rambling on about stuff in Java or in eXist-db's architecture: Servlets that
+                    execute, methods that are called, etc.</p>
+                <p>Yes, because <i>you</i> are a Java programmer its probably
+                    interesting to you. But when the intended audience of the article is XQuery
+                    programmers, don't bother them with this. And if you really (really!) think it
+                    is necessary information for some of them, add it to a separate section at the
+                    bottom.</p>
+            </section>
+
+        </section>
+
+
+    </section>
+        <section id="tech">
+            <title>Technical guidelines</title>
+        
+
+        <p>More information about DocBook itself can be found on the <xref href="https://docbook.org/" scope="external">official DocBook site</xref>.</p>
+
+        
+
+        <section id="col-struct">
+                <title>Collection (directory) structure</title>
+            
+            <ul>
+                    <li>
+                    <p>A single article must be stored in a collection on its own, the
+                        <i>article-collection</i>. Related assets or other files will
+                        be stored in sub-collections of this. This setup ensures that everything
+                        belonging to a single article stays together. </p>
+                </li>
+                    <li>
+                    <p>In the eXist documentation app, the article-collection will become a
+                        sub-collection of the <ph>data</ph> collection. So an article-collection
+                        called <ph>new-cool-feature</ph> will become
+                        <ph>/db/apps/doc/data/new-cool-feature</ph>.</p>
+                </li>
+                    <li>
+                    <p>The name of the article-collection should be the same as the document-name
+                        of the article itself. So if your article is called
+                        <ph>new-cool-feature.xml</ph>, store it as
+                        <ph>new-cool-feature/new-cool-feature.xml</ph>.</p>
+                </li>
+                    <li>
+                    <p>Any binary assets (images, etc.) referenced by your article must be stored
+                        in a sub-collection <ph>assets</ph>. So in our example in
+                        <ph>new-cool-feature/assets</ph>.</p>
+                </li>
+                    <li>
+                    <p>Any non-binary assets (usually included program/text listings) referenced
+                        by your article must be stored in a sub-collection <ph>listings</ph>. So
+                        in our example in <ph>new-cool-feature/listings</ph>.</p>
+                </li>
+                </ul>
+            <note type="note">
+                    <p>All rules regarding collection names are not there for technical reasons but
+                    to promote consistency. If you deviate and make sure all references are correct
+                    it will still work. However, to keep things maintainable it is strongly
+                    recommended to follow the rules stated above (or, if you really think they're
+                    stupid, apply for a rule change).</p>
+                </note>
+        </section>
+
+        
+
+        <section id="file-struc">
+                <title>Overall XML structure</title>
+            
+            <p>Here is an example how an article for this documentation set looks like:</p>
+            <pre outputclass="xml">&lt;?xml-model href="http://docbook.org/xml/5.0/rng/docbook.rng" schematypens="http://relaxng.org/ns/structure/1.0"?&gt;&lt;?xml-model href="http://docbook.org/xml/5.0/rng/docbook.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?&gt;&lt;article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0"&gt;
+  &lt;info&gt;
+    &lt;title&gt;
+      Document title
+    &lt;/title&gt;
+    &lt;date&gt;
+      1Q18
+    &lt;/date&gt;
+    &lt;keywordset&gt;
+      &lt;keyword&gt;
+        blah
+      &lt;/keyword&gt;
+    &lt;/keywordset&gt;
+  &lt;/info&gt;
+  &lt;para&gt;
+    Introductory paragraph(s)
+  &lt;/para&gt;
+  &lt;sect1 xml:id="main-id"&gt;
+    &lt;title&gt;
+      Title of first main section
+    &lt;/title&gt;
+    &lt;para&gt;
+      Lorem ipsum...
+    &lt;/para&gt;
+    &lt;sect2 xml:id="sub-id"&gt;
+      &lt;title&gt;
+        Title of first sub-section
+      &lt;/title&gt;
+      &lt;para&gt;
+        Lorem ipsum...
+      &lt;/para&gt;
+    &lt;/sect2&gt;
+  &lt;/sect1&gt;
+  &lt;sect1 xml:id="next-id"&gt;
+    &lt;title&gt;
+      Title of second main section
+    &lt;/title&gt;
+    &lt;para&gt;
+      Lorem ipsum...
+    &lt;/para&gt;
+  &lt;/sect1&gt;
+&lt;?site-url articles/author-reference?&gt;&lt;/article&gt;</pre>
+            <p>Both the processing instructions at the top are optional but strongly recommended.
+                They're present to guide tools like oXygen in validating the document and provide
+                authoring hints.</p>
+        </section>
+
+        
+
+        <section id="info">
+                <title>Article information</title>
+            
+            <p>Here is an example the article's mandatory information section:</p>
+            <pre outputclass="xml">&lt;info&gt;
+  &lt;title&gt;
+    Author Reference
+  &lt;/title&gt;
+  &lt;date&gt;
+    January 2018
+  &lt;/date&gt;
+  &lt;keywordset&gt;
+    &lt;keyword&gt;
+      authoring
+    &lt;/keyword&gt;
+  &lt;/keywordset&gt;
+&lt;/info&gt;</pre>
+            <p>The following rules and guidelines apply:</p>
+            <ul>
+                    <li>
+                    <p>There <i>must</i> be a title present in a <ph>title</ph>
+                        element. This is the main title of the document. It will be displayed at the
+                        top of the page.</p>
+                </li>
+                    <li>
+                    <p>Optional but strongly recommended is a date in the <ph>date</ph>
+                        element. This will be displayed below the title and provide the reader with
+                        some clue on how old this information is. We all know that sometimes
+                        articles get outdated but are not removed... You don't have to provide an
+                        exact date. Just month and year will do, or some indication like
+                        1Q18.</p>
+                </li>
+                    <li>
+                    <p>We use keywords to mark an article for certain subject areas. See <xref href="#keyword-usage" scope="local"/>.</p>
+                </li>
+                    <li>
+                    <p>You can add more information in <ph>info</ph> to your heart's desire but
+                        the renderer won't use nor display it.</p>
+                </li>
+                </ul>
+
+            <section id="keyword-usage">
+                    <title>Keyword usage</title>
+                
+
+                <p>The <ph>info</ph> element must contain at least one keyword. This is used to
+                    create an index on subject. Multiple keywords can be specified by repeating the
+                    <ph>keyword</ph> element.</p>
+                <p>Keywords are always written <i>lower-case</i> and must not
+                    contain spaces.</p>
+                <p>The following keywords are in use:</p>
+                <p>
+                        <b>Keyword usage</b>
+                    </p>
+                    <simpletable>
+                        <sthead>
+                            <stentry> Keyword </stentry>
+                            <stentry> Meaning </stentry>
+                        </sthead>
+                        <strow>
+                            <stentry>  <ph>application-development</ph>  </stentry>
+                            <stentry> Information related to using eXIst-db as an
+                                    application platform. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>exist</ph>  </stentry>
+                            <stentry> Anything related to eXist-db itself, like legal
+                                    statements, how to send in bugs, etc. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>getting-started</ph>  </stentry>
+                            <stentry> Basic information on how to get eXist-db up and
+                                    running. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>java-development</ph>  </stentry>
+                            <stentry> Information about programming Java for or in
+                                    eXist-db. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>indexing</ph>  </stentry>
+                            <stentry> Information related to eXist-db's indexes.
+                                </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>installation</ph>  </stentry>
+                            <stentry> Information about installing eXist-db </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>interfaces</ph>  </stentry>
+                            <stentry> Information about specific interfaces eXist-db
+                                    provides </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>operations</ph>  </stentry>
+                            <stentry> How to keep eXist-db up and running, not from a
+                                    programmer's but from a system maintenance point of view.
+                                </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>testing</ph>  </stentry>
+                            <stentry> Information related to testing eXist-db or its
+                                    applications. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>xquery</ph>  </stentry>
+                            <stentry> Information related to XQuery (or XPath) in general or
+                                    eXist-db's specific features of the language. </stentry>
+                        </strow>
+                    </simpletable>
+
+                <note type="warning">
+                        <p>Tables like the one above tend to get outdated sooner or later (because
+                        somebody adds/deletes a keyword and forgets to update it). To see all the
+                        keywords actually in use, look at the index-by-subject section of the <xref href="documentation" scope="external">main documentation page</xref>.</p>
+                        <p>Watch out: For legibility reasons the keywords there are presented
+                        <i>capitalized</i>. Remember that in the article documents the
+                        keywords must be stated in <i>lower-case</i>!</p>
+                    </note>
+
+            </section>
+
+        </section>
+
+        
+
+        <section id="block">
+                <title>Supported block elements</title>
+            
+
+            <p>The following DocBook 5 block level elements are supported for the eXist-db
+                documentation set. Unsupported elements will be flagged when the content is rendered
+                (you'll see a bold red error message in the middle of your story).</p>
+
+            <dl>
+                    <dlentry>
+                        <dt>Paragraphs</dt>
+                        <dd>
+                        <p>Use <ph>para</ph> to tag text as a paragraph.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Section levels</dt>
+                        <dd>
+                        <p>You can use <ph>sect1</ph> up to <ph>sect3</ph> as section levels.
+                            Only <ph>sect1</ph> and <ph>sect2</ph> will appear in the table of
+                            contents. Markup in titles is ignored.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Lists</dt>
+                        <dd>
+                        <p>You can use either <ph>itemizedlist</ph> (with bullets) or
+                            <ph>orderedlist</ph> (with numbers).</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Variable list</dt>
+                        <dd>
+                        <p>A <ph>variablelist</ph> is a bit of a misnomer. It creates lists
+                            like this one (the list of block elements you're looking at now), so
+                            it's useful for much more than variables.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Notes</dt>
+                        <dd>
+                        <note type="note">
+                                <p>The <ph>note</ph> element creates a noticeable layout like this.
+                                The title is optional.</p>
+                            </note>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Warnings</dt>
+                        <dd>
+                        <note type="warning">
+                                <p>Both the <ph>warning</ph> and <ph>important</ph> element
+                                produce a layout like this. The only difference is the text of the
+                                header. You can optionally add a title.</p>
+                            </note>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Examples</dt>
+                        <dd>
+                        <section>
+                                <title>An example of an example</title>
+                                <p>The <ph>example</ph> element produces an example in a layout
+                                like this. It must have a <ph>title</ph> element, which is
+                                displayed at the bottom:</p>
+                            </section>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Listings</dt>
+                        <dd>
+                        <p>Anything you want to present as a program listing or other fixed text
+                            (e.g. a sequence of commands) must be enclosed in a
+                            <ph>programlisting</ph> element. There are two ways to provide the
+                            actual contents of the listing:</p>
+                        <ul>
+                                <li>
+                                <p>Simply enclose the text in the <ph>programlisting</ph>
+                                    element. Use CDATA if necessary. Any markup will be
+                                    ignored.</p>
+                            </li>
+                                <li>
+                                <p>Add an <ph>xlink:href</ph> attribute
+                                    (<ph>xmlns:xlink="http://www.w3.org/1999/xlink"</ph>) with a
+                                    reference to a file containing the text. This must be a
+                                    <i>relative</i> reference (e.g.
+                                    <ph>xlink:href="listings/mylisting.txt"</ph>). The contents
+                                    of the element will be ignored.</p>
+                                <p>Using the <ph>xlink:href</ph> attribute is definitely
+                                    <i>not</i> the proper way to do this. It should be
+                                    done by using an <ph>xi:include</ph> element inside
+                                    <ph>programlisting</ph>. However, current XInclude limitations
+                                    in eXist prevent this from working properly (it can only include
+                                    XML, not text). So therefore this workaround.</p>
+                            </li>
+                            </ul>
+                        <p>Listings have two display modes:</p>
+                        <ul>
+                                <li>
+                                <p>If it's a listing in some language (like XML), add a
+                                    <ph>language</ph> attribute with the name of the language.
+                                    The render will try to add some color coding (if it recognizes
+                                    it). Here is a listing with <ph>language="xml"</ph>:</p>
+                                <pre outputclass="xml">&lt;example-xml example="true"&gt;
+  &lt;!-- Comment --&gt;
+  &lt;p&gt;
+    Some text...
+  &lt;/p&gt;
+&lt;/example-xml&gt;</pre>
+                            </li>
+                                <li>
+                                <p>For a straight listing, don't add a <ph>language</ph>
+                                    attribute. Here is the same listing as above without:</p>
+                                <pre>&lt;example-xml example="true"&gt;
+  &lt;!-- Comment --&gt;
+  &lt;p&gt;
+    Some text...
+  &lt;/p&gt;
+&lt;/example-xml&gt;</pre>
+                            </li>
+                            </ul>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Figures</dt>
+                        <dd>
+                        <p>Use <ph>figure</ph> or <ph>informalfigure</ph> to add an asset.
+                            The effect of both elements is almost the same, the only difference is
+                            that an informal figure has no title. DocBook prescribes an elaborate
+                            XML construction, here is an example:</p>
+                        <pre outputclass="xml">&lt;figure&gt;
+  &lt;title&gt;
+    Figure title here
+  &lt;/title&gt;
+  &lt;mediaobject&gt;
+    &lt;imageobject&gt;
+      &lt;imagedata fileref="assets/powered-by-exist.gif" width="50%"/&gt;
+    &lt;/imageobject&gt;
+  &lt;/mediaobject&gt;
+&lt;/figure&gt;</pre>
+                        <p>This produces:</p>
+                        <fig>
+                                <title>Figure title here</title>
+                                <image href="assets/powered-by-exist.gif" width="50%"/>
+                            </fig>
+                        <p>The <ph>width</ph> attribute is the only size-related attribute
+                            used. It sets the width relative to the available horizontal space. If
+                            you don't specify a width a default of 75% is used.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Tables</dt>
+                        <dd>
+                        <p>Use <ph>table</ph> or <ph>informaltable</ph> to add a table. The
+                            effect of both elements is almost the same, the only difference is that
+                            an informal table has no title. Table layout is kept simple and
+                            straight. Here is how a simple table looks like:</p>
+                        <pre outputclass="xml">&lt;table&gt;
+  &lt;title&gt;
+    Table title
+  &lt;/title&gt;
+  &lt;tgroup cols="2"&gt;
+    &lt;colspec colwidth="30%"/&gt;
+    &lt;colspec/&gt;
+    &lt;thead&gt;
+      &lt;row&gt;
+        &lt;entry&gt;
+          Col 1
+        &lt;/entry&gt;
+        &lt;entry&gt;
+          Col 2
+        &lt;/entry&gt;
+      &lt;/row&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;row&gt;
+        &lt;entry&gt;
+          &lt;para&gt;
+            Bla
+          &lt;/para&gt;
+        &lt;/entry&gt;
+        &lt;entry&gt;
+          &lt;para&gt;
+            More bla
+          &lt;/para&gt;
+        &lt;/entry&gt;
+      &lt;/row&gt;
+      &lt;row&gt;
+        &lt;entry&gt;
+          &lt;para&gt;
+            Blegh
+          &lt;/para&gt;
+        &lt;/entry&gt;
+        &lt;entry&gt;
+          &lt;para&gt;
+            More blegh
+          &lt;/para&gt;
+        &lt;/entry&gt;
+      &lt;/row&gt;
+    &lt;/tbody&gt;
+  &lt;/tgroup&gt;
+&lt;/table&gt;</pre>
+                        <p>And this is the result:</p>
+                        <p>
+                                <b>Table title</b>
+                            </p>
+                            <simpletable>
+                                <sthead>
+                                    <stentry> Col 1 </stentry>
+                                    <stentry> Col 2 </stentry>
+                                </sthead>
+                                <strow>
+                                    <stentry> Bla </stentry>
+                                    <stentry> More bla </stentry>
+                                </strow>
+                                <strow>
+                                    <stentry> Blegh </stentry>
+                                    <stentry> More blegh </stentry>
+                                </strow>
+                            </simpletable>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+        </section>
+
+        
+
+        <section id="inline">
+                <title>Supported inline elements</title>
+            
+            <p>The following inline elements are supported:</p>
+            <note type="warning">
+                    <p>Inline elements in <ph>title</ph> elements are <i>not</i>
+                    supported. Any markup in titles is ignored.</p>
+                </note>
+
+            <dl>
+                    <dlentry>
+                        <dt>Emphasis</dt>
+                        <dd>
+                        <p>Use <ph>emphasis</ph> for <i>emphasizing</i>.</p>
+                        <p>Although discouraged, you can request a specific emphasis type:</p>
+                        <ul>
+                                <li>
+                                <p>Use <ph>role="bold"</ph> for <b>bold
+                                    emphasis</b>.</p>
+                            </li>
+                                <li>
+                                <p>Use <ph>role="underline"</ph> for <i>underlined emphasis</i>.</p>
+                            </li>
+                                <li>
+                                <p>Use <ph>role="italic"</ph> for <i>italic emphasis</i>. This looks the same as no
+                                    <ph>role</ph> attribute but produces an <ph>i</ph> instead
+                                    of an <ph>em</ph>.</p>
+                            </li>
+                            </ul>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>GUI Items</dt>
+                        <dd>
+                        <p>Use <ph>guimenuitem</ph> around anything referring to choices in a
+                            GUI, for instance <ph>menu</ph> choices. The effect is
+                            now simple italic but that might change later.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Code</dt>
+                        <dd>
+                        <p>Use <ph>code</ph> or <ph>literal</ph> for literals, pieces of
+                            code, commands, etc. The result will be <ph>mono-spaced</ph>.</p>
+                        <p>The general guideline is to use this for everything that lists pieces
+                            of code, attributes, variable names, etc. For elements use
+                            <ph>tag</ph>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Tags</dt>
+                        <dd>
+                        <p>A <ph>tag</ph> element surrounds its content with &lt; and &gt; and
+                            formats it like code. Meant to make life easier:
+                            <ph/> is the shorter version of
+                            <ph/>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Figures</dt>
+                        <dd>
+                        <p>Use the <ph>inlinemediaobject</ph> to add an asset inline in the
+                            text. DocBook prescribes an elaborate XML construction, here is an
+                            example of a paragraph with an inline figure:</p>
+                        <pre outputclass="xml">&lt;para&gt;
+  There is an asset
+  &lt;inlinemediaobject&gt;
+    &lt;imageobject&gt;
+      &lt;imagedata fileref="assets/webstart.small.jpg"/&gt;
+    &lt;/imageobject&gt;
+  &lt;/inlinemediaobject&gt;
+  here.
+&lt;/para&gt;</pre>
+                        <p>This produces:</p>
+                        <p>There is an asset 
+                            
+                                
+                            
+                             here.</p>
+                        <p>The <ph>width</ph> attribute is the only size-related attribute
+                            recognized and used.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Internal links</dt>
+                        <dd>
+                        <p>You can create a link to any block level element with the
+                            <ph>xref</ph> element. To do so, give the target an identifier by
+                            using <ph>xml:id="..."</ph> and mention this identifier in the
+                            <ph>linkend</ph> attribute of the <ph>xref</ph>. </p>
+                        <p>You can generate a specific link text by adding an
+                            <ph>xreflabel</ph> attribute to the <i>target</i>
+                            element, like here: <xref href="#test-list-for-ref" scope="local"/>. If this
+                            attribute is not present on the target its title is used, like this:
+                            <xref href="#writing-guidelines" scope="local"/>. If there is no title, the name of
+                            the element is presented.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>External links</dt>
+                        <dd>
+                        <p>Links to external sources are done with the <ph>link</ph> element.
+                            Place the target's full URI in the <ph>xlink:href</ph> attribute.
+                            For instance, <ph>link
+                            xlink:href="https://exist-db.org/exist/apps/homepage/index.html"</ph>
+                            links to the <xref href="https://exist-db.org/exist/apps/homepage/index.html" scope="external">eXist
+                            home page</xref>.</p>
+                        <p>To open the link on a new page, add
+                            <ph>condition="_blank"</ph>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Article links</dt>
+                        <dd>
+                        <p>To create a link to another article in this documentation set, also
+                            use the <ph>link</ph> element. However, use the target's document name
+                            (without the <ph>.xml</ph> extension) as the link address. For
+                            instance, <ph>link xlink:href="documentation"</ph> links to the <xref href="documentation" scope="external">documentation home page</xref>.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+        </section>
+
+        
+
+        <section id="index">
+                <title>Generating indexes</title>
+            
+
+            <p>Indexes can be automagicly generated. For examples have a look at the <xref href="documentation" scope="external">documentation home page</xref>. There are three
+                variations:</p>
+            <dl>
+                    <dlentry>
+                        <dt>Alphabetical index on title</dt>
+                        <dd>
+                        <p>Add a <ph>role="indexontitle"</ph> attribute to a <ph>para</ph>
+                            element. An index on title will be generated after it.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Index on keyword, all</dt>
+                        <dd>
+                        <p>Add a <ph>role="indexonkeyword"</ph> attribute to a
+                            <ph>para</ph> element. An index on keywords (as specified in the
+                            <ph>info</ph> element, see <xref href="#keyword-usage" scope="local"/>) will be
+                            generated after it.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Index on keyword, single</dt>
+                        <dd>
+                        <p>Add a <ph>role="indexonkeyword:somekeyword"</ph> attribute to a
+                            <ph>para</ph> element to generate a list of articles with this
+                            specific keyword (as specified in the <ph>info</ph> element, see <xref href="#keyword-usage" scope="local"/>).</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+    </section>
+        <section id="tools">
+            <title>Additional tools</title>
+        
+
+        <p>There are two additional pages in the documentation app to help authors and
+            editors:</p>
+        <dl>
+                <dlentry>
+                    <dt> <xref href="editorial-view.html" scope="external">Editorial
+                    view</xref> </dt>
+                    <dd>
+                    <p>The editorial view provides an overview of all the articles and their
+                        incoming and outgoing links.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <xref href="diagnostics.html" scope="external">Diagnostics</xref> </dt>
+                    <dd>
+                    <p>Performs limited diagnostics. Checks whether the outgoing links in
+                        articles to other articles, listings and assets are ok. Also checks whether
+                        there are unreferenced (and therefore superfluous) listings and
+                        assets.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+    </section>
+    </body>
+</topic>

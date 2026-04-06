@@ -1,0 +1,239 @@
+<topic id="devguide_manifesto">
+    <title>eXist-db Developer Manifesto</title>
+    <prolog>
+        <data name="date" value="1Q18"/>
+        <data name="keyword" value="exist"/>
+    </prolog>
+    <body>
+        <p>This document lays out guidelines for developers that are either committing directly to
+        the eXist-db code base via the projects GitHub repository or developing externally, for
+        later incorporation into eXist-db.</p>
+        <section id="communication">
+            <title>Communication</title>
+        
+
+        <p>Communication between developers and within Open Source projects can be a hard thing
+            to achieve effectively, but to ensure the success of the project and contributions, we
+            must all strive to improve on communicating our intentions.</p>
+        <p>Public and open discussion of all new features and changes to existing features
+            <i>must</i> always be undertaken. eXist-db is a community project and the
+            community must be invited to provide input and feedback on development. Development
+            discussions take place through the <xref href="http://sourceforge.net/mail/?group_id=17691" scope="external">eXist-db Development mailing
+            list</xref>.</p>
+        <p>If conflicts of interest occur during discussion, they must be resolved before code
+            changes are made. If conflicts cannot be resolved by the community, usually one of the
+            core maintainers acts as a moderator. Core maintainers are contributors who feel
+            responsible for the project as a whole and have shown it in the past their commitment
+            and support. Right now this includes: Pierrick Brihaye, Wolfgang Meier, Leif-Jöran
+            Olsson, Adam Retter and Dannes Wessels. We name those people, so you know who to talk
+            to, but the list is in no way exclusive and may change over time.</p>
+    </section>
+        <section id="maintainability">
+            <title>Maintainability</title>
+        
+
+        <p>All code accepted must be maintainable. Otherwise there is the possibility that it
+            will grow stale and, without maintainers, will be removed from the code base.</p>
+        <p>To ensure a happy future for the code base, each contributor has a responsibility to
+            ensure:</p>
+        <ul>
+                <li>
+                <p>New code and bug-fixes <i>must</i> be accompanied by
+                    JUnit/XQuery/XSpec test cases. This helps us understand intention and avoid
+                    regressions.</p>
+            </li>
+                <li>
+                <p>Code must be appropriately commented (including javadoc/xqdoc), so the
+                    intention is understood. Industry standard code formatting rules must be
+                    followed. This helps us read and understand contributions.</p>
+            </li>
+                <li>
+                <p>Code must be tagged with the developers name and email address. This helps us
+                    contact contributors/maintainers should issues arrive.</p>
+            </li>
+                <li>
+                <p>Consider the maintainability of new features: will you maintain and support
+                    them over years? If not, who will? How do you communicate what is
+                    required?</p>
+            </li>
+            </ul>
+    </section>
+        <section id="developing">
+            <title>Developing</title>
+        
+
+        <ul>
+                <li>
+                <p>Follow Industry Standard coding conventions.</p>
+            </li>
+                <li>
+                <p>eXist-db is now developed atop Sun Java 8, so make use of Java 8 features for
+                    cleaner, safer and more efficient code.</p>
+            </li>
+                <li>
+                <p>New Features <i>must</i> be generic and applicable to an
+                    audience of more than one or two. Consider whether the eXist-db community would
+                    see this as a valuable feature (you should have already discussed this via the
+                    eXist-db Development mailing list). If a feature is just for you and/or your
+                    customer, it may have no place in eXist-db's main code base.</p>
+            </li>
+                <li>
+                <p>Major new features or risky changes must be developed in their own branch.
+                    Once tested (this must include user testing) they may then be integrated back
+                    into the main code base.</p>
+            </li>
+                <li>
+                <p>Follow a RISC like approach to developing new functions. It is better to have
+                    a single function that is flexible than multiple function signatures for the
+                    same function. Likewise, do not replace two functions by offering one new super
+                    function. Functions should act like simple building blocks that can be combined
+                    together.</p>
+            </li>
+                <li>
+                <p>The use of Static Analysis tools is highly recommended. These tools reduce
+                    risk, and are valuable even to the most highly skilled developers. Such tools
+                    include <xref href="http://checkstyle.sourceforge.net" scope="external">Checkstyle</xref>,
+                    <xref href="http://findbugs.sourceforge.net" scope="external">FindBugs</xref> and <xref href="http://pmd.sourceforge.net/" scope="external">PMD</xref>.</p>
+            </li>
+            </ul>
+    </section>
+        <section id="before">
+            <title>Before Committing</title>
+        
+
+        <ul>
+                <li>
+                <p> <i>TEST, TEST and TEST again!</i> See last section how to do
+                    this.</p>
+            </li>
+                <li>
+                <p>Execute the JUnit test suite to ensure that there are no regressions. If there
+                    are any regressions, do not commit!</p>
+            </li>
+                <li>
+                <p>Execute the XQTS test suite to ensure that there are no regressions. If there
+                    are any regressions, do not commit!</p>
+            </li>
+                <li>
+                <p>If you are working in an area of performance, there is a Benchmark test suite
+                    that you should run.</p>
+            </li>
+                <li>
+                <p>When effecting major changes, make sure all the demo applications which ship
+                    with eXist-db are still working as expected. Testing of the main user
+                    interfaces, including Java WebStart client and WebDAV, helps to avoid surprises
+                    at release time.</p>
+            </li>
+                <li>
+                <p>Documentation, whilst often overlooked, is critical in getting users to accept
+                    and test any new feature. If you add features without documentation they are
+                    worthless to the community.</p>
+            </li>
+                <li>
+                <p>Have a look at the <xref href="devguide_codereview" scope="external">Code Review
+                    Guide</xref> and take its recommendations at heart!</p>
+            </li>
+                <li>
+                <p>Atomicity! Please consider how you group commits together. A feature should be
+                    contributed as an atomic commit, this enables co-developers to easily follow and
+                    test the feature. If you need to clean up existing code during development,
+                    please commit this labelled 'cleaning up'. This makes your final commit much
+                    more concise.</p>
+            </li>
+                <li>
+                <p>If possible, without breaking existing functionality, it can be useful to
+                    break very large commits into a few smaller atomic ones, spanning a couple of
+                    days. This allows other users to test and help identify any parts of your code
+                    which might introduce issues.</p>
+            </li>
+                <li>
+                <p>Commit tagging helps us to generate lists of what has changed between
+                    releases. Please prefix your commit messages with an appropriate tag:</p>
+                <ul>
+                        <li>
+                        <p>[bugfix]</p>
+                    </li>
+                        <li>
+                        <p>[lib-change]</p>
+                    </li>
+                        <li>
+                        <p>[feature]</p>
+                    </li>
+                        <li>
+                        <p>[ignore]</p>
+                    </li>
+                        <li>
+                        <p>[format-change]</p>
+                    </li>
+                        <li>
+                        <p>[documentation]</p>
+                    </li>
+                        <li>
+                        <p>[documentation-fix]</p>
+                    </li>
+                        <li>
+                        <p>[performance]</p>
+                    </li>
+                        <li>
+                        <p>[testsuite]</p>
+                    </li>
+                        <li>
+                        <p>[building]</p>
+                    </li>
+                    </ul>
+                <p>The change log scripts will ignore any messages which do not start with one of
+                    the tags above or whose tag is [ignore].</p>
+            </li>
+            </ul>
+    </section>
+        <section id="finally">
+            <title>Finally</title>
+        
+
+        <p>Open Source projects are almost but quite not a democracy. Breaking, unknown and/or
+            untested commits cause a lot of pain and lost hours to your fellow developers.</p>
+        <p>Whilst we of course wish to encourage and nurture contributions to the project, these
+            have to happen in a manner everyone involved in the project can cope with. However, as
+            an absolute last measure, if developers frequently fail to adhere to the Manifesto then
+            Commit access to the eXist-db repository shall be revoked by the core developers.</p>
+    </section>
+        <section id="test-all">
+            <title>How to enable all and test</title>
+        
+
+        <p>It is essential that none of the existing code breaks because of your commit. Here is
+            how to be sure all code can be built and tested:</p>
+        <ol>
+                <li>
+                <p>Edit <ph>conf.xml</ph> (or actually the original file
+                    <ph>conf.xml.tmpl</ph>)</p>
+                <ol>
+                        <li>
+                        <p>Uncomment all (really, all) built-in modules under Xpath
+                            <ph>/exist/xquery/builtin-modules</ph> </p>
+                    </li>
+                        <li>
+                        <p>Activate the spatial index by uncommenting the index-module
+                            spatial-index under Xpath <ph>/exist/indexer/modules</ph> (the
+                            corresponding function module is uncommented in the first step.</p>
+                    </li>
+                    </ol>
+            </li>
+                <li>
+                <p>Edit <ph>local.build.properties</ph> and switch on all
+                    modules</p>
+                <ol>
+                        <li>
+                        <p>The Oracle module can be left switched off, the required jar is a bit
+                            difficult to download</p>
+                    </li>
+                        <li>
+                        <p>Switch all modules on with the command </p>
+                        <pre>cat build.properties | sed 's/false/true/g' &gt; local.build.properties</pre>
+                    </li>
+                    </ol>
+            </li>
+            </ol>
+    </section>
+    </body>
+</topic>

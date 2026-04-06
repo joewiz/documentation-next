@@ -1,0 +1,285 @@
+<topic id="xforms">
+    <title>XForms Introduction</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db offers support for the W3C XForms standard. It offers both a client-side (<xref href="http://www.agencexml.com" scope="external">XSLTForms</xref>) and a server-side
+        (<xref href="http://www.betterform.de" scope="external">betterFORM</xref>)
+        implementation. With this it is fully equipped to build complete applications that use XML
+        from front to back. However, eXist-db will also work with other XForms processors, such as
+        Orbeon or betterFORM.</p>
+        <p>As eXist-db also has native support for RESTful interactions, saving XML data is as easy
+        as using a HTTP PUT submission. For more complex tasks, you can submit your XForms instances
+        to an XQuery, post-process them and get the results back into your form. Several examples
+        are referred to below.</p>
+        <section id="bf">
+            <title>Using betterFORM inside of eXist-db</title>
+        
+
+        <p> betterFORM is a server-side W3C XForms 1.1 implementation written in Java. It covers
+            99% of the XForms recommendation and has been extensively tested against the official
+            XForms 1.1 Test Suite. All modern browsers are supported without the need for plug-ins.
+            betterFORM can also be obtained <xref href="https://github.com/betterFORM/betterFORM" scope="external">via Github</xref> and run
+            separately as a standard webapp. It is published under the BSD license. It is fully
+            integrated in eXist. </p>
+        <p> With betterFORM, XHTML/XForms documents are transcoded on the server into plain
+            (X)HTML + JavaScript. The resulting page uses an AJAX layer to keep client and server in
+            sync and to provide an attractive user interface without the need of writing a single
+            line of script code. </p>
+        <p> XForms processing with betterFORM is handled by a servlet filter (XFormsFilter) which
+            nicely integrates with the <xref href="urlrewrite" scope="external">URL Rewriting feature</xref> of
+            eXist. You can use XQuery to generate your XForms markup and process it in a single
+            request. </p>
+
+        
+
+        <section id="getting-started">
+                <title>Getting started</title>
+            
+            <note type="notice">
+                    <p>Warning: the following information is subject to change for eXist-db 5.0 when
+                    betterFORM will likely not be available by default any more</p>
+                </note>
+            <p>betterFORM is activated once you have installed eXist-db on your machine. By
+                default betterFORM is configured to run XForms exclusively from the database.</p>
+            <p>To execute an XHTML/XForms document it is sufficient to store it into your
+                database (using WebDAV or the admin client) and access it via the REST
+                interface.</p>
+            <p>betterFORM can also be configured to listen for a certain collection in the
+                database only or to fetch documents from the filesystem (from a directory below the
+                <ph>webapp</ph> directory). This can be done by changing the filter mapping in
+                <ph>etc/webapp/WEB-INF/web.xml</ph>:</p>
+
+            <pre outputclass="xml">&lt;filter-mapping&gt;
+    &lt;filter-name&gt;XFormsFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/apps/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;XFormsFilter&lt;/filter-name&gt;
+    &lt;servlet-name&gt;XFormsPostServlet&lt;/servlet-name&gt;
+&lt;/filter-mapping&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;XQueryURLRewrite&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;</pre>
+        </section>
+
+        
+
+        <section id="bf-add-ons">
+                <title>betterFORM Add-ons</title>
+            
+
+            <p>To ease the work with betterFORM it is highly recommended to install the
+                betterFORM dashboard along with the FeatureExplorer and the demo application.</p>
+            <p> <xref href="{bf-XForms}/reference/FeatureExplorer.xhtml" scope="external"> <i>FeatureExplorer</i> </xref> is the live documentation of
+                betterFORM. It is itself an XForms document that offers a navigation menu with links
+                to many sample XForms that show working examples along with relevant links to the
+                XForms Spec. A live CSS reference helps with styling forms by showing all available
+                CSS classes.</p>
+        </section>
+    </section>
+        <section id="xsl-forms">
+            <title>Using XSLTForms inside of eXist</title>
+        
+
+        <p>eXist directly supports XForms via Alain Couthures' <xref href="http://www.agencexml.com" scope="external">XSLTForms</xref> processor. XSLTForms implements
+            the XForms standard within the browser and is therefore easy to integrate. XSLTForms
+            transforms the XForms XML into an XHTML page with JavaScript that can process
+            XForms.</p>
+
+        
+
+        <section id="use-xsl-forms">
+                <title>Using XSLTForms inside of eXist</title>
+            
+
+            <p>XSLTForms consists of two components:</p>
+            <ul>
+                    <li>
+                    <p>the XSLT stylesheet <ph>xsltforms.xsl</ph>, which transforms the
+                        XForms markup into HTML and JavaScript understood by the browser</p>
+                </li>
+                    <li>
+                    <p>a JavaScript library, <ph>xsltforms.js</ph> </p>
+                </li>
+                </ul>
+            <p>The XSLT stylesheet can either be applied <i>server-side</i> or
+                within the <i>client</i> (the browser). To let the browser do the job,
+                all you have to do is prepend an XSL processing instruction to your XForms document,
+                pointing to the <ph>xsltforms/xsltforms.xsl</ph> stylesheet:</p>
+
+            <p>Please have a look at <xref href="{xsltforms-demo}/modules/form.xq?form=hello.xhtml" scope="external">hello.xml</xref> for
+                a very basic example using client-side transformation.</p>
+            <p>When applying the stylesheet server-side, you need to make sure serialization
+                parameters are set correctly. For example, you can apply the stylesheet within an
+                <xref href="urlrewrite" scope="external">XQueryURLRewrite</xref> controller pipeline:</p>
+
+            <pre outputclass="xml">&lt;dispatch xmlns="http://exist.sourceforge.net/NS/exist"&gt;
+  &lt;view&gt;
+    &lt;forward servlet="XSLTServlet"&gt;
+      (: Apply xsltforms.xsl stylesheet :)
+      &lt;set-attribute name="xslt.stylesheet" value="xsltforms/xsltforms.xsl"/&gt;
+      &lt;set-attribute name="xslt.output.omit-xml-declaration" value="yes"/&gt;
+      &lt;set-attribute name="xslt.output.indent" value="no"/&gt;
+      &lt;set-attribute name="xslt.output.media-type" value="text/html"/&gt;
+      &lt;set-attribute name="xslt.output.method" value="xhtml"/&gt;
+      &lt;set-attribute name="xslt.baseuri" value="xsltforms/"/&gt;
+      &lt;set-attribute name="xslt.xsltforms_home" value="webapp/xforms/xsltforms/"/&gt;
+    &lt;/forward&gt;
+  &lt;/view&gt;
+  &lt;cache-control cache="yes"/&gt;
+&lt;/dispatch&gt;</pre>
+            <p>It is important to set the <ph>indent</ph> serialization parameter to
+                <ph>no</ph>, otherwise you'll get JavaScript errors when viewing the page. Also,
+                if you apply the stylesheet server-side, make sure you remove the processing
+                instruction from the source file, or the browser will try to run the stylesheet as
+                well (which most likely leads to errors).</p>
+        </section>
+
+        
+
+        <section id="known-issues">
+                <title>Known Issues</title>
+            
+
+            <p>When you load an XForms document through eXist's REST interface, when the REST
+                server finds an <ph>xsl-stylesheet</ph> processing instruction in the document,
+                it tries to apply the referenced stylesheet server-side. Unfortunately, the default
+                serialization settings of the REST interface set <ph>indent="yes"</ph>,
+                which leads to problems with the XForms JavaScript library.</p>
+            <p>As a workaround, you can append a request parameter <ph>?_indent=no</ph>
+                to the REST URI. However, the recommended approach would be to use
+                <ph>XQueryURLRewrite</ph> to properly handle those requests and apply the
+                stylesheet.</p>
+        </section>
+    </section>
+        <section id="disable-bf">
+            <title>Disabling betterFORM</title>
+        
+
+        <p>Under certain conditions, for instance when XSLTforms is used, the betterFORM engine
+            needs to be disabled. This can be done in two ways: </p>
+        <ul>
+                <li>
+                <p>Per request, by setting an HTTP attribute: </p>
+                <pre outputclass="xquery">request:set-attribute("betterform.filter.ignoreResponseBody", "true")</pre>
+            </li>
+                <li>
+                <p>System global, by editing
+                    <ph>$EXIST_HOME/etc/webapp/WEB-INF/betterform-config.xml</ph>: <ph>property name="filter.ignoreResponseBody" value="false"</ph>
+                    </p>
+                <p>Change the value of the property <ph>filter.ignoreResponseBody</ph>
+                    to <ph>true</ph> and restart eXist-db. </p>
+            </li>
+                <li>
+                <p>By removing the configuration for XFormsFilter in
+                    <ph>$EXIST_HOME/etc/webapp/WEB-INF/web.xml</ph>. By commenting the
+                    filter-mapping XForms processing will be disabled. However note that betterFORM
+                    still get loaded on the classpath.</p>
+            </li>
+                <li>
+                <p>To fully remove betterFORM from your eXist-db binary, you have to comment the
+                    line <ph>include.feature.betterform = true </ph> in
+                    <ph>$EXIST_HOME/extensions/build.properties</ph> and rebuild the
+                    code.</p>
+            </li>
+            </ul>
+    </section>
+        <section id="resources">
+            <title>Additional XForms Resources</title>
+        
+        <p>A collection of further xforms resources to provide help.</p>
+
+
+        
+
+        <section id="bf-ex">
+                <title>XForms examples running in eXist</title>
+            
+
+            <ul>
+                    <li>
+                    <p>XSLT <xref href="{xsltforms-demo}/" scope="external">Examples</xref> </p>
+                </li>
+                    <li>
+                    <p>betterFORM <xref href="{bf-XForms}/" scope="external">Examples</xref> </p>
+                </li>
+                </ul>
+        </section>
+
+        
+
+        <section id="mailing-list">
+                <title>Mailing Lists</title>
+            
+
+            <ul>
+                    <li>
+                    <p> <xref href="https://lists.sourceforge.net/lists/listinfo/xsltforms-support" scope="external">
+                        XSLTForms mailing list</xref> </p>
+                </li>
+                    <li>
+                    <p> betterFORM questions may be asked on <xref href="https://sourceforge.net/p/exist/mailman/exist-open/" scope="external"> exist open
+                        mailinglist.</xref> </p>
+                </li>
+                </ul>
+        </section>
+
+        
+
+        <section id="specs">
+                <title>XForms Specification</title>
+            
+
+            <ul>
+                    <li>
+                    <p> <xref href="https://www.w3.org/TR/xforms/" scope="external">XForms v1.1 (W3C Recommendation)</xref> </p>
+                </li>
+                </ul>
+        </section>
+
+        
+
+        <section id="links">
+                <title>Useful other links</title>
+            
+
+            <ul>
+                    <li>
+                    <p> <xref href="http://betterform.wordpress.com" scope="external">betterFORM Blog</xref> </p>
+                </li>
+                    <li>
+                    <p> <xref href="https://betterform.de/trac" scope="external">betterFORM Issue Tracking</xref> </p>
+                </li>
+                    <li>
+                    <p> <xref href="http://betterform.de" scope="external">betterFORM
+                        homepage</xref> </p>
+                </li>
+                    <li>
+                    <p> <xref href="https://github.com/betterFORM/betterFORM" scope="external">betterFORM@github</xref> - source code available here</p>
+                </li>
+                    <li>
+                    <p> <xref href="http://betterform.de/reports/Firefox-3.0-Mac-OS-X-10.6-ConformanceReport1.1.html" scope="external">betterFORM coverage</xref> of W3C XForms 1.1 Test Suite</p>
+                </li>
+                    <li>
+                    <p> <xref href="https://en.wikibooks.org/wiki/XForms" scope="external">XForms Wikibook</xref> is
+                        a useful place to learn XForms</p>
+                </li>
+                    <li>
+                    <p> <xref href="https://en.wikibooks.org/wiki/XRX" scope="external">XRX Wikibook</xref> about XML application building</p>
+                </li>
+                    <li>
+                    <p> <xref href="https://en.wikibooks.org/wiki/XSLTForms" scope="external">XSLTForms
+                        Wikibook</xref> provides specific information on XSLTForms</p>
+                </li>
+                    <li>
+                    <p> <xref href="http://www.agencexml.com/xforms-tests/testsuite/XForms1.1/Edition1/driverPages/html/" scope="external">XSLTForms coverage</xref> of W3C test suite</p>
+                </li>
+                </ul>
+        </section>
+    </section>
+    </body>
+</topic>

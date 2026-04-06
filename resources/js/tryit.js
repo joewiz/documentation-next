@@ -1,0 +1,146 @@
+/**
+ * Try-it component for function documentation.
+ *
+ * Sends XQuery expressions to exist-api's /api/query endpoint
+ * and displays results. Degrades gracefully if exist-api is not available.
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+    const API_BASE =
+        document.querySelector("html").dataset.apiBase ||
+        window.location.pathname.replace(/\/apps\/docs\/.*/, "/apps/exist-api");
+
+    const buttons = document.querySelectorAll("[data-tryit]");
+    if (!buttons.length) return;
+
+    // Check if exist-api is available
+    checkApiAvailable().then((available) => {
+        if (!available) {
+            // Hide all try-it buttons
+            buttons.forEach((btn) => (btn.style.display = "none"));
+            return;
+        }
+
+        buttons.forEach((btn) => {
+            btn.addEventListener("click", handleTryIt);
+        });
+    });
+
+    async function checkApiAvailable() {
+        try {
+            const resp = await fetch(`${API_BASE}/api/system/info`, {
+                method: "GET",
+                credentials: "same-origin",
+            });
+            return resp.ok;
+        } catch {
+            return false;
+        }
+    }
+
+    function handleTryIt(e) {
+        const btn = e.currentTarget;
+        const panel = btn.closest(".tryit-section")?.querySelector(".tryit-panel")
+            || btn.nextElementSibling;
+
+        if (!panel) {
+            // Create inline panel for module-detail page
+            const section = createPanel(btn);
+            btn.after(section);
+            return;
+        }
+
+        // Toggle panel visibility
+        if (panel.hidden) {
+            panel.hidden = false;
+            const codeArea = panel.querySelector(".tryit-code");
+            if (codeArea && !codeArea.value.trim()) {
+                codeArea.value = generateExample(btn);
+            }
+        } else {
+            panel.hidden = true;
+        }
+    }
+
+    function createPanel(btn) {
+        const panel = document.createElement("div");
+        panel.className = "tryit-panel";
+        panel.innerHTML = `
+            <textarea class="tryit-code" rows="4">${generateExample(btn)}</textarea>
+            <button class="tryit-run">Run</button>
+            <pre class="tryit-output" hidden></pre>
+        `;
+        panel.querySelector(".tryit-run").addEventListener("click", () => {
+            runQuery(panel);
+        });
+        return panel;
+    }
+
+    function generateExample(btn) {
+        const name = btn.dataset.tryit;
+        const signature = btn.dataset.signature || name + "()";
+        // Generate a simple call expression from the signature
+        return signature.replace(/\$\w+ as [^,)]+/g, "()")
+            .replace(/ as .+$/, "");
+    }
+
+    async function runQuery(panel) {
+        const codeArea = panel.querySelector(".tryit-code");
+        const output = panel.querySelector(".tryit-output");
+        const runBtn = panel.querySelector(".tryit-run");
+        const query = codeArea.value.trim();
+
+        if (!query) return;
+
+        runBtn.disabled = true;
+        runBtn.textContent = "Running...";
+        output.hidden = false;
+        output.textContent = "Executing...";
+
+        try {
+            // Execute query
+            const execResp = await fetch(`${API_BASE}/api/query`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ query }),
+            });
+
+            if (!execResp.ok) {
+                const err = await execResp.json().catch(() => ({}));
+                throw new Error(
+                    err.error?.description || `HTTP ${execResp.status}`
+                );
+            }
+
+            const execData = await execResp.json();
+            const cursor = execData.cursor;
+
+            // Fetch results
+            const resultsResp = await fetch(
+                `${API_BASE}/api/query/${cursor}/results?start=1&count=50&method=adaptive&indent=yes`,
+                { credentials: "same-origin" }
+            );
+
+            const resultsText = await resultsResp.text();
+            output.textContent = resultsText || "(empty result)";
+
+            // Close cursor
+            fetch(`${API_BASE}/api/query/${cursor}`, {
+                method: "DELETE",
+                credentials: "same-origin",
+            }).catch(() => {});
+
+            // Timing info
+            if (execData.timing) {
+                output.textContent +=
+                    `\n\n(${execData.items} items, ${execData.timing.total}ms)`;
+            }
+        } catch (err) {
+            output.textContent = `Error: ${err.message}`;
+        } finally {
+            runBtn.disabled = false;
+            runBtn.textContent = "Run";
+        }
+    }
+});

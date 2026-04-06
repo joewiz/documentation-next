@@ -1,0 +1,48 @@
+<topic id="getting-help">
+    <title>Getting Help</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="getting-started"/>
+    </prolog>
+    <body>
+        <p>This article will tell you where to go for additional help working with eXist-db.</p>
+        <section id="community-support">
+            <title>Community Support</title>
+    
+
+    <p>Besides eXist-db's extensive <xref href="documentation" scope="external">documentation</xref>, eXist-db has a large and active community of users
+      and developers. The community uses mailing lists, chat, a wiki, and social media to get and give help, follow the latest developments and share
+      tips and discoveries.</p>
+    <p>The book, "eXist: a NoSQL Document Database and Application Platform" was published in 2014 and is available from <xref href="http://shop.oreilly.com/product/0636920026525.do" scope="external">O'Reilly.com</xref>.</p>
+    <fig>
+                <title/>
+                <image href="assets/book-cover.gif" width="30%"/>
+            </fig>
+    <p>The <xref href="https://lists.sourceforge.net/lists/listinfo/exist-open" scope="external">exist-open</xref> mailing list is the
+      primary forum for asking questions and getting help. Finding the answer to a question can sometimes be as simple as <xref href="https://exist-open.markmail.org/" scope="external">searching the mailing list's archives</xref>. Whether you have a
+      question that you can't find the answer to, or you just want to join the discussion, <xref href="https://lists.sourceforge.net/lists/listinfo/exist-open" scope="external">subscribe to the mailing list</xref>. It's free and
+      you can unsubscribe anytime.</p>
+    <p>You can also search the <xref href="https://stackoverflow.com/questions/tagged/exist-db" scope="external">exist-db tag on Stackoverflow</xref> for questions and answers.</p>
+    <note type="note">
+                <p>For reporting issues, please consult the <xref href="getting-help-how-to-report" scope="external">How to Report Issues</xref> article.</p>
+            </note>
+    <p>Besides exist-open, there is a mailing list dedicated solely to the XQuery language: the <xref href="http://x-query.com/mailman/listinfo/talk" scope="external">xquery-talk mailing list</xref>. It's a great place to ask questions about XQuery, from
+      basic to advanced.</p>
+    <p>See our list of resources for <xref href="learning-xquery" scope="external">learning XQuery</xref>.</p>
+    <p>Follow <xref href="https://twitter.com/#!/existdb" scope="external">@existdb</xref> on Twitter for news and announcements about
+      eXist-db. Use the <xref href="https://twitter.com/#!/search?q=%23existdb" scope="external">#existdb</xref> hash tag (note: no dash in
+      #existdb). </p>
+    <p>Meet eXist-db professionals on <xref href="https://www.linkedin.com/groups?mostPopular=&amp;gid=35624" scope="external">LinkedIn</xref>. Subscribe to the <xref href="http://atomic.exist-db.org/blogs/eXist/" scope="external">eXist
+        Developer Blog</xref>, powered by the eXist-based AtomicWiki project.</p>
+  </section>
+        <section id="professional-support">
+            <title>Professional Support</title>
+    
+
+    <p>eXist-db began as and continues to thrive as an open source community, built on the contributions of volunteers. Recognizing the need for
+      professional solutions for eXist-db, members of our development team and community have come together commercially under the umbrella of <xref href="http://www.existsolutions.com" scope="external">eXist Solutions</xref>. They are available for  Consultancy, Training or Bespoke
+      Development. We also offer <xref href="https://exist-db.org/exist/apps/homepage/index.html#subscriptions" scope="external">support
+        subscriptions</xref> with service level agreements tailored to customer's requirements. Please contact us at <xref href="mailto:info@existsolutions.com" scope="external">info@existsolutions.com</xref>. </p>
+  </section>
+    </body>
+</topic>

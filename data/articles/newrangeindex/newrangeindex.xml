@@ -1,0 +1,331 @@
+<topic id="newrangeindex">
+    <title>Range Index</title>
+    <prolog>
+        <data name="date" value="4Q20"/>
+        <data name="keyword" value="indexing"/>
+    </prolog>
+    <body>
+        <p>eXist-db includes a super fast modularized range index based on
+        Apache Lucene. This article describes eXist-db's range index.</p>
+        <section id="newrangeidx">
+            <title>Overview</title>
+        
+
+        <p>Range indexes are extremely important in eXist-db. Without a proper index, evaluating
+            a general comparison in an XPath filter expression (like <ph>//foo[baz =
+            "xyz"]</ph>) requires eXist to do a full scan over the context node set, checking the
+            value of every node against the argument. This is not only slow, it also limits
+            concurrency due to necessary locking and consumes memory for loading each of the nodes.
+            With a well-defined index, queries will usually complete in a few milliseconds instead
+            of seconds. The index allows the optimizer to rewrite the expression and process the
+            index lookup in advance, assuming that the number of <ph>baz</ph> elements with
+            content <ph>xyz</ph> is much smaller than the total number of elements.</p>
+
+    </section>
+        <section id="conf-idx">
+            <title>Index Configuration</title>
+        
+
+
+        <p>To use the new range index, wrap the range index definitions into a range
+            element:</p>
+        <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;index xmlns:mods="http://www.loc.gov/mods/v3"&gt;
+    &lt;!-- Range indexes --&gt;
+    &lt;range&gt;
+      &lt;create qname="mods:namePart" type="xs:string" case="no"/&gt;
+      &lt;create qname="mods:dateIssued" type="xs:string"/&gt;
+      &lt;create qname="@ID" type="xs:string"/&gt;
+    &lt;/range&gt;
+  &lt;/index&gt;
+&lt;/collection&gt;</pre>
+
+        <p>Store this definition and do a re-index. Index files are created in the
+            <ph>$EXIST_HOME/data/range directory</ph> (or wherever you configured your
+            data directory to be). </p>
+        <p>The indexes will be used automatically for general or value comparisons, as well as
+            string functions like <ph>fn:contains</ph>, <ph>fn:starts-with</ph>,
+            <ph>fn:ends-with</ph>. </p>
+        <note type="note">
+                <p>
+                    <ph>fn:matches</ph> is currently not supported due to limitations in Lucene's
+                regular expression handling. Alternatives include the new <ph>range:matches</ph>
+                function (which <i>is</i> supported with the new range index, although subject to
+                <xref href="https://lucene.apache.org/core/4_10_4/core/org/apache/lucene/util/automaton/RegExp.html" scope="external">Lucene 
+                    limitations</xref>) and the <xref href="oldrangeindex" scope="external">old range index</xref> (which does not use Lucene).</p>
+            </note>
+        <p>Above configuration applies to documents using MODS, a standard for bibliographical
+            metadata. The following XPath expressions use the created indexes: </p>
+
+        <pre outputclass="xquery">declare namespace mods="http://www.loc.gov/mods/v3";
+//mods:mods[mods:name/mods:namePart = "Dennis Ritchie"],
+//mods:mods[mods:originInfo/mods:dateIssued = "1978"],
+//mods:mods[mods:name/mods:namePart = "Dennis Ritchie"][mods:originInfo/mods:dateIssued = "1978"]</pre>
+    </section>
+        <section id="conf-feature">
+            <title>Configuration Features</title>
+        
+        <p>Some notes on how to configuration the index.</p>
+        
+
+        <section id="case-sensitive">
+                <title>Case sensitive index</title>
+            
+
+            <p> Add <ph>case="no"</ph> to create a case insensitive index on a string. </p>
+            <p>With a case insensitive index on <ph>mods:namePart</ph> a match will also be
+                found if you query for "dennis ritchie" instead of "Dennis Ritchie". </p>
+        </section>
+
+        
+
+        <section id="collation">
+                <title>Collations</title>
+            
+
+            <p> A collation changes how strings are compared. For example, you can change the
+                strength property of the collation to ignore diacritics, accents or case. So to
+                compare strings ignoring accents or case, you can define your index as follows: </p>
+
+            <pre outputclass="xml">&lt;create qname="mods:namePart" 
+        type="xs:string" 
+        collation="?lang=en-US&amp;amp;strength=primary"/&gt;</pre>
+            <p> Please refer to the <xref href="http://userguide.icu-project.org/collation/concepts" scope="external">ICU
+                documentation</xref> (which is used by eXist) for more information on collations,
+                strength, etc. </p>
+        </section>
+
+        
+
+        <section id="combined-idx">
+                <title>Combined indexes</title>
+            
+
+            <p> If you know you will often use a certain combination of filters, you can combine
+                the corresponding indexes into one to further reduce query times. For example, the
+                <ph>mods:name</ph> element has an attribute type which qualifies the name as being
+                "personal", "corporate" or another predefined value. </p>
+            <p>Assume you want to speed up a query like this:</p>
+            <pre outputclass="xquery">//mods:name[@type = "personal"][mods:namePart = "Dennis Ritchie"]</pre>
+            <p>To do this you could create a combined index on <ph>mods:name</ph> as
+                follows:</p>
+            <pre outputclass="xml">&lt;range&gt;
+  &lt;create qname="mods:name"&gt;
+    &lt;field name="name-type" match="@type" type="xs:string"/&gt;
+    &lt;field name="name-part" match="mods:namePart" type="xs:string"/&gt;
+  &lt;/create&gt;
+&lt;/range&gt;</pre>
+
+            <p>This index will be used whenever the context of the filter expression is a
+                <ph>mods:name</ph>. It filters on either or both: <ph>@type</ph> and
+                <ph>mods:namePart</ph>. Advantage: only one index lookup is required to evaluate
+                such an expression, resulting in a huge performance boost, in particular if the
+                combination of filters does only match a few names out of a large set!</p>
+            <p>Note that all 3 attributes of the field element are required. The
+                <ph>name</ph> you give to the field can be arbitrary, but it should be unique
+                within the index configuration document. The <ph>match</ph> attribute specifies
+                the nodes to include in the field. It should be a simple path relative to the
+                context element. </p>
+            <p> You can skip the match attribute if you want to index the content of the context
+                node itself. In this case, an additional attribute: <ph>nested="yes|no"</ph> can
+                be added to tell the indexer to skip the content of nested nodes to only index
+                direct text children of the context node.</p>
+            <p> The index is also used if you only query one of the defined fields, for instance: </p>
+            <pre outputclass="xquery">//mods:mods[mods:name[mods:namePart = "Dennis Ritchie"]]</pre>
+            <p> It is important that the filter expression matches the index definition though,
+                so the following will <i>not</i> be sped up by the index: </p>
+            <pre outputclass="xquery">//mods:mods[mods:name/mods:namePart = "Dennis Ritchie"]</pre>
+            <p>This is because the context of the filter expression here is <ph>mods:mods</ph>,
+                not <ph>mods:name</ph>. </p>
+            <p>You can create as many combined indexes as you like, even if some of them refer to
+                elements which are nested inside other elements having a different index. For
+                example, to index a complete MODS record, we could create one nested index on the
+                root element: <ph>mods:mods</ph>, and include all attributes or simple descendant
+                elements we may want to query at the same time. <ph>mods:name</ph>, even though a
+                child of <ph>mods:mods</ph>, is a complex element, so we want it to have a
+                separate index as shown above. We therefore define both indexes: </p>
+
+            <pre outputclass="xml">&lt;range&gt;
+  &lt;create qname="mods:name"&gt;
+    &lt;field name="name-type" match="@type" type="xs:string"/&gt;
+    &lt;field name="name-part" match="mods:namePart" type="xs:string"/&gt;
+  &lt;/create&gt;
+  &lt;create qname="mods:mods"&gt;
+    &lt;field name="mods-dateIssued" match="mods:originInfo/mods:dateIssued" type="xs:string"/&gt;
+    &lt;field name="mods-id" match="@ID" type="xs:string"/&gt;
+    &lt;field name="mods-authority" match="@authority" type="xs:string"/&gt;
+    &lt;field name="mods-lang" match="@lang" type="xs:string"/&gt;
+  &lt;/create&gt;
+&lt;/range&gt;</pre>
+            <p> This allows more complex queries to be optimized, for instance: </p>
+
+            <pre outputclass="xquery">//mods:mods[mods:name[@type = "personal"][mods:namePart = "Dennis Ritchie"]] 
+           [mods:originInfo/mods:dateIssued = "1979"]</pre>
+            <p>In this case, the <ph>mods:dateIssued</ph> lookup will be done first, which
+                presumably returns more hits than the name lookup. So, for maximum performance it
+                may still be faster to split the expression into two parts and do the name check
+                first.</p>
+        </section>
+
+        
+
+        <section id="conditional">
+                <title>Conditional combined indexes</title>
+            
+
+            <p>For combined indexes, you can specify conditions to restrict the values being
+                indexed to those contained in elements that have an attribute meeting certain
+                criteria: </p>
+
+            <pre outputclass="xml">&lt;range&gt;
+  &lt;create qname="tei:term"&gt;
+    &lt;condition attribute="type" value="main"/&gt;
+    &lt;field name="mainTerm" type="xs:string"/&gt;
+  &lt;/create&gt;
+&lt;/range&gt;</pre>
+            <p>This will only index the value of the <ph>tei:term</ph> element if it has an
+                attribute named <ph>type</ph> with the value <ph>main</ph>. Multiple
+                conditions can be specified in an index definition, in which case all conditions
+                need to match in order for the value to be indexed.</p>
+            <p>In order to take advantage of query optimization for conditionally indexed fields,
+                queries should be formulated like this:</p>
+            <pre>//tei:term[@type = "main"][. = "xyz"]</pre>
+            <p>This gets rewritten to a call to: </p>
+            <pre>range:field(("mainTerm"), "eq", "xyz")</pre>
+            <p>By default, condition matching is string-based and case-sensitive. </p>
+            <p>The following optional attributes can be specified on a <ph>condition</ph>: </p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                        <ph>operator="eq|ne|lt|gt|le|ge|starts-with|ends-with|contains|matches"</ph>
+                    </dt>
+                        <dd>
+                        <p>Specifies the operator for the comparison. <ph>matches</ph>
+                            supports Java regular expressions.</p>
+                        <p>Default is <ph>eq</ph>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>case="yes|no"</ph>
+                    </dt>
+                        <dd>
+                        <p>Turns case sensitivity on or off for string comparisons. </p>
+                        <p>Default is <ph>yes</ph>.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                        <ph>numeric="yes|no"</ph>
+                    </dt>
+                        <dd>
+                        <p>Turns numeric comparison on or off for equality and ordinal
+                            comparisons (<ph>eq, ne, lt, gt, le, ge</ph>). When enabled, 01.0
+                            will equal 1 and 2 will be less than 110 for example. The rewriter will
+                            respect the type of the value (string, numeric) when matching a
+                            condition to a predicate. </p>
+                        <p>Default is <ph>off</ph>.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+    </section>
+        <section id="idx-functions">
+            <title>Using Index Functions</title>
+        
+
+        <p>Internally the query optimizer will rewrite range lookup expressions into optimized
+            function calls into the <ph>range</ph> module (namespace
+            <ph>http://exist-db.org/xquery/range</ph>). This happens transparently and you'll
+            never see the function calls. However, for debugging and testing it is sometimes useful
+            to use the corresponding functions directly. There are two sets of functions: one for
+            simple range index lookups, and one for indexes on fields.</p>
+        <p>For example, assume the following index configuration:</p>
+
+        <pre outputclass="xml">&lt;range&gt;
+  &lt;create qname="SPEAKER" type="xs:string"/&gt;
+  &lt;create qname="SPEECH"&gt;
+    &lt;field name="stagedir" type="xs:string" match="//STAGEDIR"/&gt;
+    &lt;field name="line" type="xs:string" match="LINE" case="no"/&gt;
+  &lt;/create&gt;
+&lt;/range&gt;</pre>
+        <p>And the following query:</p>
+        <pre outputclass="xquery">//SPEECH[SPEAKER="HAMLET"]</pre>
+        <p>This translates into:</p>
+        <pre outputclass="xquery">//SPEECH[range:eq(SPEAKER, "HAMLET")]</pre>
+
+        <p>If the index is defined on an element with fields, the entire sub-expression, the
+            context path and all its filters, is rewritten into a single function call. For
+            example:</p>
+        <pre outputclass="xquery">collection("/db/apps/demo/data")//SPEECH[.//STAGEDIR = "Aside"]</pre>
+        <p>This is replaced with:</p>
+        <pre outputclass="xquery">collection("/db/apps/demo/data")/range:field-eq("stagedir", "Aside")</pre>
+        <p>Because the index root is defined on <ph>SPEECH</ph>, the function will always
+            return <ph>SPEECH</ph> elements.</p>
+
+        <p>If multiple filters are used and each of them has a corresponding field definition,
+            they are combined into one call:</p>
+        <pre outputclass="xquery">collection("/db/apps/demo/data")/range:field-eq(("stagedir", "line"), "Aside", "what do you read, my lord?")</pre>
+        <p>Note that while the field names are specified in a sequence, we add one parameter for
+            every value to look up. This way it is possible to specify more than one value for each
+            parameter by passing in a sequence.</p>
+        <p>Because different operators might be used inside the filters, the query engine will
+            actually rewrite the expression to the following:</p>
+        <pre outputclass="xquery">collection("/db/apps/demo/data")/range:field(("stagedir", "line"), ("eq", "eq"), "Aside", "what do you read, my lord?")</pre>
+        <p>This is not easy to read, but efficient. Users will normally not see this function
+            call. However, it sometimes helps to know what the optimizer is supposed to do and try
+            it out explicitly.</p>
+    </section>
+        <section id="comparison-range-index">
+            <title>Comparison with the old range index</title>
+        
+
+        <p>eXist also has an older version of the range index on board (see <xref href="oldrangeindex" scope="external">old range index</xref>). Compared to this newer version it
+            has three main issues:</p>
+        <ol>
+                <li>
+                <p> Index entries were organized by collection, resulting in an unfortunate
+                    dependency between collection size and update speed. In simple words: updating
+                    or removing documents became slower as the collection grew. For a long time, the
+                    general recommendation was to split large document sets into multiple, smaller
+                    sub-collections if update speed was an issue. </p>
+            </li>
+                <li>
+                <p> Queries on very frequent search strings were quite inefficient: for example,
+                    a query </p>
+                <pre outputclass="xquery">//term[@type ="main"][. = "xyz"]</pre>
+                <p> could be quite slow despite an index being defined if
+                    <ph>@type="main"</ph> occurred very often. Unfortunately this is a common
+                    use of attributes and to make it quick, you had to reformulate the query, e.g.
+                    by moving the non-selective step to the back: </p>
+                <pre outputclass="xquery">//term[. = "xyz"][@type = "main"]</pre>
+            </li>
+                <li>
+                <p>Range indexes were baked into the core of eXist-db, making maintenance and bug
+                    fixing difficult. </p>
+            </li>
+            </ol>
+        <p>The rewritten range index addresses both issues. First, indexes are now organized by
+            document/node, so collection size does no longer matter when updating an index entry.
+            Concerning storage, the index is entirely based on Apache Lucene instead of the B+-tree
+            which was previously used. Most range indexes tend to be strings, so why not leave the
+            indexing to a technology like Lucene, which is known to scale well and does a highly
+            efficient job on string processing? Since version 4, Lucene has added support for
+            storing numeric data types and binary data into the index, so it seemed to be a perfect
+            match for our requirements. Lucene is integrated into eXist on a rather low level with
+            direct access to the indexes. </p>
+        <p>To address the second issue, it is now possible to combine several fields to index
+            into one index definition: </p>
+        <pre outputclass="xquery">//term[@type = "main"] [. = "xyz"]</pre>
+        <p>This can now be evaluated with a single index lookup. </p>
+        <p>Finally, the new range index is implemented as a pluggable module: a separate
+            component which is not required for the core of eXist-db to work properly. For eXist,
+            the index is a black box: it does not need to know what the index does. If the index is
+            there, it will automatically plug itself into the indexing pipeline as well as the query
+            engine. If it is not, eXist will fall back to default (brute force) query
+            processing.</p>
+        <p>The old range index is still supported to allow existing applications to run
+            unchanged.</p>
+    </section>
+    </body>
+</topic>

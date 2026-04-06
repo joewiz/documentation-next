@@ -1,0 +1,988 @@
+<topic id="ant-tasks">
+    <title>Ant Tasks</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>eXist-db provides a library for the <xref href="https://ant.apache.org" scope="external">
+                <ph>Ant</ph>
+            </xref> build tool to automate common system administration and
+        operation tasks, like backup/restore or importing files. The latest version of eXist-db's
+        Ant Tasks can be found on Maven Central as the artifact <xref href="https://search.maven.org/search?q=g:org.exist-db%20AND%20a:exist-ant" scope="external">exist-ant</xref>.</p>
+        <section id="basic">
+            <title>Basic configuration</title>
+        
+
+        <p>To prepare your <ph>Ant</ph> build script for working with eXist-db, do the
+            following:</p>
+        <ul>
+                <li>
+                <p>Add the eXist-db <ph>Ant</ph> tasks namespace to your script, preferably
+                    on the root <ph>project</ph> element and with prefix <ph>xdb</ph>:</p>
+                <pre>&lt;project xmlns:xdb="http://exist-db.org/ant" … &gt;</pre>
+            </li>
+                <li>
+                <p>Import the eXist-db tasks with Ivy and then add the following code:</p>
+                <pre outputclass="xml">&lt;typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/&gt;</pre>
+            </li>
+            </ul>
+
+    </section>
+        <section id="common">
+            <title>Common attributes</title>
+        
+        <p>All tasks share the following common attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>uri</ph>
+                    </dt>
+                    <dd>
+                    <p>An XMLDB URI specifying the database collection through XMLRPC. For
+                        instance
+                        <ph>xmldb:exist://localhost:8080/exist/xmlrpc/db/my-collection-my-resource.xml</ph>.</p>
+                    <p>All collection and resource paths specified in the tasks are relative to
+                        this.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>ssl</ph>
+                    </dt>
+                    <dd>
+                    <p>Use SSL encryption when communicating with the database (default:
+                        <ph>false</ph>).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>user</ph>
+                    </dt>
+                    <dd>
+                    <p>The user to connect with (default: <ph>guest</ph>).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>password</ph>
+                    </dt>
+                    <dd>
+                    <p>Password for the user (default: <ph>guest</ph>).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>failonerror</ph>
+                    </dt>
+                    <dd>
+                    <p>Whether or not a error should stop the build execution (default:
+                        <ph>true</ph>).</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="storing">
+            <title>Storing Documents</title>
+        
+
+        <p>The <ph>store</ph> task uploads and stores documents into the database. Documents
+            are specified as single source file or with <ph>Ant</ph> filesets:</p>
+
+        <pre outputclass="xml">&lt;xdb:store xmlns:xdb="http://exist-db.org/ant"
+    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+    createcollection="true"&gt;
+    &lt;fileset dir="samples/shakespeare"&gt; 
+        &lt;include name="*.xml"/&gt;
+        &lt;include name="*.xsl"/&gt;
+    &lt;/fileset&gt;
+&lt;/xdb:store&gt;
+&lt;xdb:store xmlns:xdb="http://exist-db.org/ant"
+  uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+  createcollection="true" srcfile="samples/shakespeare/hamlet.xml"/&gt;</pre>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>createcollection</ph>
+                    </dt>
+                    <dd>
+                    <p>If set to <ph>true</ph>, non-existing base collections are
+                        automatically created.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>createsubcollections</ph>
+                    </dt>
+                    <dd>
+                    <p>If set to <ph>true</ph>, non-existing sub-collections are
+                        automatically created.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>type</ph>
+                    </dt>
+                    <dd>
+                    <p>The type of the resource: either <ph>xml</ph> or <ph>binary</ph>.
+                        If <ph>binary</ph>, documents will be stored as binary resources. If
+                        unset, the type will be guessed from identified MIME type.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>defaultmimetype</ph>
+                    </dt>
+                    <dd>
+                    <p>The default MIME type to use when the resource's MIME type cannot be
+                        identified. Default: <ph>binary</ph>
+                        (<ph>application/octet-stream</ph>).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>forcemimetype</ph>
+                    </dt>
+                    <dd>
+                    <p>Use this attribute when you want to force the MIME type. Also set
+                        <ph>type</ph> attribute (because resource kind guessing is disabled in
+                        this mode).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>mimetypesfile</ph>
+                    </dt>
+                    <dd>
+                    <p>The <ph>mime-types.xml</ph> file used to identify the resource's kind
+                        (<ph>binary</ph> or <ph>xml</ph>) and MIME type. If not set
+                        eXist-db's default MIME types file will be used. An example MIME types file
+                        can be found in the eXist-db installation directory.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>srcfile</ph>
+                    </dt>
+                    <dd>
+                    <p>a single source file to store. Use either this or <ph>Ant</ph>
+                        filesets.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>permissions</ph>
+                    </dt>
+                    <dd>
+                    <p>The permissions for the resource, expressed in a Unix-style form, e.g.
+                        <ph>rwxr-xr-x</ph>. Permissions will be applied to the
+                        resource/collection after it is created.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="removing">
+            <title>Removing Documents/Collections</title>
+        
+
+        <p>The <ph>remove</ph> task removes a single resource or a collection:</p>
+
+        <pre outputclass="xml">&lt;xdb:remove xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml"/&gt;</pre>
+
+        <pre outputclass="xml">&lt;xdb:remove xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays"/&gt;</pre>
+        <p>Attributes (use either <ph>collection</ph> or <ph>resource</ph>, not
+            both):</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>collection</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of the collection to remove. </p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of the resource which should be removed.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="creating">
+            <title>Creating Empty Collections</title>
+        
+
+        <p>The <ph>create</ph> task creates a single, empty, collection:</p>
+
+        <pre outputclass="xml">&lt;xdb:create xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays"/&gt;</pre>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>collection</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of the collection to create.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>permissions</ph>
+                    </dt>
+                    <dd>
+                    <p>The permissions to be applied to the collection, expressed in a Unix-style
+                        form, e.g. <ph>rwxr-xr-x</ph>. Permissions will be applied to the
+                        collection after it is created.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="check">
+            <title>Check Existence of Resource/Collection</title>
+        
+
+        <p>The <ph>exist</ph> task is a condition that checks whether a resource or
+            collection as specified in the uri attribute exists or not. An ant target can be
+            executed conditionally, depending on the property set or not set by the
+            condition.</p>
+
+        <pre outputclass="xml">&lt;condition property="exists"&gt;
+  &lt;xdb:exist xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml"/&gt;
+&lt;/condition&gt;</pre>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of the resource to check. If you don't specify this, the
+                        existence of the collection in the <ph>uri</ph> attribute is
+                        checked.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="list">
+            <title>List Resources/Collections</title>
+        
+
+        <p>The list task returns a list of resources and/or collections:</p>
+        <pre outputclass="xml">&lt;xdb:list xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resources="true" outputproperty="resources"/&gt;</pre>
+        <pre outputclass="xml">&lt;xdb:list xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collections="true" outputproperty="collections"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resources</ph>
+                    </dt>
+                    <dd>
+                    <p>If <ph>true</ph> returns a list of resources.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>collections</ph>
+                    </dt>
+                    <dd>
+                    <p>If <ph>true</ph> returns a list of collections.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>separator</ph>
+                    </dt>
+                    <dd>
+                    <p>Separator character for the returned list. Default:
+                        "<ph>,</ph>".</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>outputproperty</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the (new) <ph>Ant</ph> property for the result</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="copy">
+            <title>Copy a Resource/Collection</title>
+        
+
+        <p>The <ph>copy</ph> task copies a resource or collection:</p>
+        <pre outputclass="xml">&lt;xdb:copy xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destination="sub"/&gt;</pre>
+        <pre outputclass="xml">&lt;xdb:copy xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays" destination="sub"/&gt;</pre>
+        <p>Attributes (use either <ph>collection</ph> or <ph>resource</ph>, not
+            both):</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the resource to copy.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>collection</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the collection to copy.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>destination</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the destination collection to copy to.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the new name of the resource or collection.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="move">
+            <title>Move a Resource/Collection</title>
+        
+
+        <p>The <ph>move</ph> task moves a resource or collection:</p>
+        <pre outputclass="xml">&lt;xdb:move xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destination="sub"/&gt;</pre>
+        <pre outputclass="xml">&lt;xdb:move xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare" collection="plays" destination="sub"/&gt;</pre>
+        <p>Attributes (use either <ph>collection</ph> or <ph>resource</ph>, not
+            both):</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the resource to move.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>collection</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the collection to move.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>destination</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the destination collection to move to.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the new name of the resource or collection.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="process-xpath">
+            <title>Process an XPath Expression</title>
+        
+
+        <p>The <ph>xpath</ph> task executes an XPath expression on a single or a collection
+            of XML documents.</p>
+        <pre outputclass="xml">&lt;xdb:xpath xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" query="/example-queries/query"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>query</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the XPath expression to process.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>Run the XPath query on this resource instead of a collection.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>count</ph>
+                    </dt>
+                    <dd>
+                    <p>If <ph>true</ph>, the <i>number</i> of results is
+                        returned (instead of the results themselves).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>outputproperty</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the (new) property for returning the results of the query
+                        in.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>destDir</ph>
+                    </dt>
+                    <dd>
+                    <p>Write the results of the query to this destination file. Care should be
+                        taken to get a well-formed document (one root tag!). </p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>namespace</ph>
+                    </dt>
+                    <dd>
+                    <p>Optional XML namespace for the query.</p>
+                </dd>
+                </dlentry>
+            </dl>
+        <p>If you don't specify an output property or destination file, the results are
+            discarded.</p>
+    </section>
+        <section id="process-xq">
+            <title>Process an XQuery Expression</title>
+        
+
+        <p>The <ph>xquery</ph> task executes an XQuery expression:</p>
+        <pre outputclass="xml">&lt;loadfile property="xquery" srcFile="wzb.xq"/&gt;
+&lt;xdb:xquery  xmlns:xdb="http://exist-db.org/ant"
+    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" query="${xquery}"
+    user="guest" password="guest-passwd"&gt;
+      &lt;variable name="alpha" value="aaa-alep" /&gt;
+&lt;/xdb:xquery&gt;</pre>
+        <pre outputclass="xml">&lt;xdb:xquery xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db" queryUri="http://www.example.com/query/xquery-task.xql" user="guest" password="guest-passwd"&gt;
+  &lt;variable name="beta" value="ϐ"/&gt;
+&lt;/xdb:xquery&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>query</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the full query that should be processed.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>queryUri</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the query to process, specified as a URI.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>outputproperty</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the (new) property for returning the results of the query
+                        in.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>destfile</ph>
+                    </dt>
+                    <dd>
+                    <p>Write the results of the query to this destination file. Care should be taken to get a well-formed document (one root tag!).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>queryfile</ph>
+                    </dt>
+                    <dd>
+                    <p>The query to process, specified as a filename.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>The XQuery may also be specified as text content of the element.</p>
+        <p>Passing variables to the XQuery script can be done using one or more nested
+            <ph>variable</ph> child elements. Declare these variables in your XQuery script as
+            <ph>external</ph>. For instance, a variable passed as <ph>&lt;variable name="test"
+            value="Yup"/&gt;</ph> can be accessed in the XQuery script as <ph>declare variable
+            $beta external;</ph>:</p>
+    </section>
+        <section id="extract">
+            <title>Extract a Resource/Collection</title>
+        
+
+        <p>The <ph>extract</ph> task extracts XML resources or collections with XML resources
+            to disk. Extraction of binary resources is not supported.</p>
+        <pre outputclass="xml">&lt;xdb:extract xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" resource="hamlet.xml" destfile="/tmp/hamlet.xml"/&gt;</pre>
+        <pre outputclass="xml">&lt;xdb:extract xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays" destdir="/tmp" subcollections="true" createdirectories="true"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of the resource to extract.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>sub-collections</ph>
+                    </dt>
+                    <dd>
+                    <p>If <ph>true</ph> all sub-collections of the specified collection are
+                        extracted as well.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>destfile</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of the destination file to extract to on extracting a
+                        resource.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>destdir</ph>
+                    </dt>
+                    <dd>
+                    <p>The name of a destination directory to extract to on extracting a
+                        collection.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>createdirectories</ph>
+                    </dt>
+                    <dd>
+                    <p>If <ph>true</ph> directories for sub-collections will be created.
+                        Otherwise all extracted resources are written to the same destination
+                        directory.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>type</ph>
+                    </dt>
+                    <dd>
+                    <p>Type of the resource to extract. Only <ph>xml</ph> is supported
+                        currently. </p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>overwrite</ph>
+                    </dt>
+                    <dd>
+                    <p>Set to <ph>true</ph> to force overwriting of files.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="backup">
+            <title>Backup</title>
+        
+
+        <p>The <ph>backup</ph> task creates a backup of the specified database collection on
+            disk:</p>
+        <pre outputclass="xml">&lt;xdb:backup xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db/system" dir="${backup.dir}" user="${backup.user}" password="${backup.pass}"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>dir</ph>
+                    </dt>
+                    <dd>
+                    <p>The directory where the backup files will be stored.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="restore">
+            <title>Restore</title>
+        
+
+        <p>The <ph>restore</ph> task restores database contents from a backup.</p>
+        <pre outputclass="xml">&lt;xdb:restore xmlns:xdb="http://exist-db.org/ant" uri="xmldb:exist://localhost:8080/exist/xmlrpc" user="admin" dir="${backup.dir}/db/home"/&gt;</pre>
+        <p>Attributes (use either <ph>dir</ph> or <ph>file</ph>, not both):</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>dir</ph>
+                    </dt>
+                    <dd>
+                    <p>The directory (containing a <ph>__content__.xml</ph> file) to
+                        restore.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>file</ph>
+                    </dt>
+                    <dd>
+                    <p>A zip file which contains the backup to be restored. </p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="list-group">
+            <title>List User Groups</title>
+        
+
+        <p>The <ph>groups</ph> task lists all user groups defined in eXist-db:</p>
+        <pre outputclass="xml">&lt;xdb:groups xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db/system" outputproperty="groups"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>outputproperty</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of (new) property to write the output to.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>separator</ph>
+                    </dt>
+                    <dd>
+                    <p>Separator character for the returned list. Default:
+                        "<ph>,</ph>".</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="list-usr">
+            <title>List Users</title>
+        
+
+        <p>The <ph>users</ph> task lists all users defined in eXist-db:</p>
+        <pre outputclass="xml">&lt;xdb:users xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db/system" outputproperty="users"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>outputproperty</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of (new) property to write the output to.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>separator</ph>
+                    </dt>
+                    <dd>
+                    <p>Separator character for the returned list. Default:
+                        "<ph>,</ph>".</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="lock">
+            <title>Lock Resource</title>
+        
+        <p>The lock task locks a resource for a specific user:</p>
+        <pre outputclass="xml">&lt;xdb:lock xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db/shakespeare/plays" resource="hamlet.xml" name="guest"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the resource to lock.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the name of the user to lock the resource for.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="add">
+            <title>Add User</title>
+        
+
+        <p>The <ph>adduser</ph> task adds a user:</p>
+        <pre outputclass="xml">&lt;xdb:adduser xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db" name="guest" secret="ToPSecreT" primaryGroup="users"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the username of the new user.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>home</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the new user's home collection.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>secret</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the password for the new user.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>primaryGroup</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of primary user group for the new user.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="remove">
+            <title>Remove User</title>
+        
+
+        <p>The <ph>rmuser</ph> task removes a user:</p>
+
+        <pre outputclass="xml">&lt;xdb:rmuser xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db" name="guest"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the username of the user to remove.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="change-pw">
+            <title>Change User Password</title>
+        
+
+        <p>The <ph>password</ph> task changes a user's password.</p>
+
+        <pre outputclass="xml">&lt;xdb:password xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db" user="dba-user" password="dba-user-SecreT" name="guest" secret="Guest-Changed-Secret"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the username of the user to change the password for.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>secret</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the new password for the user.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="add-group">
+            <title>Add User Group</title>
+        
+
+        <p>The <ph>addgroup</ph> task adds a user group. </p>
+        <pre outputclass="xml">&lt;xdb:addgroup xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db" name="guest"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the groupname of the new group.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="remove-group">
+            <title>Remove User Group</title>
+        
+
+        <p>The <ph>rmgroup</ph> task removes a user group.</p>
+        <pre outputclass="xml">&lt;xdb:rmgroup xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db" name="guest"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Takes the groupname of the group to remove.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="change-perm">
+            <title>Change Resource Permissions</title>
+        
+
+        <p>The <ph>chmod</ph> task changes the permissions of a resource or
+            collection.</p>
+        <pre outputclass="xml">&lt;xdb:chmod xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" mode="group=-write,other=-write"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>resource</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the resource to modify. If no resource has been specified,
+                        <ph>chmod</ph> will operate on the collection specified by the
+                        <ph>uri</ph> attribute.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>permissions</ph>
+                    </dt>
+                    <dd>
+                    <p>Permission modification string. Use either Unix-style syntax like
+                        <ph>rwxrwx---</ph> or additive/subtractive syntax like
+                        <ph>[user|group|other]=[+|-][read|write|execute]</ph>, comma
+                        separated.</p>
+                    <p>For example, to set read and write permissions for the group, but not for
+                        others:</p>
+                    <pre>group=+read,+write,other=-read,-write</pre>
+                    <p>The new settings are OR-ed with the existing settings.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>mode</ph>
+                    </dt>
+                    <dd>
+                    <p>
+                            <b>DEPRECATED:</b> Permission modification
+                        string. Use <ph>permissions</ph> instead.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="change-owner">
+            <title>Change Owner of resource/collection (chown)</title>
+        
+        <p>The <ph>chown</ph> task changes the owner of a resource or collection. </p>
+        <pre outputclass="xml">&lt;xdb:chown xmlns:xdb="http://exist-db.org/ant" uri="${backup.uri}/db/shakespeare/plays" resource="hamlet.xml" name="guest" group="guest"/&gt;</pre>
+        <p>Attributes:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>name</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the user to own the resource/collection.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>group</ph>
+                    </dt>
+                    <dd>
+                    <p>Name of the user group to own the resource/collection.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="shutdown">
+            <title>Database Shutdown</title>
+        
+        <p>The <ph>shutdown</ph> task will shut down the database instance listening at the
+            provided URI.</p>
+    </section>
+        <section id="ex-ant">
+            <title>Example Ant script</title>
+        
+
+        <p>This example Ant script shows how to copy data from two different instances of
+            eXist-db (remote or local).</p>
+        <p>Supply your own values for the source and target <ph>user</ph>, <ph>pass</ph>,
+            and <ph>url</ph> properties. You can find this Ant script under the
+                <ph>$EXIST_HOME/exist-samples/src/main/resources/org/exist/samples/ant</ph>
+            directory.</p>
+        <pre outputclass="xml">&lt;project xmlns:xdb="http://exist-db.org/ant" name="exist-data-migrate" default="migrate"&gt;
+  &lt;description&gt;
+    Migrate data from one instance of eXist-db to another
+  &lt;/description&gt;
+  &lt;!-- edit these properties // --&gt;
+  &lt;property name="p.exist.dir" value="/opt/eXist-1.0"/&gt;
+  &lt;property name="p.source.exist.url" value="xmldb:exist://www.example.org:8080/exist/xmlrpc/db/"/&gt;
+  &lt;property name="p.source.user" value="myusername"/&gt;
+  &lt;property name="p.source.pass" value="myuserpass"/&gt;
+  &lt;property name="p.target.exist.url" value="xmldb:exist://www.example.org:8680/exist/xmlrpc/db/"/&gt;
+  &lt;property name="p.target.user" value="myotherusername"/&gt;
+  &lt;property name="p.target.pass" value="myotheruserpass"/&gt;
+  &lt;property name="p.export.dir" location="export"/&gt;
+  &lt;!-- import eXist-db tasks --&gt;
+  &lt;typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"&gt;
+    &lt;classpath&gt;
+      &lt;fileset dir="${p.exist.dir}/lib/core"&gt;
+        &lt;include name="*.jar"/&gt;
+      &lt;/fileset&gt;
+      &lt;fileset dir="${p.exist.dir}/lib/endorsed"&gt;
+        &lt;include name="*.jar"/&gt;
+      &lt;/fileset&gt;
+      &lt;fileset dir="${p.exist.dir}/lib/optional"&gt;
+        &lt;include name="*.jar"/&gt;
+      &lt;/fileset&gt;
+      &lt;pathelement location="${p.exist.dir}/exist.jar"/&gt;
+      &lt;pathelement location="${p.exist.dir}/exist-optional.jar"/&gt;
+    &lt;/classpath&gt;
+  &lt;/typedef&gt;
+  &lt;target name="clean"&gt;
+    &lt;delete dir="${p.export.dir}"/&gt;
+    &lt;mkdir dir="${p.export.dir}"/&gt;
+  &lt;/target&gt;
+  &lt;target name="migrate" depends="extract-source, load-target"&gt;
+    &lt;echo message="migration complete"/&gt;
+  &lt;/target&gt;
+  &lt;target name="extract-source" depends="clean" description="export xml from source eXist-db instance"&gt;
+    &lt;xdb:extract uri="${p.source.exist.url}" user="${p.source.user}" password="${p.source.pass}" destdir="${p.export.dir}"/&gt;
+  &lt;/target&gt;
+  &lt;target name="load-target" description="store xml to target eXist-db instance"&gt;
+    &lt;xdb:store uri="${p.target.exist.url}" user="${p.target.user}" password="${p.target.pass}" createcollection="true" createsubcollections="true"&gt;
+      &lt;fileset dir="${p.export.dir}"/&gt;
+    &lt;/xdb:store&gt;
+  &lt;/target&gt;
+  &lt;target name="check-env" description="check env and dependencies are installed"&gt;
+  &lt;/target&gt;
+&lt;/project&gt;</pre>
+    </section>
+    </body>
+</topic>

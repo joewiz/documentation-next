@@ -1,0 +1,64 @@
+<topic id="webdav">
+    <title>WebDAV</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="getting-started"/>
+        <data name="keyword" value="interfaces"/>
+    </prolog>
+    <body>
+        <p>eXist-db ships with a <xref href="https://en.wikipedia.org/wiki/WebDAV" scope="external">WebDAV</xref> interface.
+    WebDAV makes it possible to manage database collections and documents just like directories and
+    files in a file system. You can copy, move, delete, view or edit files with any application
+    supporting the WebDAV protocol, including Windows Explorer, macOS Finder, <xref href="http://www.webdav.org/cadaver" scope="external">cadaver</xref>, <xref href="https://www.konqueror.org/" scope="external">KDE Konqueror</xref>, <xref href="https://www.oxygenxml.com/" scope="external">oXygen XML Editor</xref>, <xref href="https://www.altova.com/" scope="external">XML Spy</xref>, <xref href="https://www.libreoffice.org/" scope="external">LibreOffice</xref> and many others (see <xref href="#compatibility" scope="local"/>
+    below). The interface has been implemented with excellent open-source <xref href="http://milton.io" scope="external">Milton</xref>  WebDAV API for Java.</p>
+        <p>In the default configuration the WebDAV server can be accessed via the URLs <ph>http://localhost:8080/exist/webdav/db/</ph> and <ph>http://localhost:8443/exist/webdav/db/</ph>.</p>
+        <section id="compatibility">
+            <title>Compatibility</title>
+    
+    <ul>
+                <li>
+        <p>eXist's Milton based WebDAV interface does not support HTTP Digest Authentication.</p>
+      </li>
+                <li>
+        <p>
+          The size of an XML document is presented as a multiple of 4096 bytes, which is eXist's
+          internal pagesize (see <xref href="configuration#conf.xml" scope="external">conf.xml</xref>). The actual size of an XML
+          document stored in the database can not be determined because the size depends on many
+          factors, e.g. the applied serialization parameters.</p>
+      </li>
+                <li>
+                    <p>A webdav client / enabled application may or may not work with the webdav server of eXist-db, depending on the quality of the implementation of the client. The server fullfills all requirements of the webdav <xref href="https://tools.ietf.org/html/rfc2518" scope="external">specification</xref>.</p>
+                </li>
+            </ul>
+  </section>
+        <section id="serialization">
+            <title>Serialization</title>
+    
+
+    <p>When retrieving an XML document via the WebDAV interface, the default serialization
+      settings as defined in <xref href="configuration#conf.xml" scope="external">conf.xml</xref> are effective. It is  possible to define custom serialization settings specific for the WebDAV interface. </p>
+    <p>
+      Copy the file <ph>extensions/webdav/src/main/resources/webdav.properties</ph>
+      into <ph>$EXIST_HOME/etc</ph> directory and uncomment/modify the parameters. Changes
+      in this file requires a restart of eXist-db. </p>
+
+    <pre>## XML Serialization options for the WevDAV
+## The file is read from $EXIST_HOME/etc
+## Be carefull changing the default values !
+indent=no
+expand-xincludes=no
+process-xsl-pi=no
+encoding=UTF-8
+omit-xml-declaration=no
+</pre>
+  </section>
+        <section id="notes">
+            <title>Notes</title>
+    
+
+    <p> From the <xref href="https://github.com/eXist-db/exist/issues/1442" scope="external">community</xref> we have received feedback that the WebDAV interface is not fully
+      functional when it is accessed via a reverse proxy and a resource's path is altered (aliased)
+      with it. </p>
+  </section>
+    </body>
+</topic>

@@ -1,0 +1,804 @@
+/* documentation-next app styles */
+
+/* ========================= */
+/*  App wrapper + tabs       */
+/* ========================= */
+
+.docs-app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.docs-tabs {
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.docs-tabs ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+}
+
+.docs-tabs li {
+    flex-shrink: 0;
+}
+
+.docs-tabs a {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    text-decoration: none;
+    color: #555;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.docs-tabs a:hover {
+    color: #1a1a1a;
+    border-bottom-color: #bbb;
+}
+
+.docs-tabs a.active {
+    color: #1565c0;
+    border-bottom-color: #1565c0;
+}
+
+.docs-content {
+    padding-bottom: 3rem;
+}
+
+/* ========================= */
+/*  Content layout           */
+/* ========================= */
+
+.docs-layout {
+    padding: 0;
+}
+
+.docs-header {
+    margin-bottom: 2rem;
+}
+
+.docs-header .lead {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* ========================= */
+/*  Breadcrumb               */
+/* ========================= */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.breadcrumb a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-sep {
+    color: #ccc;
+    margin: 0 0.125rem;
+}
+
+/* ========================= */
+/*  Search form              */
+/* ========================= */
+
+.docs-search {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.docs-search input[type="search"] {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.docs-search select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.docs-search button {
+    padding: 0.5rem 1rem;
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.docs-search button:hover {
+    background: #2980b9;
+}
+
+/* ========================= */
+/*  Module grid              */
+/* ========================= */
+
+.module-category {
+    margin-bottom: 2rem;
+}
+
+.module-category h2 {
+    font-size: 1.25rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.module-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem;
+    transition: border-color 0.15s;
+}
+
+.module-card:hover {
+    border-color: #3498db;
+}
+
+.module-card h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+}
+
+.module-card h3 a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.module-card h3 a:hover {
+    color: #3498db;
+}
+
+.module-uri {
+    font-size: 0.8rem;
+    color: #888;
+    word-break: break-all;
+    margin: 0 0 0.5rem;
+}
+
+.module-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 0 0 0.5rem;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    background: #eee;
+    border-radius: 3px;
+    color: #666;
+}
+
+.badge-deprecated {
+    background: #f0ad4e;
+    color: #fff;
+}
+
+/* ========================= */
+/*  Module detail            */
+/* ========================= */
+
+.module-header {
+    margin-bottom: 2rem;
+}
+
+.module-header h1 {
+    margin-bottom: 0.25rem;
+}
+
+.module-meta {
+    font-size: 0.875rem;
+    color: #888;
+}
+
+.module-location {
+    font-family: monospace;
+}
+
+/* ========================= */
+/*  Function cards           */
+/* ========================= */
+
+.function {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.function.deprecated {
+    opacity: 0.7;
+    border-color: #f0ad4e;
+}
+
+.function-head h3,
+.function-head h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+}
+
+.function-head h3 a,
+.function-head h4 a {
+    text-decoration: none;
+}
+
+.anchor-link {
+    color: #ccc;
+    margin-right: 0.25rem;
+}
+
+.anchor-link:hover {
+    color: #3498db;
+}
+
+/* ========================= */
+/*  Signatures               */
+/* ========================= */
+
+.signature {
+    background: #282c34;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+}
+
+.signature code {
+    font-size: 0.875rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ========================= */
+/*  Code blocks (articles)   */
+/* ========================= */
+
+.code-block {
+    background: #282c34;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    color: #abb2bf;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.code-block code,
+.signature code {
+    color: #abb2bf;
+}
+
+/* Lezer/CM6 classHighlighter token styles — One Dark theme
+ * Matches the colors used by eXide and Notebook */
+.tok-keyword { color: #c678dd; }
+.tok-operator { color: #56b6c2; }
+.tok-number { color: #d19a66; }
+.tok-string { color: #98c379; }
+.tok-string2 { color: #98c379; }
+.tok-comment { color: #5c6370; font-style: italic; }
+.tok-variableName { color: #e06c75; }
+.tok-variableName2 { color: #e06c75; }
+.tok-definition { color: #e5c07b; }
+.tok-punctuation { color: #abb2bf; }
+.tok-propertyName { color: #e06c75; }
+.tok-typeName { color: #e5c07b; }
+.tok-className { color: #e5c07b; }
+.tok-labelName { color: #e06c75; }
+.tok-namespace { color: #e06c75; }
+.tok-macroName { color: #61afef; }
+.tok-literal { color: #d19a66; }
+.tok-bool { color: #d19a66; }
+.tok-atom { color: #d19a66; }
+.tok-url { color: #56b6c2; text-decoration: underline; }
+.tok-link { color: #61afef; }
+.tok-inserted { color: #98c379; }
+.tok-deleted { color: #e06c75; }
+.tok-changed { color: #e5c07b; }
+.tok-invalid { color: #ffffff; background: #e06c75; }
+.tok-meta { color: #abb2bf; }
+.tok-tagName { color: #e06c75; }
+.tok-attributeName { color: #d19a66; }
+.tok-attributeValue { color: #98c379; }
+.tok-angleBracket { color: #abb2bf; }
+.tok-content { color: #abb2bf; }
+.tok-documentMeta { color: #5c6370; }
+.tok-processingInstruction { color: #5c6370; }
+
+/* ========================= */
+/*  Parameter tables         */
+/* ========================= */
+
+.param-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 1rem;
+    font-size: 0.9rem;
+}
+
+.param-table th {
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    padding: 0.4rem 0.5rem;
+    font-weight: 600;
+}
+
+.param-table td {
+    border-bottom: 1px solid #eee;
+    padding: 0.4rem 0.5rem;
+    vertical-align: top;
+}
+
+.param-name {
+    font-family: monospace;
+    white-space: nowrap;
+    color: #c0392b;
+}
+
+.param-type {
+    font-family: monospace;
+    white-space: nowrap;
+    color: #8e44ad;
+}
+
+.return-type {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.return-type code {
+    color: #8e44ad;
+}
+
+/* ========================= */
+/*  Deprecated notice        */
+/* ========================= */
+
+.deprecated-notice {
+    background: #fcf8e3;
+    border: 1px solid #f0ad4e;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+/* ========================= */
+/*  Try-it                   */
+/* ========================= */
+
+.tryit-btn {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.tryit-btn:hover {
+    background: #219a52;
+}
+
+.tryit-panel {
+    margin-top: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.75rem;
+    background: #fafafa;
+}
+
+.tryit-code {
+    width: 100%;
+    font-family: monospace;
+    font-size: 0.875rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5rem;
+    resize: vertical;
+}
+
+.tryit-run {
+    margin-top: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tryit-output {
+    margin-top: 0.5rem;
+    background: #282c34;
+    color: #abb2bf;
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    max-height: 300px;
+    overflow: auto;
+}
+
+/* ========================= */
+/*  Search results           */
+/* ========================= */
+
+.search-summary {
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.search-results {
+    list-style: none;
+    padding: 0;
+}
+
+.search-result {
+    border-bottom: 1px solid #eee;
+    padding: 0.75rem 0;
+}
+
+.search-result h2 {
+    font-size: 1rem;
+    margin: 0 0 0.25rem;
+}
+
+.search-result h2 a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.search-result h2 a:hover {
+    color: #3498db;
+}
+
+.search-snippet {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 0 0 0.25rem;
+}
+
+.search-meta {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.search-meta span {
+    margin-right: 0.75rem;
+}
+
+/* ========================= */
+/*  Admin                    */
+/* ========================= */
+
+.admin-section {
+    margin-bottom: 2rem;
+}
+
+.admin-form {
+    margin-top: 1rem;
+}
+
+.btn-primary {
+    padding: 0.5rem 1.25rem;
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+/* ========================= */
+/*  Disambiguation           */
+/* ========================= */
+
+.disambiguation {
+    margin: 2rem 0;
+}
+
+.disambiguation ul {
+    list-style: none;
+    padding: 0;
+}
+
+.disambiguation li {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+/* ========================= */
+/*  Error page               */
+/* ========================= */
+
+.error-page {
+    text-align: center;
+    padding-top: 3rem;
+}
+
+/* ========================= */
+/*  Accessibility            */
+/* ========================= */
+
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    padding: 0.5rem;
+    background: #2c3e50;
+    color: #fff;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Standalone mode styles are in standalone.tpl.
+ * Do NOT add .site-header/.site-nav/.site-menu styles here —
+ * they conflict with site-shell's site.css when the shell is active. */
+
+/* ========================= */
+/*  Article layout           */
+/* ========================= */
+
+.docs-article-layout {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 2rem;
+}
+
+.docs-sidebar {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+}
+
+.toc h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc > ul > li {
+    margin-bottom: 0.25rem;
+}
+
+.toc ul ul {
+    padding-left: 1rem;
+}
+
+.toc a {
+    color: #555;
+    text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.toc a:hover {
+    color: #3498db;
+}
+
+.xdita-article {
+    line-height: 1.7;
+}
+
+.xdita-article section {
+    margin-bottom: 1.5rem;
+}
+
+.article-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    color: #999;
+    font-size: 0.85rem;
+}
+
+/* ========================= */
+/*  Article index             */
+/* ========================= */
+
+.article-category {
+    margin-bottom: 2rem;
+}
+
+.article-category h2 {
+    font-size: 1.25rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.article-list {
+    list-style: none;
+    padding: 0;
+}
+
+.article-item {
+    margin-bottom: 0.75rem;
+}
+
+.article-item a {
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.article-item a:hover {
+    color: #3498db;
+}
+
+.article-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.25rem 0 0;
+}
+
+/* ========================= */
+/*  Search type badges       */
+/* ========================= */
+
+.badge-article {
+    background: #3498db;
+    color: #fff;
+}
+
+.status-ok {
+    color: #27ae60;
+    margin-top: 0.5rem;
+}
+
+.status-error {
+    color: #e74c3c;
+    margin-top: 0.5rem;
+}
+
+/* ========================= */
+/*  Responsive               */
+/* ========================= */
+
+/* ========================= */
+/*  Admin: Editor             */
+/* ========================= */
+
+.editor-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.editor-controls select {
+    flex: 1;
+    max-width: 400px;
+    padding: 0.4rem;
+    font-size: 0.95rem;
+}
+
+.editor-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 400px;
+    margin-bottom: 1rem;
+}
+
+.editor-container jinn-tap {
+    display: block;
+    min-height: 400px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.admin-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.8rem;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 3px;
+}
+
+.status-ok { color: #2e7d32; }
+.status-error { color: #c62828; }
+
+@media (max-width: 640px) {
+    .docs-search {
+        flex-direction: column;
+    }
+
+    .module-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .docs-article-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .docs-sidebar {
+        position: static;
+        order: -1;
+    }
+
+}

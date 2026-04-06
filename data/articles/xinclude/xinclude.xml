@@ -1,0 +1,230 @@
+<topic id="xinclude">
+    <title>XInclude Support</title>
+    <prolog>
+        <data name="date" value="1Q18"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db comes with partial support for the XInclude standard. By default, eXist-db's XML
+        serializer will scan all XML fragments for XInclude tags. </p>
+        <section id="introduction">
+            <title>Introduction</title>
+        
+
+        <p>The XInclude processor is implemented as a filter in between the serializer's output
+            event stream and the receiver. If it finds an XInclude element, it will try to expand
+            it. XInclude processing is therefore applied whenever eXist-db serializes an XML
+            fragment,whether it's a document, the result of an XQuery or an XSLT stylesheet.</p>
+        <p>eXist-db's does not support the full XInclude standard:</p>
+        <ul>
+                <li>
+                <p> You cannot include raw text, only XML.</p>
+            </li>
+                <li>
+                <p> XPointers are restricted to XPath. Additional features defined in the
+                    XPointer spec (points and locations) are not supported. However, you can use
+                    XPath functions to partly work around this and substitute XPointer's important
+                    <ph>string-range()</ph> function. </p>
+            </li>
+            </ul>
+
+        <p>eXist-db expands XIncludes at serialization, which means that the query engine will
+            see the XInclude tags <i>before</i> they are expanded. You therefore
+            cannot query across XIncludes, unless you create your own code (e.g. an XQuery function)
+            for it.</p>
+        <p>DTD entity declarations can be used for some of the things that XInclude can be used
+            for. In general, however, XInclude is more powerful (with the exception that entity
+            declarations are able include raw text). </p>
+
+        <p>The XInclude namespace (in the examples below bound to the prefix <ph>xi:</ph>)
+            is:</p>
+        <pre>http://www.w3.org/2001/XInclude</pre>
+    </section>
+        <section id="include-doc">
+            <title>Including entire documents</title>
+        
+
+        <p>To include an entire document, simply specify its path in the <ph>href</ph>
+            attribute of an <ph>xi:include</ph> element.</p>
+        <p>For example, one can include a standard disclaimer, stored in the file
+            <ph>short-disclaimer.xml</ph>, as follows: <ph>xi:include
+            href="/db/apps/doc/data/disclaimer-short.xml"/</ph>
+            </p>
+
+
+        <p>If the URI in the <ph>href</ph> attribute specifies a known scheme (like
+            <ph>http:</ph> or <ph>file:</ph>), eXist-db will try to load it as an external
+            resource. For example: <ph>xi:include
+            href="http://localhost:8080/exist/rest/db/apps/doc/data/disclaimer-short.xml"/</ph>
+            </p>
+
+
+        <p>If no scheme is specified, the XInclude processor will first try to load the
+            referenced document from the database (relative to the current collection), and if that
+            fails, from the file system.</p>
+        <p>If the document that contains the XInclude has been constructed in an XQuery (see
+            <xref href="#sect-xquery-results" scope="local"/>), relative file system paths will be resolved
+            relative to the main XQuery module source file.</p>
+
+    </section>
+        <section id="select-part">
+            <title>Selecting parts of a resource</title>
+        
+
+        <p>The <ph>xpointer</ph> attribute of the <ph>xi:include</ph> element can be
+            used to identify which part of the resource to include.</p>
+
+        
+
+        <section id="select-ident">
+                <title>Selection by identifier</title>
+            
+
+            <p>If the XPointer contains a simple value it is interpreted as an identifier. This
+                will select the element in the target document that has a matching attribute of type
+                identifier (<ph>ID</ph>) (usually <ph>xml:id</ph>).</p>
+            <p> For example, assume an XInclude target document <ph>disclaimer.xml</ph> looks
+                like this:</p>
+            <pre outputclass="xml">&lt;disclaimer&gt;
+  &lt;p xml:id="p1"&gt;
+    First disclaimer ...
+  &lt;/p&gt;
+  &lt;p xml:id="p2"&gt;
+    Second disclaimer ...
+  &lt;/p&gt;
+&lt;/disclaimer&gt;</pre>
+            <p>the following XInclude selects the element from <ph>disclaimer.xml</ph>
+                with an <ph>identifier</ph> attribute with value <ph>p1</ph>:
+                <ph>xi:include href="disclaimer.xml" xpointer="p1"/</ph>
+                </p>
+            <p>When there are multiple instances of the same identifier attribute, only the first
+                instance will be used.</p>
+        </section>
+
+        
+
+        <section id="select-xpath">
+                <title>Selecting by XPath expression</title>
+            
+
+            <p>We can also use an XPath expression to select fragments. For this the
+                <ph>xpointer</ph> attribute must contain an XPointer, which consists of so
+                called "schemes". An XPath expression can be passed through the
+                <ph>xpointer()</ph> XPointer scheme. </p>
+            <p> The following expression includes the first stage direction in Shakespeare's
+                Macbeth:</p>
+            <pre outputclass="xml">&lt;xi:include href="/db/apps/demo/data/macbeth.xml" xpointer="xpointer(//PLAY/ACT[1]/SCENE[1]/STAGEDIR[1])"/&gt;
+</pre>
+
+        </section>
+
+        
+
+        <section id="select-search">
+                <title>Selecting by a search expression</title>
+            
+
+            <p>XIncludes can also perform searches, for instance using a full-text search:</p>
+            <pre outputclass="xml">&lt;xi:include href="/db/apps/demo/data/hamlet.xml" xpointer="xpointer(//SPEECH[ft:query(., '" slings="slings" and="and" arrows"')/LINE[1])"="arrows"')/LINE[1])""/&gt;
+</pre>
+            <p>The XPath expression will be applied to the entire collection if the path in
+                <ph>href</ph> points to a collection and not a single document:</p>
+            <pre outputclass="xml">&lt;xi:include href="/db/apps/demo/data" 
+  xpointer="xpointer(//SPEECH[ft:query(., '"cursed spite"')]/LINE[1])"/&gt;
+</pre>
+            <p>In all cases, only the first hit is retrieved.</p>
+        </section>
+
+        
+
+        <section id="ns-map">
+                <title>Namespace mappings</title>
+            
+
+            <p>All namespace/prefix mappings declared in the source document are passed to the
+                query context. If necessary you can declare additional namespace mappings using
+                <ph>xmlns()</ph>, like this:</p>
+            <pre outputclass="xml">&lt;xi:include href="disclaimer.xml" xpointer="xpointer(//comment:comment)
+  xmlns(comment=http://test.org)"/&gt;
+</pre>
+        </section>
+
+    </section>
+        <section id="sect-xquery-results">
+            <title>Including XQuery results</title>
+        
+
+        <p>It is possible to include the result of an XQuery script by XInclude. If the target of
+            an XInclude reference points to an XQuery document stored in the database (binary
+            resource with MIME type <ph>application/xquery</ph>), the XInclude processor will
+            attempt to compile and execute this query and use its results. </p>
+        <p>For example:<ph>xi:include href="display-collection.xq"/</ph>
+            </p>
+        <p>The XInclude processor declares two variables in the XQuery's static context:</p>
+        <dl>
+                <dlentry>
+                    <dt> <ph>$xinclude:current-doc</ph> </dt>
+                    <dd>
+                    <p>The name of the document which XInclude-s the query (without its
+                        collection path)</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>$xinclude:current-collection</ph> </dt>
+                    <dd>
+                    <p>the collection in which the current document resides</p>
+                </dd>
+                </dlentry>
+            </dl>
+        <p>You can also pass additional parameters to the XQuery script: <ph>xi:include
+            href="testvars.xq?var1=Hello&amp;var2=World"/</ph>
+            </p>
+        <p>The parameters <ph>var1</ph> and <ph>var2</ph> will be available
+            to the XQuery as an external global variable. The XQuery needs to declare them:</p>
+        <pre outputclass="xquery">declare variable $var1 external;
+declare variable $var2 external;</pre>
+
+    </section>
+        <section id="errors">
+            <title>Error Handling</title>
+        
+
+        <p>An error is raised if you try to XInclude a resource which does not exist. You can
+            specify a fallback to avoid this. The result of the XInclude will be the content of the
+            <ph>xi:fallback</ph> element:</p>
+        <pre outputclass="xml">&lt;xi:include href="I-do-not exist.xml"&gt;
+  &lt;xi:fallback&gt;
+    &lt;p&gt;
+      The included document was not found!
+    &lt;/p&gt;
+  &lt;/xi:fallback&gt;
+  &lt;xi:include&gt;
+</pre>
+
+        <p>A fallback element itself cannot contain XInclude elements.</p>
+    </section>
+        <section id="xpointer">
+            <title>Implementing XPointer <ph>string-range()</ph> </title>
+        
+
+        <p>One reason why the XPointer spec has hardly seen any implementation is that it
+            operates with "points" and "locations" which have no equivalent in the XPath Data Model.
+            However, a major use case for the XPointer specification is to allow pointing at a range
+            of characters inside an element. Luckily, we can work around the absence of this using
+            the XPath functions <ph>string-join()</ph> and <ph>substring()</ph>.</p>
+        <p>In the following example, a range of characters in the text node of a <ph>LINE</ph>
+            element is extracted, 20 characters long, starting at the 22nd character:</p>
+        <pre outputclass="xml">&lt;xi:include href="/db/apps/demo/data" xpointer="xpointer(
+      substring(string-join(//PLAY/ACT[3]/SCENE[1]/SPEECH[19]/LINE[1],''), 22, 20)
+    )"/&gt;
+</pre>
+        <p>Since only string contents is involved, these ranges can also work on text nodes
+            belonging to different elements. In the following example, parts of succeeding lines are
+            extracted from the SPEECH element: </p>
+        <pre outputclass="xml">&lt;xi:include href="/db/apps/demo/data" xpointer="xpointer(
+      substring(string-join(//PLAY/ACT[3]/SCENE[1]/SPEECH[19], ''), 202, 24)
+    )"/&gt;
+</pre>
+    </section>
+    </body>
+</topic>

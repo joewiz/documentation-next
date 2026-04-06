@@ -1,0 +1,74 @@
+<topic id="datasync">
+    <title>Synchronize directory to a collection</title>
+    <prolog>
+        <data name="date" value="3Q20"/>
+        <data name="keyword" value="synchronize"/>
+        <data name="keyword" value="filesystem"/>
+        <data name="keyword" value="collection"/>
+    </prolog>
+    <body>
+        <p>This article provides information on the synchronization of filesystem data to an exist-db collection.</p>
+        <section id="intro">
+            <title>Introduction</title>
+        
+
+        <p>An editing workflow often operates on a filesystem directory that eventually may be published using exist-db.
+            An <xref href="https://search.maven.org/search?q=a:exist-db-addons" scope="external">exist-db-addons</xref> library,
+            available in maven central, enables automatic publication of a directory to a collection.
+        </p>
+        <p>Files in a directory specified by the parameter <b>datadir</b> will be synchronized to a collection specified by the parameter
+                <b>collection</b> recursively. If the target collection
+            does not exist it will be created. Files and collections that are new or newer than the
+            one in the target collection will be written to that collection. Files and collections
+            that are not present in the source directory will be removed from the collection, this
+            can be turned off via a boolean parameter <b>removeNotInSource</b>. Owner and group of collections and documents can be
+            provided in parameters <b>owner</b> and <b>group</b>, otherwise they will be the same as the owner and group of the
+            parent collection of the provided collection parameter. After syncing cache is cleared
+            to prevent problems, this can be turned off via boolean parameter <b>clearCache</b>. NOTE that the sync will partially succeed when during
+            syncing an exception occurs, collections and files added or removed before the exception
+            will remain added/removed. Meant to be used as a start-up task, DataSyncTaskCron is
+            meant to be scheduled as a cronjob. </p>
+    </section>
+        <section id="usage">
+            <title>usage</title>
+        
+        <p>Below a setup for exist-db for data synchronization.</p>
+        <section id="classpath">
+                <title>Include exist-db-addons</title>
+            
+            <p>For example in a Dockerfile:</p>
+            <pre outputclass="Dockerfile">ARG EXISTADDONSERSION=2.3
+COPY exist-db-addons-${EXISTADDONSERSION}.jar $EXIST_HOME/lib/
+ENV CLASSPATH=$EXIST_HOME/lib/exist.uber.jar:$EXIST_HOME/lib/exist-db-addons-${EXISTADDONSERSION}.jar</pre>
+            <p>Or include a dependency in exist-db's pom.xml:</p>
+            <pre outputclass="xml">&lt;dependency&gt;
+  &lt;groupId&gt;
+    org.fryske-akademy
+  &lt;/groupId&gt;
+  &lt;artifactId&gt;
+    exist-db-addons
+  &lt;/artifactId&gt;
+  &lt;version&gt;
+    2.3
+  &lt;/version&gt;
+&lt;/dependency&gt;</pre>
+        </section>
+        <section id="conf.xml">
+                <title>configure in conf.xml</title>
+            
+            <p>Sync at start-up, <xref href="../scheduler/scheduler.xml" scope="external">see scheduler</xref>
+                </p>
+            <pre outputclass="xml">&lt;job class="org.fryske_akademy.exist.jobs.DataSyncTask" type="system" period="10" repeat="0"&gt;
+  &lt;parameter name="collection" value="xmldb:exist:///db/apps/teidictjson/data"/&gt;
+  &lt;parameter name="datadir" value="/data"/&gt;
+&lt;/job&gt;</pre>
+            <p>Sync at 2am, <xref href="../scheduler/scheduler.xml" scope="external">see scheduler</xref>
+                </p>
+            <pre outputclass="xml">&lt;job class="org.fryske_akademy.exist.jobs.DataSyncTaskCron" type="system" cron-trigger="0 0 2 ? * *"&gt;
+  &lt;parameter name="collection" value="xmldb:exist:///db/apps/teidictjson/data"/&gt;
+  &lt;parameter name="datadir" value="/data"/&gt;
+&lt;/job&gt;</pre>
+        </section>
+    </section>
+    </body>
+</topic>

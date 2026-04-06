@@ -1,0 +1,302 @@
+<topic id="development-starter">
+    <title>Getting Started with Web Application Development</title>
+    <prolog>
+        <data name="date" value="4Q24"/>
+        <data name="keyword" value="getting-started"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db is much more than just an XML database. It is also an excellent platform for the
+        development of rich web applications, based on XML and related technologies (XQuery, XForms,
+        XSLT, XHTML...). This article describes one of the possible approaches and demonstrates how
+        to quickly prototype an application, using the following key components:</p>
+        <p/>
+        <ul>
+            <li>
+            <p>A standardized packaging format for modular applications, allowing deployment into
+                any eXist-db instance.</p>
+        </li>
+            <li>
+            <p>A set of tools to create application packages, integrated into our XQuery IDE,
+                eXide.</p>
+        </li>
+            <li>
+            <p>An <xref href="templating" scope="external">HTML templating framework</xref> for a clean
+                separation of HTML page content and application logic.</p>
+        </li>
+            <li>
+            <p>A tight integration with XForms for fast form development.</p>
+        </li>
+            <li>
+            <p>A clean approach for the deployment of RESTful services based on XQuery code
+                annotations (RESTXQ).</p>
+        </li>
+        </ul>
+        <note type="note">
+            <p> Those working on data sets in TEI may want to look at <xref href="https://teipublisher.com" scope="external">TEI Publisher</xref> also. It includes an
+            application generator tailored at digital editions. The created app packages include all
+            the basic functionality needed for browsing the edition, searching it or producing PDFs
+            and ePUBs.</p>
+        </note>
+        <section id="packaging">
+            <title>Packaging</title>
+        
+
+        <p>eXist-db builds on the concept of self-contained, modular applications using a
+            standardized packaging format. Applications live inside the database, so application
+            code, HTML views, associated services and data all reside in the same place. This allows
+            packaging an application and pass it to someone else for installation in another
+            database. It might even be published to eXist-db's public repository. The packaging
+            format is compliant with the <xref href="http://expath.org/modules/pkg/" scope="external">EXPath packaging proposal</xref>, though it
+            extends it considerably.</p>
+
+        <p>For distribution, an application is packed into a <ph>.xar</ph> archive, which is
+            basically a ZIP archive. The <ph>.xar</ph> archive contains all the application code
+            and optionally data.</p>
+        <p>The documentation, the dashboard, eXide and the eXist XQuery Features Demo are all
+            examples of these application packages. </p>
+
+
+        <p>The packaging format includes descriptor files. These describe the application and
+            control the installation process. As an absolute minimum, an application package
+            <i>must</i> contain two descriptor files:
+            <ph>expath-pkg.xml</ph> and <ph>repo.xml</ph>. You can read more
+            about these files in the <xref href="repo" scope="external">package repository
+            documentation</xref>. Detailed knowledge about these files is not required for the
+            following sections: eXide will create the proper basic descriptors for you
+            automatically.</p>
+    </section>
+        <section id="starting">
+            <title>Starting a New Application</title>
+        
+
+        <p>There are many ways to start new applications on your local environment, we provide a  <xref href="https://github.com/eXist-db/generator-exist" scope="external">yeoman generator</xref> to be run from your commandline.</p>
+    </section>
+        <section id="default-structure">
+            <title>The Default Application Structure</title>
+        
+
+        <p>eXide has created an application skeleton for you which works out of the box. All
+            resources of the application reside below the target collection
+            (<ph>/db/tutorial</ph>).</p>
+        <p>The generated collection hierarchy follows a certain structure, which is usually the
+            same for all apps which ship with eXist-db. The most important collections and files are
+            described below:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>/modules/</ph>
+                    </dt>
+                    <dd>
+                    <p>Contains XQuery modules. The actual application code should go
+                        here.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>/resources/</ph>
+                    </dt>
+                    <dd>
+                    <p>Resources like CSS files, images or JavaScript.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>/templates/</ph>
+                    </dt>
+                    <dd>
+                    <p>Page templates containing all the repeating parts of the site's HTML
+                        layout.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>collection.xconf</ph>
+                    </dt>
+                    <dd>
+                    <p>A template file for the index configuration for this application. This
+                        file will be copied into the correct system collection when the application
+                        is installed. This causes automatic indexing of installed data.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>controller.xq</ph>
+                    </dt>
+                    <dd>
+                    <p>The URL rewriting controller, which handles the URL handling of the
+                        application. You will rarely need to change this for simple
+                        applications.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>expath-pkg.xml</ph> and <ph>repo.xml</ph>
+                    </dt>
+                    <dd>
+                    <p>Package descriptor files for the application. These contain the
+                        information you entered via the Deployment Editor. You don't need to edit
+                        these files directly. Instead, open the Deployment Editor to change any of
+                        the descriptor properties.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>index.html</ph>
+                    </dt>
+                    <dd>
+                    <p>The default start page of the application.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                        <ph>pre-install.xql</ph>
+                    </dt>
+                    <dd>
+                    <p>An XQuery script run by the package manager <i>before</i>
+                        installing the app. By default, the script only ensures the index
+                        configurations (in <ph>collection.xconf</ph>) is properly copied to the
+                        corresponding system collection.</p>
+                    <p>In addition to <ph>pre-install.xql</ph>, you may also define a
+                        <ph>post-install.xql</ph> script via the Deployment Editor. As the
+                        name says, this script will run after the app is deployed into the database.
+                        It is most often used to copy resources or run initialization tasks.</p>
+                </dd>
+                </dlentry>
+            </dl>
+        <p>You are not required to keep this structure. Feel free to restructure the app as you
+            like it and remove some of its parts. However, preserve the two descriptor files
+            <ph>expath-pkg.xml</ph> and <ph>repo.xml</ph>.</p>
+    </section>
+        <section id="html-templating">
+            <title>The HTML Templating Framework </title>
+        
+
+        <p>The generated application code uses the <xref href="templating" scope="external">HTML Templating
+            Framework</xref> to connect HTML views with the application logic. The goal of the HTML
+            Templating Framework is a clean separation of concerns. If you look at the
+            <ph>index.html</ph> page, you'll see it is just an HTML div defining the
+            actual content body. The rest of the page is dragged in from the page template residing
+            in <ph>templates/page.html</ph>.</p>
+        <p>The <ph>controller.xq</ph> is configured to call the HTML Templating for
+            every URL ending with <ph>.html</ph>. The process flow for an arbitrary
+            <ph>.html</ph> file is shown below:</p>
+        <fig>
+                <title>Processing Flow</title>
+                <image href="assets/Templating.png"/>
+            </fig>
+        <p>The input for the templating is always a plain HTML file. The module scans the HTML
+            view for elements with class attributes, following a simple convention: It tries to
+            translate the class attributes into XQuery function calls. By using <ph>class</ph>
+            attributes, the HTML remains sufficiently clean and does not get messed up with
+            application code. A web designer could take the HTML files and work on them without
+            being bothered by this.</p>
+        <p>For instance, if you look at <ph>index.html</ph>, the <ph>class</ph>
+            attribute on the outer <ph>div</ph> contains a call to a templating function:</p>
+        <pre outputclass="html">&lt;div class="templates:surround?with=templates/page.html&amp;amp;at=content"&gt;</pre>
+        <p> <ph>templates:surround</ph> is one of the default templating functions provided
+            by the module. It loads <ph>templates/page.html</ph> and inserts the current
+            div from <ph>index.html</ph> into the element with the id <ph>content</ph>
+            in <ph>templates/page.html</ph>. A detailed description of
+            <ph>templates:surround</ph> can be found in the HTML templating module
+            documentation.</p>
+        <p>Add your own templating functions to the XQuery module
+            <ph>modules/app.xql</ph>. Or add your own modules by importing them in
+            <ph>modules/view.xql</ph>). </p>
+    </section>
+        <section id="ex-hello">
+            <title>Example: "Hello World!"</title>
+        
+
+        <p>As an example let's implement the traditional "Hello World!": </p>
+        <ol>
+                <li>
+                <p>Create a new HTML view, <ph>hello.html</ph>: Choose
+                    <ph>File, New</ph> from the menu and set the <ph>file
+                    type</ph> to HTML (drop down box at the top right in eXide). Add the
+                    following contents:</p>
+                <pre outputclass="xml">&lt;div class="templates:surround?with=templates/page.html&amp;amp;at=content"&gt;
+    &lt;form action=""&gt;
+        &lt;label for="name"&gt;Enter your name:&lt;/label&gt;
+        &lt;input name="name"/&gt;
+    &lt;/form&gt;
+    &lt;p class="app:helloworld"&gt;&lt;/p&gt;
+&lt;/div&gt;</pre>
+                <p>This creates a simple form and a paragraph connected to the template function
+                    <ph>app:helloworld</ph> through its class attribute.</p>
+                <p>Save the HTML view to the root collection of your application as
+                    <ph>/db/apps/tutorial/hello.html</ph>.</p>
+            </li>
+                <li>
+                <p>Open <ph>modules/app.xql</ph> and add an XQuery function matching
+                    the <ph>app:helloworld</ph> template call:</p>
+                <pre outputclass="xquery">declare function app:helloworld($node as node(), $model as map(*), $name as xs:string?) {
+    if ($name) then
+        &lt;p&gt;Hello {$name}!&lt;/p&gt;
+    else
+        ()
+};</pre>
+
+                <p>A template function is a normal XQuery function with two required parameters:
+                    <ph>$node</ph> and <ph>$model</ph>. Additional parameters are allowed
+                    (see below).</p>
+                <p>
+                        <ph>$node</ph> is the HTML element currently being processed, in our
+                    example case a <ph>p</ph> element. <ph>$model</ph> is an XQuery map
+                    containing application data. We can ignore both parameters for this simple
+                    example, but they must be present or the function won't be recognized by the
+                    templating module. Please refer to the <xref href="templating" scope="external">HTML
+                    templating documentation</xref> for more information.</p>
+                <p>The third parameter, <ph>$name</ph>, is injected automatically by the
+                    templating framework. The templating library will try to make a best guess about
+                    how to fill in any additional parameters. In this case, an HTTP request
+                    parameter called <ph>name</ph> will be passed in when the form is submitted.
+                    The parameter <ph>name</ph> matches the name of the variable, so the
+                    templating framework will try to use it and the function parameter will be set
+                    to the value of this request parameter. </p>
+            </li>
+                <li>
+                <p>Open <ph>hello.html</ph> in the web browser using the base URL of
+                    the app:</p>
+                <pre>http://localhost:8080/exist/apps/tutorial/hello.html</pre>
+                <p>Fill out the box with a name and press return.</p>
+            </li>
+            </ol>
+
+    </section>
+        <section id="export">
+            <title>Exporting the App</title>
+        
+
+        <p>Once you have created the first pages of an application, it is a good idea to export
+            it to a folder on disk. One way to do this is choose <ph>Application,
+            Download</ph> from the menu to create a <ph>.xar</ph> archive of the
+            application. You can however also export the app to the file system which has the
+            advantage that you can continue working on the app and have eXide keep track of which
+            files were modified since the last export. With a copy on the file system you can also
+            add it to a version control system like GIT or SVN.</p>
+        <p>To create an export to the file system, click choose <ph>Application,
+            Synchronize</ph> from the menu. In the popup dialog, fill in the path to the
+            desired <i>Target directory</i>: </p>
+        <ul>
+                <li>
+                <p>If you are accessing eXist-db on a server, not the machine you are opening
+                    eXide in, this must point to a directory <i>on the server</i>
+                    running eXist-db, not your local file system.</p>
+            </li>
+                <li>
+                <p>If you are running eXist from your own machine use this.</p>
+            </li>
+            </ul>
+
+        <p>The <ph>Start time</ph> can be ignored for now. It will show the
+            date/time of your last export when you synchronize again.</p>
+        <fig>
+                <title>Synchronize Dialog</title>
+                <image href="assets/sync-dialog.png"/>
+            </fig>
+        <p>Clicking on <ph>Synchronize</ph> starts the export. The names of the
+            resources written show up in the table at the bottom of the dialog.</p>
+    </section>
+    </body>
+</topic>

@@ -1,0 +1,163 @@
+<topic id="xsl-transform">
+    <title>XSL transformations</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db can perform XSLT transformations inside XQuery code. For this you need to use the
+    <ph>transform</ph>
+    module.</p>
+        <section id="transform-module">
+            <title>The
+      <ph>transform</ph>
+      module</title>
+    
+
+    <p>eXist-db transform module allows you to do XSLT transformations from XQuery code using Saxon.</p>
+    <p>Its function namespace is
+      <ph>http://exist-db.org/xquery/transform</ph>.</p>
+
+    
+
+    <section id="transform">
+                <title>
+        <ph>transform:transform()</ph>
+      </title>
+      
+
+      <p>The <ph>transform:transform</ph> function performs an XSLT transformation and returns you the result:. It has two signatures:</p>
+      <pre outputclass="xquery">transform:transform($input as node()?, $stylesheet as item(), $parameters as node()?) as node()?
+</pre>
+      <pre outputclass="xquery">transform:transform($node-tree as node()*, $stylesheet as item(), $parameters as node()?, $attributes as node()?, $serialization-options as xs:string?) as node()?
+</pre>
+
+      <dl>
+                    <dlentry>
+                        <dt>
+            <ph>$input</ph>
+          </dt>
+                        <dd>
+            <p>The node to be transformed. If
+              <ph>$input</ph>
+              is an empty sequence, the function returns immediately.</p>
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+            <ph>$stylesheet</ph>
+          </dt>
+                        <dd>
+            <p>The stylesheet to use. This must either be a URI or a node.</p>
+            <p>
+              If
+              <ph>$stylesheet</ph>
+              is a URI, the stylesheet is loaded from the specified location. Watch out: A relative URI is interpreted as a file path!</p>
+            <p>Loading a stylesheet from the database is done best by creating a full absolute path, including an
+              <ph>xmldb:exist://</ph>
+              prefix.</p>
+            <p>The stylesheet is compiled into a template (using the standard Java APIs
+              <ph>javax.xml.transform</ph>). The result is shared between all instances of the function and will only reload if modified since last invocation.</p>
+            <p>Some examples for referencing the stylesheet:</p>
+            <ul>
+                                <li>
+                <pre outputclass="xquery">transform:transform($root, doc("/db/styles/style.xsl"), ())</pre>
+                <p>Create the stylesheet from a document node.</p>
+              </li>
+                                <li>
+                <pre outputclass="xquery">transform:transform($root, xs:anyURI("http:exist-db.org/style.xsl"), ())</pre>
+                <pre outputclass="xquery">transform:transform($root, xs:anyURI("xmldb:exist:///db/styles/style.xsl"), ())</pre>
+                <p>Load the stylesheet from the specified URI.
+                </p>
+              </li>
+                            </ul>
+
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+            <ph>$parameters</ph>
+          </dt>
+                        <dd>
+            <p>Specify any stylesheet parameters. This must be an XML fragment like the following example:</p>
+            <pre outputclass="xml">&lt;parameters&gt;
+  &lt;param name="param1" value="value1"/&gt;
+  &lt;param name="param2" value="value2"/&gt;
+&lt;/parameters&gt;</pre>
+            <p>The stylesheet can now reference parameter
+              <ph>param1</ph>
+              as follows:</p>
+            <pre>&lt;xsl:param name="param1"/&gt;</pre>
+            <p>
+              There are two special parameters named
+              <ph>exist:stop-on-warn</ph>
+              and
+              <ph>exist:stop-on-error</ph>. If set to
+              <ph>yes</ph>, eXist will generate an XQuery error if the XSL processor reports a warning or error.
+            </p>
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>$attributes</dt>
+                        <dd>
+            <p>Pass attributes to the transformation factory. Verify the
+              <xref href="https://docs.oracle.com/javase/8/docs/api/javax/xml/transform/TransformerFactory.html#setAttribute-java.lang.String-java.lang.Object-" scope="external">Java</xref>
+              or
+              <xref href="https://www.saxonica.com/html/documentation/javadoc/net/sf/saxon/lib/FeatureKeys.html" scope="external">Saxon</xref>
+              documentation for more details. Its contents must be an XML fragment, below you see how <ph>-it:main</ph> type transformations are handled:</p>
+            <pre outputclass="xml">&lt;attributes&gt;
+  &lt;attr name="param1" value="value1"/&gt;
+  &lt;attr name="param2" value="value2"/&gt;
+  &lt;attr name="http://saxon.sf.net/feature/initialTemplate" value="main"/&gt;
+&lt;/attributes&gt;</pre>
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+            <ph>$serialization</ph>
+          </dt>
+                        <dd>
+            <p>Specifies serialization options in the same way as passed to the
+              <ph>declare option exist:serialize</ph>
+              expression.
+            </p>
+            <p>An additional serialization option,
+              <ph>xinclude-path</ph>, is supported. This specifies the base path against which XInclude-s will be expanded. A relative path is relative to the current module load path.</p>
+          </dd>
+                    </dlentry>
+                </dl>
+      <p>A common trap is the use of <ph>fn:doc()</ph> these are not identical inside eXist-db's xquery processing and Saxon's XSL handling. Therefore, for transformation of mutiple XML files stored inside the dababase, you might wish to construct a temporary catalog file for use by the transformation and immediate removal, like this:</p>
+      <pre outputclass="xquery">declare function obe:make-catalog($col as item()*, $docs as xs:string*) as item() {
+    &lt;collection stable="true" xml:base="xmldb:exist://"&gt;
+        {
+            if (exists($docs)) then
+                for $doc in $docs
+                return
+                    &lt;doc href="{$config:data-root || "/" || $doc}"/&gt;
+            else
+                for $doc in collection($col)//tei:TEI
+                return
+                    &lt;doc href="{document-uri(root($doc))}"/&gt;
+        }
+    &lt;/collection&gt;
+};
+</pre>
+    </section>
+
+    
+
+    <section id="stream-transform">
+                <title>
+        <ph>transform:stream-transform()</ph>
+      </title>
+      
+
+      <p>Performs an XSLT transformation like the
+        <ph>transform:transform</ph>
+        function, but directly streams the transformation result to the HTTP request output stream. It doesn't return anything. The function is therefore only usable in a web context.
+      </p>
+      <p>The servlet output stream will be closed afterwards.</p>
+    </section>
+  </section>
+    </body>
+</topic>

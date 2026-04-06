@@ -1,0 +1,774 @@
+<topic id="documentation">
+    <title>Documentation</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="getting-started"/>
+    </prolog>
+    <body>
+        <p>Welcome to eXist-db. This article serves as an index to the eXist-db documentation articles, which will help you get to know, install, and use eXist-db.</p>
+        <section id="start">
+            <title>Getting Started</title>
+    
+    <p>The following articles and resources will help you get started using eXist-db.</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="basic-installation" scope="external">Basic Installation</xref>
+        </dt>
+                    <dd>
+          <p>How to install eXist-db and fire it up for the first time.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Screencasts</dt>
+                    <dd>
+          <p>For the first steps with your freshly installed eXist-db, watch the screencasts available on the
+            <xref href="https://exist-db.org" scope="external">eXist-db homepage</xref>.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="http://shop.oreilly.com/product/0636920026525.do" scope="external">eXist-db Book</xref>
+        </dt>
+                    <dd>
+          <p>There is a whole book about eXist-db, written for both the novice
+            <i>and</i>
+            the more experienced user.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="getting-help" scope="external">Getting Help</xref>
+        </dt>
+                    <dd>
+          <p>How to get in touch with the eXist-db community for help and advice.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="dashboard" scope="external">Dashboard</xref>
+        </dt>
+                    <dd>
+          <p>How to use and populate eXist-db's main user interface, the dashboard.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="uploading-files" scope="external">Uploading files</xref>
+        </dt>
+                    <dd>
+          <p>How to get files in and populate your database.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="webdav" scope="external">WebDAV</xref>
+        </dt>
+                    <dd>
+          <p>How to upload and manage files in the database with a WebDAV client.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="using-collections" scope="external">Using Collections in eXist-db</xref>
+        </dt>
+                    <dd>
+          <p>How to set up a collection structure in eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="learning-xquery" scope="external">Learning XQuery</xref>
+        </dt>
+                    <dd>
+          <p>Tips and resources for newcomers to XQuery and eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="oxygen" scope="external">How to use oXygen together with eXist-db</xref>
+        </dt>
+                    <dd>
+          <p>If you're using
+            <xref href="https://oxygenxml.com/" scope="external">oXygen</xref>, this article describes how to make the most of it in combination with eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="getting-help-how-to-report" scope="external">How to report an issue</xref>
+        </dt>
+                    <dd>
+          <p>If you think you've found a bug, this article will tell you how to report it.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="xq">
+            <title>XQuery</title>
+    
+    <p>eXist-db's main programming language is XQuery. This documentation set does not contain a full introduction to XQuery. For this read the excellent
+      <xref href="http://shop.oreilly.com/product/0636920035589.do" scope="external">book about XQuery by Priscilla Walmsley</xref>. The XQuery related articles below discuss specific eXist-db related details or shed light on some of the lesser known features of the language.</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="learning-xquery" scope="external">Learning XQuery</xref>
+        </dt>
+                    <dd>
+          <p>Tips and resources for newcomers to XQuery and eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xquery" scope="external">XQuery in eXist-db</xref>
+        </dt>
+                    <dd>
+          <p>This discusses the XQuery implementation of eXist-db for the somewhat more experienced user.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="kwic" scope="external">KWIC (Keywords In Context)</xref>
+        </dt>
+                    <dd>
+          <p>How to display search results in context (parts of the document surrounding the search match).</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="update_ext" scope="external">XQuery Update Extensions</xref>
+        </dt>
+                    <dd>
+          <p>How to update XML stored in the database using eXist-db's XQuery Update extension.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xqdoc" scope="external">xqDoc</xref>
+        </dt>
+                    <dd>
+          <p>Describes eXist-db's support for the xqDoc, a standard for documenting your XQuery functions and libraries with specially-formatted comments.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xqsuite" scope="external">XQSuite</xref>
+        </dt>
+                    <dd>
+          <p>How to add tests to your XQuery functions with XQSuite, an annotation-based framework.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="app-dev">
+            <title>Application development</title>
+    
+
+    <p>eXist-db is not only a database but also an excellent application development platform. The following articles will help you find your way in this:</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="development-starter" scope="external">Getting Started with Web Application Development</xref>
+        </dt>
+                    <dd>
+          <p>How to build a basic web application using the built-in
+            <xref href="templating" scope="external">HTML templating framework</xref>.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="using-collections" scope="external">Using Collections in eXist-db</xref>
+        </dt>
+                    <dd>
+          <p>How to set up your application's collection structure in eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xmldb" scope="external">xmldb module</xref>
+        </dt>
+                    <dd>
+          <p>An overview of the xmldb XQuery function module for querying and manipulating database contents.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="docker" scope="external">Containerization via Docker</xref>
+        </dt>
+                    <dd>
+          <p>How to use eXist-db's official docker images for development and production.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="urlrewrite" scope="external">URL Rewriting</xref>
+        </dt>
+                    <dd>
+          <p>How to control the mapping of URL's to code in eXist-db. This is one the most important mechanisms in eXist-db to base applications on.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xsl-transform" scope="external">XSL Transformations</xref>
+        </dt>
+                    <dd>
+          <p>How to perform XSL Transformation with XQuery.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="fo-render" scope="external">FO Rendering</xref>
+        </dt>
+                    <dd>
+          <p>How to perform FO (Formatting Objects) Rendering with XQuery.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="indexing" scope="external">Indexing</xref>
+        </dt>
+                    <dd>
+          <p>An overview of eXist-db's indexes and how to configure them. More about indexing in:</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <xref href="lucene" scope="external">Full Text indexing</xref>
+              </dt>
+                                <dd>
+                <p>How to use eXist-db's Lucene based full-text indexing.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <xref href="ngram" scope="external">N-Gram Index</xref>
+              </dt>
+                                <dd>
+                <p>How to configure the
+                  <ph>ngram</ph>
+                  index.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <xref href="newrangeindex" scope="external">Range Index</xref>
+              </dt>
+                                <dd>
+                <p>How to use eXist-db's super fast modularized range index based on Apache Lucene.</p>
+                <p>There is also an
+                  <xref href="oldrangeindex" scope="external">older version of the range index</xref>, kept for compatibility reasons. Usage of this range index is discouraged.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="testing" scope="external">Testing and Validation</xref>
+        </dt>
+                    <dd>
+          <p>This will provide you with an overview of testing eXist-db and its applications. More about testing in:</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <xref href="validation" scope="external">XML Validation</xref>
+              </dt>
+                                <dd>
+                <p>How to validate XML in eXist-db.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <xref href="xqsuite" scope="external">XQSuite</xref>
+              </dt>
+                                <dd>
+                <p>XQSuite is an annotation-based framework that allows you to add unit tests to XQuery functions and execute them.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <xref href="integration-testing" scope="external">Integration testing</xref>
+              </dt>
+                                <dd>
+                <p>How to configure automated test pipelines, and recommends minimal test configurations.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xinclude" scope="external">XInclude Support</xref>
+        </dt>
+                    <dd>
+          <p>How XML inclusion (XInclude) processing works in eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="beginners-guide-to-xrx-v4" scope="external">The beginners guide to XRX</xref>
+        </dt>
+                    <dd>
+          <p>How to create a simple application using XRX (XForms, REST, and XQuery).</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="repo" scope="external">Package Repository</xref>
+        </dt>
+                    <dd>
+          <p>How to work with EXPath packages in eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="contentextraction" scope="external">Content extraction</xref>
+        </dt>
+                    <dd>
+          <p>How to extract and index non-XML contents, like PDF or Word documents.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_rest" scope="external">REST-Style Web API</xref>
+        </dt>
+                    <dd>
+          <p>How to use eXist-db's REST interface, a useful tool in building applications.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="http-request-session" scope="external">HTTP Request/Session</xref>
+        </dt>
+                    <dd>
+          <p>An overview of functions for working with HTTP requests and sessions.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="scheduler" scope="external">Scheduler Module</xref>
+        </dt>
+                    <dd>
+          <p>How to use eXist-db job scheduling system to regularly execute tasks.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="security" scope="external">Security</xref>
+        </dt>
+                    <dd>
+          <p>When you get serious writing applications, you need to be aware of the security model of eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="xforms" scope="external">XForms Introduction</xref>
+        </dt>
+                    <dd>
+          <p>Introduces the bright shiny world of XForms inside eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="tuning" scope="external">Tuning the Database</xref>
+        </dt>
+                    <dd>
+          <p>How to optimize your queries and indexes.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="triggers" scope="external">Configuring Database Triggers</xref>
+        </dt>
+                    <dd>
+          <p>How to use and configure triggers in your database that fire when things get created, updated or deleted.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="versioning" scope="external">Versioning Extension</xref>
+        </dt>
+                    <dd>
+          <p>How to use the built-in versioning system of eXist-db.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="interface">
+            <title>Interfaces</title>
+    
+
+    <p>eXist-db provides many ways of interfacing with the database.</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_rest" scope="external">REST-Style Web API</xref>
+        </dt>
+                    <dd>
+          <p>How to use eXist-db's REST interface.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_soap" scope="external">SOAP Interface Developer's Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to add a SOAP interface to eXist-db using Java code.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_xmlrpc" scope="external">XML-RPC API Developer's Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to interface with eXist-db using the XML-RPC API.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="webdav" scope="external">WebDAV</xref>
+        </dt>
+                    <dd>
+          <p>How to use eXist-db's WebDAV interface.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="ops">
+            <title>Operations</title>
+    
+    <p>Operations is the art of installing eXist-db and keeping it up-and-running professionally. This includes things like more advanced installation types, doing backups and restores, automate data transfers, etc.</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="java-admin-client" scope="external">Java Admin Client</xref>
+        </dt>
+                    <dd>
+          <p>This is a utility for performing basic administrative tasks. It has both a GUI and a command line interface.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="configuration" scope="external">Configuration</xref>
+        </dt>
+                    <dd>
+          <p>How to configure eXist-db using its main configuration file
+            <ph>conf.xml</ph>.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="backup" scope="external">Backups</xref>
+        </dt>
+                    <dd>
+          <p>How to backup and restore an eXist-db database.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="advanced-installation" scope="external">Advanced Installation</xref>
+        </dt>
+                    <dd>
+          <p>How to install eXist-db on a headless (no GUI) system and run it as a service.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="ant-tasks" scope="external">Ant tasks</xref>
+        </dt>
+                    <dd>
+          <p>How to use the specific eXist-db
+            <ph>Ant</ph>
+            tasks to automate common system administration and operation tasks.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="deployment" scope="external">Database Deployment</xref>
+        </dt>
+                    <dd>
+          <p>How to install eXist-db as a stand-alone or embedded server.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="exist-building" scope="external">Building eXist-db</xref>
+        </dt>
+                    <dd>
+          <p>How to build Java
+            <ph>.jar</ph>
+            files from an eXist-db distribution.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="faq_performance" scope="external">Performance FAQ</xref>
+        </dt>
+                    <dd>
+          <p>A short FAQ about eXist-db's performance.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="production_good_practice" scope="external">Production Use - Good Practice</xref>
+        </dt>
+                    <dd>
+          <p>How to configure eXist-db for use on a production system.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="production_web_proxying" scope="external">Production use - Proxying eXist-db behind a Web Server</xref>
+        </dt>
+                    <dd>
+          <p>How to proxy eXist-db behind a web server like Nginx or Apache.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="jmx" scope="external">JMX</xref>
+        </dt>
+                    <dd>
+          <p>eXist-db has a JMX interface for access to internal statistics about memory, caching, etc.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="scheduler" scope="external">Scheduler Module</xref>
+        </dt>
+                    <dd>
+          <p>How to schedule jobs (like backups).</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="security" scope="external">Security</xref>
+        </dt>
+                    <dd>
+          <p>The security model of eXist-db. Also, how to connect eXist-db to other authentication realms like LDAP or OAuth.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="tuning" scope="external">Tuning the Database</xref>
+        </dt>
+                    <dd>
+          <p>How to optimize the database's performance.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="faq_performance" scope="external">Performance FAQ</xref>
+        </dt>
+                    <dd>
+          <p>A short FAQ about eXist-db's performance.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="upgrading" scope="external">Upgrade Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to upgrade from an older version of eXist-db.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="incompatibilities" scope="external">Incompatibilities</xref>
+        </dt>
+                    <dd>
+          <p>Consult this article when you upgrade from an older version of eXist-db.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="java">
+            <title>Java development</title>
+    
+    <p>eXist-db is based on Java. Besides using eXist-db as a stand-alone application platform, you can also use it from
+      <i>within</i>
+      Java code. The following articles will help you with this.</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="deployment" scope="external">Database Deployment</xref>
+        </dt>
+                    <dd>
+          <p>How to install eXist-db as a stand-alone or embedded server. An embedded server can be accessed directly from Java code.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_xmldb" scope="external">Writing Java Applications with the XML:DB API</xref>
+        </dt>
+                    <dd>
+          <p>How to work with eXist-db from Java code using the XML:DB API. This API provides a common interface to native or XML-enabled databases and supports the development of portable, reusable applications.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="exist-building" scope="external">Building eXist-db</xref>
+        </dt>
+                    <dd>
+          <p>How to build Java
+            <ph>.jar</ph>
+            files from an eXist-db distribution.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_indexes" scope="external">Developer's Guide to Modularized Indexes</xref>
+        </dt>
+                    <dd>
+          <p>How the internal indexing mechanism works and how to add your own indexes to it.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_log4j" scope="external">Log4j Logging Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to add logging to your Java code using Log4J.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_soap" scope="external">SOAP Interface Developer's Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to add a SOAP interface to eXist-db using Java code.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_xmlrpc" scope="external">XML-RPC API Developer's Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to interface with eXist-db using the XML-RPC API.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="extensions" scope="external">Extension Modules</xref>
+        </dt>
+                    <dd>
+          <p>How to create eXist-db extension modules (in Java); contains a list of available extension modules.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="jmx" scope="external">JMX</xref>
+        </dt>
+                    <dd>
+          <p>eXist-db provides access to various management interfaces using JMX.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_indexes" scope="external">Developer's Guide to Modularized Indexes</xref>
+        </dt>
+                    <dd>
+          <p>How the internal indexing mechanism works and how to add your own indexes to it.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_log4j" scope="external">Log4j Logging Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to add logging to your Java code using Log4J.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_soap" scope="external">SOAP Interface Developer's Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to add a SOAP interface to eXist-db using Java code.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_xmlrpc" scope="external">XML-RPC API Developer's Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to interface with eXist-db using the XML-RPC API.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="extensions" scope="external">Extension Modules</xref>
+        </dt>
+                    <dd>
+          <p>How to create eXist-db extension modules (in Java) and contains a list of available extension modules.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="dev">
+            <title>Developing eXist-db</title>
+    
+
+    <p>The following articles provide information on how to work on eXist-db itself, either by enhancing its code or providing documentation.</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_manifesto" scope="external">eXist-db Developer Manifesto</xref>
+        </dt>
+                    <dd>
+          <p>Guidelines for developers who wish to contribute to eXist-db's code base.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="devguide_codereview" scope="external">Code Review Guide</xref>
+        </dt>
+                    <dd>
+          <p>How to review somebody else's (or your own of course) code.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="author-reference" scope="external">Author Reference</xref>
+        </dt>
+                    <dd>
+          <p>How to write a documentation article for eXist-db (like the ones you are looking at now).</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <xref href="legal" scope="external">Legal Statement</xref>
+        </dt>
+                    <dd>
+          <p>The legal status of eXist-db as an open source product.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+  </section>
+        <section id="alphabetical-index">
+            <title>Alphabetical index</title>
+    
+    <p>This section lists all available articles in title alphabetical order.</p>
+    <p/>
+  </section>
+        <section id="subject-index">
+            <title>Subject index</title>
+    
+    <p>This section lists all available articles by subject.
+    </p>
+    <p/>
+  </section>
+    </body>
+</topic>

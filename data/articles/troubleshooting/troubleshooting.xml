@@ -1,0 +1,299 @@
+<topic id="troubleshooting">
+    <title>Troubleshooting</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>This document contains hints and tips about troubleshooting problems. It also tells you
+        where to find information (version numbers, log information, etc.). See also <xref href="getting-help" scope="external">Getting Help</xref>.</p>
+        <section id="normal-start-up">
+            <title>Normal Start Up</title>
+        
+
+        <p>When eXist-db starts up it writes log output to the console.</p>
+        <ul>
+                <li>
+                <p> If you started eXist-db via the system tray launcher, the console output is
+                    captured. It can be viewed by selecting the <ph>Show Tool
+                    Window</ph> menu entry in the system tray pop-up. Then select
+                    <ph>Show console messages</ph>. </p>
+            </li>
+                <li>
+                <p>If you launched eXist-db via one of the shell scripts, the output directly
+                    appears.</p>
+            </li>
+            </ul>
+
+        <p>Output for a properly launched eXIst-db should be similar to the following (Linux)
+            example:</p>
+
+        <pre>05 Dec 2017 13:53:19,795 [main] INFO  (JettyStart.java [run]:137) - Running with Java 1.8.0_131 [Oracle Corporation (OpenJDK 64-Bit Server VM) in /usr/lib/jvm/java-8-openjdk-amd64/jre] 
+05 Dec 2017 13:53:19,795 [main] INFO  (JettyStart.java [run]:144) - Running as user 'root'
+05 Dec 2017 13:53:19,795 [main] INFO  (JettyStart.java [run]:145) - [eXist Home : /exist]
+05 Dec 2017 13:53:19,797 [main] INFO  (JettyStart.java [run]:146) - [eXist Version : 3.6.0]
+05 Dec 2017 13:53:19,797 [main] INFO  (JettyStart.java [run]:147) - [eXist Build : 201712051111]
+05 Dec 2017 13:53:19,797 [main] INFO  (JettyStart.java [run]:148) - [Git commit : ceaab01]
+05 Dec 2017 13:53:19,798 [main] INFO  (JettyStart.java [run]:150) - [Operating System : Linux 4.9.49-moby amd64]
+05 Dec 2017 13:53:19,798 [main] INFO  (JettyStart.java [run]:151) - [log4j.configurationFile : file:///exist/log4j2.xml]
+05 Dec 2017 13:53:19,803 [main] INFO  (JettyStart.java [run]:152) - [jetty Version: 9.4.7.v20170914]
+05 Dec 2017 13:53:19,803 [main] INFO  (JettyStart.java [run]:153) - [jetty.home : /exist/tools/jetty]
+05 Dec 2017 13:53:19,804 [main] INFO  (JettyStart.java [run]:154) - [jetty.base : /exist/tools/jetty]
+05 Dec 2017 13:53:19,804 [main] INFO  (JettyStart.java [run]:155) - [jetty configuration : /exist/tools/jetty/etc/standard.enabled-jetty-configs]
+05 Dec 2017 13:53:20,143 [main] INFO  (JettyStart.java [run]:164) - Configuring eXist from /exist/conf.xml
+05 Dec 2017 13:53:21,433 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty.xml]
+05 Dec 2017 13:53:21,518 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-gzip.xml]
+05 Dec 2017 13:53:21,547 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-http.xml]
+05 Dec 2017 13:53:21,573 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-jaas.xml]
+05 Dec 2017 13:53:21,578 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-jmx.xml]
+05 Dec 2017 13:53:21,606 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-requestlog.xml]
+05 Dec 2017 13:53:21,616 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-ssl.xml]
+05 Dec 2017 13:53:21,636 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-ssl-context.xml]
+05 Dec 2017 13:53:21,652 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-https.xml]
+05 Dec 2017 13:53:21,657 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-deploy.xml]
+05 Dec 2017 13:53:21,677 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-plus.xml]
+05 Dec 2017 13:53:21,697 [main] INFO  (JettyStart.java [run]:188) - [loading jetty configuration : /exist/tools/jetty/etc/jetty-annotations.xml]
+05 Dec 2017 13:53:21,701 [main] INFO  (JettyStart.java [startJetty]:501) - [Starting jetty component : org.eclipse.jetty.server.Server]
+05 Dec 2017 13:53:21,701 [main] INFO  (JettyStart.java [lifeCycleStarting]:649) - Jetty server starting...
+05 Dec 2017 13:53:23,197 [main] INFO  (JettyStart.java [lifeCycleStarted]:658) - Jetty server started.
+05 Dec 2017 13:53:23,198 [main] WARN  (JettyStart.java [run]:239) - Could not find OpenID extension. OpenID will be disabled!
+05 Dec 2017 13:53:23,199 [main] WARN  (JettyStart.java [run]:246) - Could not find OAuthServlet extension. OAuth will be disabled!
+05 Dec 2017 13:53:23,199 [main] WARN  (JettyStart.java [run]:253) - Could not find IPRangeServlet extension. IPRange will be disabled!
+05 Dec 2017 13:53:23,205 [main] WARN  (JettyStart.java [getURI]:468) - java.net.UnknownHostException: 5773b75f8e8d: 5773b75f8e8d: Name or service not known
+05 Dec 2017 13:53:23,208 [main] WARN  (JettyStart.java [getURI]:468) - java.net.UnknownHostException: 5773b75f8e8d: 5773b75f8e8d: Name or service not known
+05 Dec 2017 13:53:23,209 [main] INFO  (JettyStart.java [run]:262) - -----------------------------------------------------
+05 Dec 2017 13:53:23,209 [main] INFO  (JettyStart.java [run]:263) - Server has started, listening on:
+05 Dec 2017 13:53:23,209 [main] INFO  (JettyStart.java [run]:268) - Configured contexts:
+05 Dec 2017 13:53:23,211 [main] INFO  (JettyStart.java [run]:274) - 	/exist
+05 Dec 2017 13:53:23,211 [main] INFO  (JettyStart.java [run]:274) - 	/
+05 Dec 2017 13:53:23,211 [main] INFO  (JettyStart.java [run]:328) - -----------------------------------------------------</pre>
+        <p>When you see the "Server has started" message and no further errors appear, your
+            eXist-db installation is working normally.</p>
+        <p>When you do not (even) see this message,try the following troubleshooting
+            steps.</p>
+    </section>
+        <section id="db-locked">
+            <title>Database Refuses to Start</title>
+        
+
+        <p>If eXist-db was not shutdown properly, it will start a recovery process to redo
+            committed transactions and roll back uncommitted ones. If an inconsistency is found
+            during this process, eXist-db will automatically abort the start-up and print out a
+            warning. This emergency stop is done to avoid potential damage and give an administrator
+            a chance to check the database and create a backup. It does not necessarily indicate a
+            real problem. In most cases, the database should be ok and restarting it will be
+            save.</p>
+        <p>We recommend to run a <xref href="backup" scope="external">consistency check</xref> in when this
+            happens. If inconsistencies are found, make sure you have a backup before
+            continuing.</p>
+    </section>
+        <section id="clearing-db">
+            <title>Going Back to an Empty Database</title>
+        
+
+        <p>During development and testing you may sometimes wish to go back to a completely
+            empty, fresh, database. Here's how to really <i>remove everything</i> and
+            reset the database to its initial state:</p>
+        <ol>
+                <li>
+                <p>Make sure eXist-db is not running</p>
+            </li>
+                <li>
+                <p>Manually remove the contents of your data directory. </p>
+                <p>The default data directory is <ph>$EXIST_HOME/data</ph>
+                </p>
+            </li>
+            </ol>
+    </section>
+        <section id="environmental-variables">
+            <title>
+                <ph>JAVA_HOME</ph> Environment Variable</title>
+        
+
+        <p>When using one of the shell or batch scripts, eXist-db may fail to start up properly
+            if the environment variable<ph>JAVA_HOME</ph> is not set properly. The
+            variable us used by all scripts in <ph>$EXIST_HOME/bin</ph>.</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                        <ph>JAVA_HOME</ph>
+                    </dt>
+                    <dd>
+                    <p>This should point to the directory where Java (JRE or JDK) is installed. </p>
+                    <dl>
+                            <dlentry>
+                                <dt>Windows</dt>
+                                <dd>
+                                <p>
+                                        <xref href="https://confluence.atlassian.com/display/DOC/Setting+the+JAVA_HOME+Variable+in+Windows" scope="external">Setting <ph>JAVA_HOME</ph> on Windows</xref>
+                                    </p>
+                                <p/>
+                            </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>Linux</dt>
+                                <dd>
+                                <p>
+                                        <xref href="https://www.cyberciti.biz/faq/linux-unix-set-java_home-path-variable/" scope="external">Setting <ph>JAVA_HOME</ph> on Linux</xref>
+                                    </p>
+                            </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>macOS</dt>
+                                <dd>
+                                <p>
+                                        <xref href="https://osxdaily.com/2015/07/28/set-enviornment-variables-mac-os-x/" scope="external">Setting <ph>JAVA_HOME</ph> on macOS</xref>
+                                    </p>
+                            </dd>
+                            </dlentry>
+                        </dl>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="port-conflicts">
+            <title>Port Conflicts</title>
+        
+
+        <p>eXist-db can fail to start up if another service on your system is using the ports
+            that eXist's embedded web server is using (port 8080 or 8443 by default). If another
+            service occupies these ports, you cannot start up eXist-db unless you shut down the
+            service in question or make eXist-db use another port.</p>
+        <p>To see whether this is the case, enter <xref href="http://localhost:8080/" scope="external">http://localhost:8080/</xref> in your browser.
+            To make eXist-db use another port, open
+                <ph>$EXIST_HOME/etc/jetty/jetty-http.xml</ph> and change the value
+                <ph>8080</ph> to a port number that is not used (for instance
+            <ph>8899</ph>):</p>
+        <pre outputclass="xml">&lt;Set name="port"&gt;
+  &lt;Property name="jetty.http.port" deprecated="jetty.port"&gt;
+    &lt;Default&gt;
+      &lt;SystemProperty name="jetty.port" default="8899"/&gt;
+    &lt;/Default&gt;
+  &lt;/Property&gt;
+&lt;/Set&gt;</pre>
+
+        <p>eXist-db uses port 8443 for confidential communication. Another service may be using
+            this port. To make eXist-db use another port, open the file
+                <ph>$EXIST_HOME/etc/jetty/jetty-ssl.xml</ph> and change the value
+                <ph>8443</ph> in to a port number that is not used (for instance
+                <ph>8444</ph>):</p>
+        <pre outputclass="xml">&lt;Set name="port"&gt;
+  &lt;Property name="jetty.ssl.port" deprecated="ssl.port"&gt;
+    &lt;Default&gt;
+      &lt;SystemProperty name="jetty.ssl.port" deprecated="ssl.port" default="8444"/&gt;
+    &lt;/Default&gt;
+  &lt;/Property&gt;
+&lt;/Set&gt;</pre>
+    </section>
+        <section id="logs">
+            <title>Using the Logs</title>
+        
+
+        <p>If you experience any problems while using eXist-db, your first step should be to
+            check the log files to get additional information about the source of the problem.
+            eXist-db uses the <i>log4j-package</i> to write output logs to files. </p>
+        <ul>
+                <li>
+                <p> By default, this output is written to the directory
+                        <ph>$EXIST_HOME/logs</ph>
+                    </p>
+            </li>
+            </ul>
+        <p>The main log files for eXist are <ph>exist.log</ph> and
+            <ph>xmldb.log</ph>. </p>
+    </section>
+        <section id="memory">
+            <title>Out of Memory</title>
+        
+
+        <p>Running out of memory typically throws Java into an inconsistent state. Some threads
+            may still be alive and continue to run while others have died. It is therefore important
+            to avoid memory errors up-front by checking the memory consumption of your queries
+            <i>before</i> they go into production. Should you encounter an out of
+            memory error, please make sure to restart eXist and follow the emergency
+            procedure.</p>
+
+        
+
+        <section id="streaming">
+                <title>Streaming Large Files</title>
+            
+
+            <p>If you have to generate large binaries (for instance ZIP or PDF) from within
+                XQuery, it is best not to do this in memory. There are various XQuery functions
+                which directly stream to the HTTP response.</p>
+            <p>There's also a known issue with the betterform XForms filter caching every HTTP
+                response. To work around this, your XQuery should be run via an URL which is not
+                processed by the XForms filter: either disable the filter or use <ph>/rest</ph>
+                or <ph>/restxq</ph>.</p>
+        </section>
+    </section>
+        <section id="emergency">
+            <title>Killing the Database</title>
+        
+
+        <p>If you ever feel you have to kill the database (because it does not respond for
+            whatever reason), the recommended procedure is as follows:</p>
+        <ol>
+                <li>
+                <p>Check if a query is running wild and try to kill it. This can be done either
+                    through the "Scheduler" plug-in in the dashboard, or the "Running Jobs" section
+                    in the <xref href="java-admin-client" scope="external">Java Admin Client</xref>. Try to
+                    kill the query there and wait for a minute if the system returns to normal
+                    operations:</p>
+                <fig>
+                        <image href="assets/schedulerplugin.png"/>
+                    </fig>
+            </li>
+                <li>
+                <p>Attempt to trigger a proper shutdown, either via the system tray icon or the
+                    dashboard. Wait for at least 3 minutes. Even if eXist-db does not stop
+                    completely, it may still be able to complete the shutdown procedure for the core
+                    database.</p>
+            </li>
+                <li>
+                <p>It may now be safe to kill the eXist-db process. Check the logs to see if the
+                    database has properly shut down. The last message in the logs will indicate
+                    this.</p>
+            </li>
+                <li>
+                <p>If the logs indicate a proper shutdown: before restarting, remove any
+                    <ph>.log</ph> and <ph>.lck</ph> files from the data
+                    directory. This will prevent a recovery run, which would certainly take a lot of
+                    time.</p>
+            </li>
+                <li>
+                <p>Otherwise:</p>
+                <ul>
+                        <li>
+                        <p>You are sure you have no valuable changes in this db instance, usually
+                            because it's a development system: follow the step above and remove the
+                            <ph>.log</ph> files before restart to reduce startup
+                            time.</p>
+                    </li>
+                        <li>
+                        <p>Before restart, archive the contents of the data directory: you may
+                            need them if anything goes wrong. Restart the database but be prepared
+                            for a recovery run, which may take considerable time (depending on the
+                            size of your db).</p>
+                    </li>
+                        <li>
+                        <p>If inconsistencies are detected during the recovery, eXist will switch
+                            to read-only mode. In this case, stop it again and run a <xref href="backup" scope="external">consistency check</xref>, which can also create a
+                            low-level backup.</p>
+                        <p>If the consistency check reports errors, eXist may still be able to
+                            run, but there might be inconsistencies in its data structures. Prepare
+                            for a complete restore into a clean data directory as soon as you can
+                            take the database offline for maintenance.</p>
+                    </li>
+                    </ul>
+            </li>
+            </ol>
+        <note type="warning">
+                <p>Do not repeatedly kill the database. Killing eXist during recovery will most
+                likely result in additional damages. Always check the logs and console output to see
+                what eXist is doing before you kill it.</p>
+            </note>
+    </section>
+    </body>
+</topic>

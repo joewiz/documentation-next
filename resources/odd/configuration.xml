@@ -1,0 +1,5 @@
+<modules skip-global="true">
+    <!-- No extension modules needed for docs app.
+         skip-global="true" prevents tei-publisher-lib from trying to
+         import a config.xqm module that doesn't exist in our app. -->
+</modules>

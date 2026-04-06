@@ -1,0 +1,151 @@
+<topic id="extensions">
+    <title>Extension Modules</title>
+    <prolog>
+        <data name="date" value="2Q21"/>
+        <data name="keyword" value="java-development"/>
+    </prolog>
+    <body>
+        <p>This article provides an overview of how to create XQuery extension modules (in Java) for
+        eXist-db, and contains a list of extension modules which have additional configuration
+        options.</p>
+        <section id="module_intro">
+            <title>Introduction</title>
+        
+
+        <p>eXist-db provides a pluggable module interface that allows extension modules to be
+            easily developed in Java. These extension modules can provide additional XQuery
+            functions through a custom namespace. The extension modules have full access to the
+            eXist-db database, its internal API, the context of the executing XQuery and the HTTP
+            Session (if appropriate).</p>
+        <p>The source code for extension modules should be placed in their own folder inside
+            <ph>$EXIST_HOME/extensions/modules/*/src/main/java/org/exist/xquery/modules/*</ph>.
+            They may then be added to <ph>$EXIST_HOME/extensions/modules/pom.xml</ph> and
+            compiled in place using <ph>mvn compile</ph>.</p>
+        <p>Modules associated with modularized indexes must be placed in the
+                <ph>$EXIST_HOME/extensions/indexes/*/xquery/modules/*</ph> hierarchy. They
+            may then be added to <ph>$EXIST_HOME/extensions/indexes/pom.xml</ph>. They
+            will be compiled automatically by the standard build targets or as indicated
+            above.</p>
+        <p>eXist-db must also be told which modules to load at startup, this is done in
+                <ph>conf.xml</ph> and the Class name and Namespace for each module is
+            listed below. </p>
+        <note type="note">
+                <p>eXist-db will require a restart to load any new modules added. </p>
+            </note>
+        <p>Once a Module is configured and loaded eXist-db will display the module and its
+            function definitions as part of the <xref href="{${fundocs.pkg.abbrev}}" scope="external">function
+            library</xref> page or through <ph>util:decribe-function()</ph>.</p>
+    </section>
+        <section id="ext-modules">
+            <title>Extension Modules Configuration</title>
+        
+        <p>Whilst most extension modules work without any further configuration than that
+            described above, some modules have additional configuration options. Those additional
+            options are described in this section.</p>
+        <section id="module_cache">
+                <title>Cache Module</title>
+            
+            <p>This module provides a Global Mutable cache which can be used for manually
+                caching data. This is often used for caching the results of expensive queries.</p>
+            <ul>
+                    <li>
+                    <p>Creator: Adam Retter</p>
+                </li>
+                    <li>
+                    <p>Licence: LGPL v2</p>
+                </li>
+                    <li>
+                    <p>Used: <xref href="https://github.com/ben-manes/caffeine" scope="external">Caffeine</xref>
+                        </p>
+                </li>
+                    <li>
+                    <p>Status: production</p>
+                </li>
+                    <li>
+                    <p>Class: <ph>org.exist.xquery.modules.cache.CacheModule</ph>
+                    </p>
+                </li>
+                    <li>
+                    <p>Namespace: <ph>http://exist-db.org/xquery/cache</ph>
+                        </p>
+                </li>
+                </ul>
+            <p>
+                The Cache module can be configured for with a bounded size, or time, or both. eXist-db cannot
+                know how much memory the data you will put in the cache will take, so it is up to you to
+                manage your own memory needs here.
+            </p>
+            <p>A named cache can either be explicitly created by calling the <ph>cache:create</ph> XQuery
+                function, or it can be implicitly created lazing on the first operation performed on the cache.
+                Configuration of the Cache module is specified within the module definition of eXist-db's
+                <ph>conf.xml</ph> file:</p>
+            <pre outputclass="xml">&lt;module class="org.exist.xquery.modules.sql.CacheModule" uri="http://exist-db.org/xquery/cache"&gt;
+  &lt;parameter name="enableLazyCreation" value="true"/&gt;
+  &lt;!-- allow the cache to be created implicitly --&gt;
+  &lt;parameter name="lazy.maximumSize" value="128"/&gt;
+  &lt;!-- size bound - 128 entries max --&gt;
+  &lt;parameter name="lazy.expireAfterAccess" value="60000"/&gt;
+  &lt;!-- time bound - 60 seconds --&gt;
+&lt;/module&gt;</pre>
+        </section>
+        <section id="module_sql">
+                <title>SQL Module</title>
+            
+            <p>This module provides facilities for performing SQL operations against traditional
+                databases from XQuery and returning the results as XML nodes.</p>
+            <ul>
+                    <li>
+                    <p>Creator: Adam Retter</p>
+                </li>
+                    <li>
+                    <p>Licence: LGPL v2</p>
+                </li>
+                    <li>
+                    <p>Used: <xref href="https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/" scope="external">JDBC</xref>
+                        </p>
+                </li>
+                    <li>
+                    <p>Status: production</p>
+                </li>
+                    <li>
+                    <p>Class: <ph>org.exist.xquery.modules.sql.SQLModule</ph>
+                    </p>
+                </li>
+                    <li>
+                    <p>Namespace: <ph>http://exist-db.org/xquery/sql</ph>
+                        </p>
+                </li>
+                </ul>
+            <p>
+                The SQL Module can be configured with additional which allow Connection Pooling of the SQL connections to be utilised.
+                For this purpose the <xref href="https://github.com/brettwooldridge/HikariCP" scope="external">HikariCP</xref> connection pool implementation is used.
+            </p>
+            <p>Multiple connection pools can be configured and used from XQuery via the <ph>sql:get-connection-from-pool</ph> function.</p>
+            <p>All of HikariCP's <xref href="https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby" scope="external">configuration options</xref>
+                can be configured on a per-pool basis. Configuration of the connection pools is specified within the module definition of eXist-db's
+                <ph>conf.xml</ph> file:</p>
+            <pre outputclass="xml">&lt;module class="org.exist.xquery.modules.sql.SQLModule" uri="http://exist-db.org/xquery/sql"&gt;
+  &lt;!-- Connection Pool 1 --&gt;
+  &lt;parameter name="pool.1.name" value="pool-1"/&gt;
+  &lt;parameter name="pool.1.properties.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource"/&gt;
+  &lt;parameter name="pool.1.properties.dataSource.user" value="my-username"/&gt;
+  &lt;parameter name="pool.1.properties.dataSource.password" value="my-password"/&gt;
+  &lt;parameter name="pool.1.properties.dataSource.databaseName" value="my-db"/&gt;
+  &lt;parameter name="pool.1.properties.maximumPoolSize" value="10"/&gt;
+  &lt;parameter name="pool.1.properties.registerMbeans" value="false"/&gt;
+  &lt;!-- Connection Pool 2 --&gt;
+  &lt;parameter name="pool.2.name" value="pool-2"/&gt;
+  &lt;parameter name="pool.2.properties.dataSourceClassName" value="org.mariadb.jdbc.MariaDbDataSource"/&gt;
+  &lt;parameter name="pool.2.properties.dataSource.user" value="my-other-username"/&gt;
+  &lt;parameter name="pool.2.properties.dataSource.password" value="my-other-password"/&gt;
+  &lt;parameter name="pool.2.properties.dataSource.databaseName" value="other-db"/&gt;
+  &lt;parameter name="pool.2.properties.maximumPoolSize" value="10"/&gt;
+  &lt;parameter name="pool.2.properties.registerMbeans" value="false"/&gt;
+&lt;/module&gt;</pre>
+            <note type="note">
+                    <p>Any JDBC drivers that are used will need to be added to eXist-db's <ph>lib/</ph> folder and configured in the startup descriptor XML file in eXist-db's <ph>etc/</ph> folder.</p>
+                </note>
+        </section>
+    </section>
+    </body>
+</topic>

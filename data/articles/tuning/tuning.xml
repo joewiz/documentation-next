@@ -1,0 +1,468 @@
+<topic id="tuning">
+    <title>Tuning the Database</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="operations"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>This article describes strategies for improving the performance of eXist-db and optimizing
+        its efficiency. It covers subjects that constrain performance, from memory and cache
+        settings to the way a query is constructed. </p>
+        <section id="memory">
+            <title>Memory settings</title>
+        
+        <p>Java always limits the maximum amount of memory available to a process. So eXist-db
+            will not automatically use all of the available memory on your machine. </p>
+        <p>The maximum amount of memory Java will allocate is determined by the
+            <ph>-Xmx</ph> parameter passed to Java on the command line. </p>
+        <p>When eXist-db is started via the graphical launcher or via one of the shell or batch
+            scripts, memory settings are read from the file
+            <ph>$EXIST_HOME/etc/launcher.properties</ph>:</p>
+        <pre># This file contains a list of VM parameters to be passed to Java
+# when eXist is started
+
+# Minimum and maximum memory
+memory.max=2048
+memory.min=64
+
+…</pre>
+        <p>For <i>Unix/Linux</i> systems, this is done in the <ph>.sh</ph>
+            files, for instance <ph>$EXIST_HOME/bin/startup.sh</ph>, from the
+            <ph>JAVA_OPTS</ph> evironment variable. You can override those variables
+            globally in your own shell.</p>
+        <p>On <i>Windows</i>,this is done in the main <ph>.bat</ph> files, for
+            instance <ph>$EXIST_HOME\bin\startup.bat</ph>.</p>
+    </section>
+        <section id="cache">
+            <title>Cache settings</title>
+        
+
+        <p>Each of the core database files and indexes has a page cache. The main purpose of this
+            cache is to make sure that the most frequently used pages of these files are kept in
+            memory. If a file's cache is too small, eXist starts to unload pages, only to reload
+            them a few moment later. This "trashing effect" results in an immediate performance
+            drop, in particular while indexing documents.</p>
+        <p>All caches share a single memory pool, whose size is determined by the attribute
+            <ph>cacheSize</ph> in the <ph>db-connection</ph> section of
+            <ph>$EXIST_HOME/etc/conf.xml</ph>:</p>
+        <pre outputclass="xml">&lt;db-connection cacheSize="48M" collectionCache="24M" database="native" files="../data" pageSize="4096" nodesBuffer="-1"/&gt;</pre>
+        <p>The global cache manager will dynamically grant more memory to caches while they are
+            under load and free memory used by idle caches.</p>
+        <p>The default setting for <ph>cacheSize</ph> is very conservative (48M). It is
+            ok for smaller databases, but you may soon experience a performance drop when indexing
+            more than several 100M of XML data. Consider increasing <ph>cacheSize</ph> up
+            to approximately 1/3 of the main memory available to Java (determined by the
+            <ph>-Xmx</ph> parameter passed to the Java command line). If you are running
+            eXist-db with other web applications in the same servlet engine, you may need to choose
+            a smaller setting.</p>
+        <note type="warning">
+                <p>Running out of memory will crash the database, be careful!</p>
+            </note>
+        <p>The <ph>cacheSize</ph> is mostly relevant for storing/updating data. The
+            effect on query speed is negligible (unless the index caches are much too small).</p>
+        <p>If you continue to experience performance issues while storing data, revisit your
+            index configuration. Removing unused indexes provides more room to the other indexes. In
+            particular, the full text index can grow very fast until it becomes a bottleneck. Try to
+            disable the default full text index (see below).</p>
+        <p>The <ph>nodesBuffer</ph> attribute can be used to set eXist-db's temporary
+            internal buffer to a fixed size. This buffer is used during indexing to cache nodes
+            before they are flushed to disk. The default setting (<ph>nodesBuffer="-1"</ph>)
+            means use as much memory as is available. This can be problematic if you store large
+            documents in a multi-user environment. For a production server, it is recommended to set
+            <ph>nodesBuffer</ph> to <ph>1000</ph> or less when there are many concurrent
+            write operations.</p>
+    </section>
+        <section id="idx-conf">
+            <title>Index configuration</title>
+        
+        <p>Some notes on the optimizing different indexes. More general information regarding these options is available in the individual articles for each index.</p>
+
+
+        
+
+        <section id="no-default">
+                <title>Don't rely on the default behaviour</title>
+            
+
+            <p>eXist-db does <i>not</i> index element or attribute values by
+                default. For example, assume the following query without an index:</p>
+            <pre>//SPEECH[SPEAKER = "HAMLET"]</pre>
+            <p>The query engine will perform a full scan over all <ph>SPEAKER</ph> elements in
+                the database. This is very slow and limits concurrency. You should at least create a
+                global index definition (in
+                <ph>/db/system/config/db/collection.xconf</ph>) and add range indexes for
+                the most frequently used comparisons.</p>
+        </section>
+
+        
+
+        <section id="idxdefs">
+                <title>Prefer simple index definitions</title>
+            
+
+            <p>Keeping your <xref href="indexing" scope="external">index definitions</xref> simple makes it
+                easier for the query optimizer to resolve dependencies. </p>
+            <p>In particular, avoid context-dependant index definitions unless you really have a
+                reason to use them. A context-dependant index is defined on a path like
+                <ph>/book/chapter/title</ph>. General indexes are defined on a simple element or
+                attribute qname. For instance:</p>
+            <pre outputclass="xquery">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+  &lt;index&gt;
+    &lt;!-- Range indexes by qname --&gt;
+    &lt;create qname="title" type="xs:string"/&gt;
+    &lt;create qname="@ID" type="xs:string"/&gt;
+    &lt;!-- context-dependant configuration using the path attribute: --&gt;
+    &lt;create path="/book/title" type="xs:string"/&gt;
+  &lt;/index&gt;
+&lt;/collection&gt;</pre>
+            <p>Defining indexes on qnames may result in a larger index, but allows the query
+                engine to apply all available optimization techniques. This can improve query times
+                by an order of magnitude. Replacing a context-dependant index by a simple index on
+                qname can therefore result in a performance boost.</p>
+        </section>
+
+        
+
+        <section id="range">
+                <title>Use range indexes on strongly typed data or short strings</title>
+            
+
+            <p>Range indexes work with the standard XQuery operators and string functions. For
+                instance:</p>
+            <pre outputclass="xquery">//book[year = 2000]</pre>
+            <p>This will always be slow without an index: eXist-db scans over every
+                <ph>year</ph> element in the db, casting its string value to an integer.</p>
+            <p>For queries on string content, range indexes work well for exact comparisons
+                (<ph>author = 'Joe Doe'</ph>) or regular expressions (<ph>matches(author,
+                "^Joe.*")</ph>) You can also use a full text index for the latter. </p>
+            <p>Range indexes on strings are by default <i>case-sensitive</i>. To be
+                more precise: they are sensitive to the default <xref href="https://en.wikipedia.org/wiki/Collation" scope="external">collation</xref>. If you need
+                case-insensitive queries, consider using an ngram index.</p>
+        </section>
+
+        
+
+        <section id="ngram">
+                <title>Consider an n-gram index for exact substring queries on longer text
+                sequences</title>
+            
+
+            <p>While range indexes tend to become slow for substring queries (like
+                <ph>contains(title, "XSLT 2.0")</ph>), an n-gram index is nearly as fast as a
+                full text index. It also indexes whitespace and punctuation and is
+                <i>case-insensitive</i>. </p>
+            <p>For example, <ph>ngram:contains(title, "XSLT 2.0")</ph> will only match titles
+                containing the <i>exact</i> phrase "XSLT 2.0". </p>
+        </section>
+
+        
+
+        <section id="no-punct">
+                <title>Choose a full-text index for tokenizable text where whitespace/punctuation is
+                mostly irrelevant</title>
+            
+
+            <p>The full text index is very fast and should be used whenever you need to query for
+                a sequence of separate words or tokens in a longer text. It might even be faster to
+                post-process the returned node set and filter out wrong matches than using a,
+                usually much slower, regular expression!</p>
+
+        </section>
+    </section>
+        <section id="write">
+            <title>Writing Queries</title>
+        
+        <p>Next to configering your indexes for better performance, you can also optimize the way you write your queries.</p>
+        <section id="short">
+                <title>Prefer short paths</title>
+            
+
+            <p>eXist-db uses internal indexes to directly locate an element or attribute by name.
+                It doesn't need to <xref href="https://en.wikipedia.org/wiki/Tree_traversal" scope="external">traverse</xref> the
+                document tree. This means that direct selection of a node through a single
+                descendant step is <i>faster</i> than walking the child axis. For
+                example:</p>
+            <pre outputclass="xquery">a/b/c/d/e/f</pre>
+            <p>This will be <i>slower</i> than</p>
+            <pre outputclass="xquery">a//f</pre>
+            <p>The first expression requires 6 (!) index lookups where the second just needs two.
+                The same applies to the ancestor axis, for instance
+                <ph>f/ancestor::a</ph>.</p>
+        </section>
+
+        
+
+        <section id="selective">
+                <title>Always process the most selective filter/expression first</title>
+            
+
+            <p>If you need multiple steps to select nodes from a larger node set, try to process
+                the most selective steps first. The earlier you reduce the node set to process, the
+                faster your query. </p>
+            <p>For example, assume we have to find publications written by "Bjarne Stroustrup",
+                published after the year 2000:</p>
+            <pre outputclass="xquery">/dblp/*[year &gt; 2000][author = 'Bjarne Stroustrup']</pre>
+            <p>The database has 568824 records matching <ph>year &gt; 2000</ph>, but only 41
+                of them were written by Stroustrup. Moving the filter on the author to the front of
+                the expression results in better performance:</p>
+            <pre outputclass="xquery">/dblp/*[author = 'Bjarne Stroustrup'][year &gt; 2000]</pre>
+        </section>
+
+        
+
+        <section id="avoid-nested">
+                <title>Avoid unnecessary nested filters</title>
+            
+
+            <p>Nesting filters in an XPath expression is often required and eXist-db will process
+                them correctly. However, unnecessary nesting should be avoided because it has a
+                negative impact on the query optimizer.</p>
+            <p>For example: <ph>//A[B[C = "D"]]</ph> could also be written as <ph>//A[B/C =
+                "D"]</ph> without changing the result. The variant with only one filter is easier
+                to optimize for eXist-db.</p>
+            <p>Likewise, if you are calling one of the optimized functions
+                (<ph>contains</ph>, <ph>matches</ph>, <ph>ft:query</ph>, etc.), make
+                sure you do not nest them, unless really required. For instance
+                <ph>//A[B/C[contains(., "D")]]</ph> can be rewritten as <ph>//A[contains(B/C,
+                "D")]</ph>.</p>
+
+        </section>
+
+        
+
+        <section id="allow-large">
+                <title>Allow eXist-db to process large node sets in one step</title>
+            
+
+            <p>The query engine is optimized to process a path expression in a single operation.
+                For instance:</p>
+            <pre outputclass="xquery">//A/*[B = 'C']</pre>
+            <p>This is evaluated in a single operation for all context items. It doesn't make a
+                difference if the input set comes from a single large document, includes all the
+                documents in a specific collection or even the entire database. The logic of the
+                operation remains the same.</p>
+            <p>However, "bad" queries can force the query engine to partition the input sequence
+                and process it in an item-by-item mode. For example, most function calls will force
+                the query engine into item-by-item mode:</p>
+            <pre outputclass="xquery">//A/*[f:process(B) = 'C']</pre>
+            <p>The query engine needs to call a (non-optimized) function for each <ph>B</ph>
+                and will therefore process the entire comparison once for every context item.</p>
+            <p>There are functions to which the above does not apply. This includes most
+                functions which operate on indexes, e.g. <ph>contains</ph>,
+                <ph>matches</ph>, <ph>starts-with</ph>, <ph>ngram:contains</ph>, etc.
+                These calls are optimized, eXist-db only needs to call them once to process the
+                entire context set. For example, using <ph>ngram:contains</ph> like in
+                <ph>//A/*[ngram:contains(B, 'C')]</ph> is ok. But
+                <ph>//A/*[ngram:contains(f:process(B), 'C')]</ph> will again force eXist-db into
+                step-by-step evaluation.</p>
+
+        </section>
+
+        
+
+        <section id="xpath">
+                <title>Prefer XPath predicates over where expressions</title>
+            
+
+            <p>This is a variation of what was discussed above. Many users formulate SQL-style
+                queries using an explicit "where" clause:</p>
+
+            <pre outputclass="xquery">for $e in //entry 
+where $e/@type = 'subject'
+return $e</pre>
+            <p>This could be rewritten as:</p>
+
+            <pre outputclass="xquery">for $e in //entry[@type = 'subject'] 
+return $e</pre>
+            <p>The "<ph>for … where</ph>" expression forces the query engine into a
+                step-by-step iteration over the input sequence, testing each instance of
+                <ph>$e</ph> against the <ph>where</ph> expression. Any possible
+                optimizations are lost.</p>
+            <p>However, the XPath predicate expression can be processed in one single step,
+                making best use of available indexes. There are of course cases which cannot be
+                handled without using <ph>where</ph> (for instance joins between multiple
+                documents), but you don't use <ph>where</ph> if you can replace it by a simple
+                XPath predicate.</p>
+            <p>The query engine will always <i>try</i> to process a
+                <ph>where</ph> clause like an equivalent XPath with predicate, but it only
+                detects the simple cases.</p>
+        </section>
+
+        
+
+        <section id="general-comparison">
+                <title>Use general comparisons to compare an item to a list of alternatives</title>
+            
+
+            <p>General comparisons are handy if you need to compare something to multiple values.
+                For example, you could use an "or" to find all <ph>b</ph> children whose string
+                value is either <ph>"c"</ph> or <ph>"d"</ph>:</p>
+            <pre outputclass="xquery">//a[b eq 'c' or b eq 'd']</pre>
+            <p>A shorter and more efficient way to express this is:</p>
+            <pre outputclass="xquery">//a[b = ('c', 'd')]</pre>
+            <p>If an index is defined on <ph>b</ph>, eXist-db will need only one index lookup
+                to find all b's matching the comparison. The equivalent "or" expression needs two
+                separate index lookups.</p>
+        </section>
+
+        
+
+        <section id="group-by">
+                <title>Use "group by"</title>
+            
+
+            <p>The XQuery 3.0 <ph>group by</ph> feature is more efficient than using the
+                <ph>distinct-values</ph> function. For example, to order the results of a query
+                by the value of the child element <ph>SPEAKER</ph>:</p>
+            <pre outputclass="xquery">xquery version "3.0";
+
+let $query := "king"
+let $speeches := //SPEECH[ft:query(., $query)]
+for $speaker in distinct-values($speeches/SPEAKER)
+let $speechBySpeaker := $speeches[SPEAKER = $speaker]
+order by $speaker
+return
+    &lt;speaker name="{$speaker}"&gt;
+    { $speechBySpeaker }
+    &lt;/speaker&gt;</pre>
+            <p>The XQuery 3.0 variant with <ph>group by</ph> is much more efficient:</p>
+            <pre outputclass="xquery">let $query := "king"
+for $speechBySpeaker in //SPEECH[ft:query(., $query)]
+group by $speaker := $speechBySpeaker/SPEAKER
+order by $speaker
+return
+    &lt;speaker name="{$speaker}"&gt;
+    { $speechBySpeaker }
+    &lt;/speaker&gt;</pre>
+        </section>
+
+        
+
+        <section id="multiple-collections">
+                <title>Querying multiple collections</title>
+            
+
+            <p>You could use a <ph>for</ph> loop to query over multiple collections on the
+                same level in the collection hierarchy. However, this forces the query engine to
+                process the remaining expression once for each collection. It is more efficient to
+                construct the initial node set once and use it as input for the main expression. For
+                example:</p>
+
+            <pre outputclass="xquery">for $path in ('/db/a', '/db/b')
+for $result in collection($path)//test[...]
+return
+    ...</pre>
+            <p>This will be less efficient than:</p>
+
+            <pre outputclass="xquery">let $docs :=
+    for $path in ('/db/a', '/db/b') return $collection($path)
+for $result in $docs//test[...]
+return
+    ...</pre>
+        </section>
+
+        
+
+        <section id="ancestor">
+                <title>Use the ancestor or parent axis instead of a top-down approach</title>
+            
+
+            <p>eXist-db can navigate the ancestor axis as fast as the descendant axis. It can
+                therefore be more efficient to build a query bottom-up instead of top-down. Here's a
+                top-down example:</p>
+
+            <pre outputclass="xquery">for $section in collection("/db/articles")//section
+for $match in $section//p[contains(., "XML")]
+return
+    &lt;match&gt;
+        &lt;section&gt;{$section/title/text()}&lt;/section&gt;
+        {$match}
+    &lt;/match&gt;</pre>
+            <p>This query walks through a set of sections and queries each of them for paragraphs
+                containing the string "XML". It then outputs the title of the section, followed by
+                the matching paragraphs. Note that it will also return the title of all sections
+                which do not have any matches.</p>
+            <p>The nested <ph>for</ph> loop forces the query engine into a step-by-step
+                iteration over the section elements. We can avoid this by using a bottom-up
+                approach:</p>
+            <pre outputclass="xquery">for $match in collection("/db/articles")//section//p[contains(., "XML")]
+return
+    &lt;match&gt;
+        &lt;section&gt;{$match/ancestor::title/text()}&lt;/section&gt;
+        {$match}
+    &lt;/match&gt;</pre>
+        </section>
+
+        
+
+        <section id="match">
+                <title>Match regular expressions against the start of a string</title>
+            
+
+            <p>The function <ph>fn:matches</ph> returns <ph>true</ph> if a substring of
+                its first argument matches the regular expression. The query engine needs to scan
+                all index entries, as the match could be at any position of an entry.</p>
+            <p>You can reduce the range of entries scanned by anchoring your pattern at the start
+                of a string:</p>
+            <pre outputclass="xquery">fn:matches($str, "^XQuery")</pre>
+        </section>
+
+        
+
+        <section id="structural">
+                <title>Use fn:id to lookup xml:id attributes</title>
+            
+
+            <p>eXist-db automatically indexes all <ph>xml:id</ph> attributes and other
+                attributes with type <ph>ID</ph> as declared in a DTD (if validation is
+                enabled). This automatic index is used by the standard <ph>id</ph> functions and
+                provides a fast way to look up an element. For example,
+                <ph>id("sect1")/head</ph> works through a fast index lookup.</p>
+            <p>However, the equivalent expression <ph>//section[@xml:id = 'sect1']/head</ph>
+                will <i>not</i> use the <ph>id</ph> index.</p>
+            <p>Some users have reported that larger <ph>xml:id</ph> values have a negative
+                performance impact. </p>
+        </section>
+
+        
+
+        <section id="defer-output">
+                <title>Defer output generation until really needed</title>
+            
+
+            <p>When working with large result sets within a query, it is important to understand
+                the <i>differences between stored nodes and in-memory XML</i>: if a
+                node set consists of nodes stored in the database, eXist-db will, in most cases,
+                never load these into memory. It uses lightweight references instead for most
+                processing steps. Even large node sets do not consume too much memory.</p>
+            <p>However, all new XML nodes created within an XQuery reside in memory. The
+                constructed XML fragments need to fit into the memory available to the Java VM. If a
+                query generates too many nodes, the XQuery watchdog (if enabled) may step in and
+                kill it.</p>
+            <p>A typical scenario: a query selects a large number of documents from the database
+                and then iterates through each to generate some HTML output for display. However,
+                only the first 10 results are returned to the user, the rest is stored into an HTTP
+                session for later viewing. In this case it is important to limit the HTML generation
+                to <i>those items which are actually returned</i>. Though the source
+                XML documents may be large, eXist-db will not load them into memory. Storing those
+                references into a session does not consume much memory:</p>
+
+            <pre outputclass="xquery">let $nodes := (: select some nodes in the db :)
+let $session := session:set-attribute("result", $nodes) (: store result into session :)
+(: only return the first 10 nodes :)
+for $node in subsequence($nodes, 1, 10)
+return
+    (: Generate HTML for output :)
+    &lt;div&gt;(: Create complex HTML markup using $node :)&lt;/div&gt;</pre>
+            <p>Also note that eXist-db uses <i>lazy evaluation</i> when
+                constructing new XML fragments. For example:</p>
+            <pre outputclass="xquery">&lt;book&gt;{$node/title}&lt;/book&gt;</pre>
+            <p>Assuming that <ph>$node</ph> references a node in the database, the query
+                engine will not copy <ph>$node/title</ph> into the constructed <ph>book</ph>
+                element. Only a reference is inserted. The reference will not be expanded until the
+                fragment is serialized or queried.</p>
+        </section>
+    </section>
+    </body>
+</topic>

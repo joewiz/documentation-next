@@ -1,0 +1,621 @@
+<topic id="repo">
+    <title>Package Repository</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>The eXist-db package repository is a central component of eXist-db. It makes it easy to
+        manage and deploy external packages (<ph>.xar</ph> archives) which include everything
+        they need to run third party XQuery libraries, full applications or other XML technology
+        functionality. This article provides technical details on the packaging format.</p>
+        <section id="intro">
+            <title>Introduction</title>
+        
+
+        <p>The package repository is based on and extends the <xref href="http://expath.org/modules/pkg/" scope="external">EXPath Packaging System</xref>. The core
+            of the EXPath packaging specification has been designed to work across different XQuery
+            implementations and is targeted at managing extension libraries (including XQuery, Java
+            or XSLT code modules). eXist-db extends this core by adding a facility for the automatic
+            deployment of entire applications into the database. </p>
+        <p>eXist-db packages may fall into one of the following categories:</p>
+        <dl>
+                <dlentry>
+                    <dt>Applications</dt>
+                    <dd>
+                    <p> Contain application code, HTML views, associated services, resources and
+                        data. An application always has a web interface which can be displayed, if
+                        for example the user clicks on the application icon in the Dashboard.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Resource packages</dt>
+                    <dd>
+                    <p> Contain only data or resources used by other applications, e.g.
+                        JavaScript libraries shared by several application packages. A resource
+                        package has no web view, but needs to be deployed into the database.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Library packages</dt>
+                    <dd>
+                    <p> Provide a set of XQuery library modules to be registered with eXist-db
+                        and used by other packages. A library package may also contain Java
+                        <ph>.jar</ph> archives to be loaded into the eXist-db classpath. It has
+                        no web view and is not deployed into the database.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>These categories are not exclusive. An application may include resources and XQuery
+            libraries and is not required to move those into separate packages.</p>
+    </section>
+        <section id="expath-pkg">
+            <title>EXPath Packaging Format</title>
+        
+
+        <p>An EXPath package is essentially an archive file in ZIP format. By convention, the
+            file extension of the package is <ph>.xar</ph>. </p>
+        <p>The archive <i>must</i> contain two XML descriptor files in the root
+            directory: <ph>expath-pkg.xml</ph> and <ph>repo.xml</ph>:</p>
+        <dl>
+                <dlentry>
+                    <dt>
+                    <ph>expath-pkg.xml</ph>
+                </dt>
+                    <dd>
+                    <p>This is the standard EXPath descriptor as defined by the EXPath
+                        specification. It specifies the unique name of the package, lists
+                        dependencies and any library modules to register globally. See <xref href="#sect-expathpkg" scope="local"/>.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+                    <ph>repo.xml</ph>
+                </dt>
+                    <dd>
+                    <p>The eXist-db specific deployment descriptor: it contains additional
+                        metadata about the package and controls how it will be deployed into the
+                        database. See <xref href="#sect-repoxml" scope="local"/>.</p>
+                </dd>
+                </dlentry>
+            </dl>
+        <p>For library packages <ph>repo.xml</ph> is optional. However, we recommend to
+            always provide it for better tool integration.</p>
+        <p>The following is not mentioned in the EXPath spec, but if an image resource with the
+            filename <ph>icon.png</ph> or <ph>icon.svg</ph> is found in the root
+            directory of an app, the eXist-db dashboard will display that user-supplied image
+            instead of the default eXist-db blue dotted <ph>X</ph>.</p>
+
+        
+
+        <section id="sect-expathpkg">
+                <title>
+                    <ph>expath-pkg.xml</ph>
+                </title>
+            
+
+            <p>As an example, the EXPath descriptor for the documentation app is shown
+                below:</p>
+            <pre outputclass="xml">&lt;package xmlns="http://expath.org/ns/pkg" abbrev="exist-documentation" name="http://exist-db.org/apps/doc" spec="1.0" version="5.2.1-SNAPSHOT"&gt;
+  &lt;title&gt;
+    eXist-db Documentation
+  &lt;/title&gt;
+  &lt;home&gt;
+    https://www.github.com/exist-db/documentation
+  &lt;/home&gt;
+  &lt;dependency processor="http://exist-db.org" semver-min="5.3.0-SNAPSHOT"/&gt;
+  &lt;dependency package="http://exist-db.org/html-templating"/&gt;
+&lt;/package&gt;</pre>
+            <p>The schema of this file is documented in the specification. In short, the
+                attributes are as follows:</p>
+            <dl>
+                    <dlentry>
+                        <dt>
+                            <ph>name</ph>
+                        </dt>
+                        <dd>
+                        <p>URI used as a unique identifier for the package. The URI does not need
+                            to point to an existing web site. The package repository will use this
+                            URI to identify a package within the system.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>abbrev</ph>
+                        </dt>
+                        <dd>
+                        <p>Short abbreviation for the package. This will be used as part of the
+                            file name for the <ph>.xar</ph>. We recommend to choose a
+                            short, simple name, without spaces or punctuation characters.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>version</ph>
+                        </dt>
+                        <dd>
+                        <p>Version of the package. This allows the Package Manager to determine
+                            if newer versions of the same package are available.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>spec</ph>
+                        </dt>
+                        <dd>
+                        <p>Version of the packaging specification the package conforms to. Always
+                            <ph>1.0</ph> for the current specification.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>title</ph>
+                        </dt>
+                        <dd>
+                        <p>Descriptive title to display to the user (in the Dashboard)</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+            <section id="dependencies">
+                    <title>Dependency Management</title>
+                
+
+                <p>A package may depend on one or more other packages. The Package Manager in the
+                    Dashboard will resolve these dependencies before deployment. Dependant packages
+                    will be installed automatically from the public repository. It is an error if a
+                    dependency cannot be resolved.</p>
+                <p>A dependency on another package is defined by using a reference to the unique
+                    name of the other package: The name attribute (URI) of the
+                    <ph>expath-pkg.xml</ph> descriptor. For eaxample:</p>
+                <pre outputclass="xml">&lt;dependency package="http://exist-db.org/html-templating"/&gt;</pre>
+                <p>It is also possible to create a dependency on a specific version, based on
+                        <xref href="https://semver.org/" scope="external">Semantic
+                        Versioning</xref>. This can be done by adding either of the attributes:
+                    <ph>version</ph>, <ph>semver</ph>, <ph>semver-min</ph>,
+                    <ph>semver-max</ph>: </p>
+                <dl>
+                        <dlentry>
+                            <dt>
+                                <ph>version</ph>
+                            </dt>
+                            <dd>
+                            <p>A simple version string which must exactly match the version
+                                string of the package to install.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>
+                                <ph>semver</ph>
+                            </dt>
+                            <dd>
+                            <p>A "semantic" version string: the version number must follow the
+                                scheme <ph>x.x.x</ph>. Selects the highest version in the range
+                                of versions starting with <ph>semver</ph>. </p>
+                            <p>For example, if semver is <ph>1.2</ph>, a package with version
+                                <ph>1.2.3</ph> will be selected because it is in the
+                                <ph>1.2</ph> release series. Likewise, if <ph>semver</ph> is
+                                <ph>1</ph>, any package with a version starting with
+                                <ph>1</ph> will be chosen.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>
+                                <ph>semver-min</ph>
+                            </dt>
+                            <dd>
+                            <p>Defines a minimal required version according to the
+                                <ph>semver</ph> scheme.</p>
+                        </dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>
+                                <ph>semver-max</ph>
+                            </dt>
+                            <dd>
+                            <p>Defines a maximum version according to the <ph>semver</ph>
+                                scheme.</p>
+                        </dd>
+                        </dlentry>
+                    </dl>
+                <p>These attributes are mutually exclusive, except for <ph>semver-min</ph>
+                    and <ph>semver-max</ph>, which may appear together. We recommend using
+                    <ph>semver</ph>, <ph>semver-min</ph> and <ph>semver-max</ph> where
+                    possible.</p>
+                <p>It is also possible to require a certain eXist-db version (for versions
+                    greater than 2.2). The Dashboard will prevent installation of packages into
+                    unsupported instances and display a warning to the user. To require such a
+                    specific eXist-db version, include a processor dependency in your
+                    descriptor:</p>
+                <pre outputclass="xml">&lt;dependency processor="http://exist-db.org" semver-min="3.1.0" semver-max="4.5.0"/&gt;</pre>
+            </section>
+
+            
+
+            <section id="library-modules">
+                    <title>Library Modules</title>
+                
+
+                <p>A package may list one or more library modules to register with eXist-db. The
+                    registered modules will become globally available within the eXist-db instance
+                    and may be used by other packages without knowing where the module code is
+                    stored. </p>
+                <p>For example, the following descriptor registers the module
+                        <ph>functx.xql</ph> using the given namespace: </p>
+                <pre outputclass="xml">&lt;package xmlns="http://expath.org/ns/pkg" name="http://www.functx.com" abbrev="functx" version="1.0" spec="1.0"&gt;
+  &lt;title&gt;
+    FunctX library
+  &lt;/title&gt;
+  &lt;xquery&gt;
+    &lt;namespace&gt;
+      http://www.functx.com
+    &lt;/namespace&gt;
+    &lt;file&gt;
+      functx.xql
+    &lt;/file&gt;
+  &lt;/xquery&gt;
+&lt;/package&gt;</pre>
+                <p>The namespace has to correspond to the namespace defined in the module
+                    declaration of the XQuery module. The file should be placed into a subdirectory
+                    of the .xar archive, named "content". The structure of the <ph>.xar</ph> for
+                    the <ph>functx</ph> library would be as follows:</p>
+                <pre>/expath-pkg.xml
+/repo.xml
+/content/functx.xql</pre>
+                <p>Only XQuery files which are registered in <ph>expath-pkg.xml</ph> need to
+                    go into this special directory. You are free to keep other XQuery files wherever
+                    you want. Also, XQuery resources which are only used by a single application,
+                    should <i>not</i> be registered (to avoid messing up the global
+                    context). Registering a module only makes sense for libraries which will likely
+                    be used by several applications.</p>
+                <p>After installing the package, you should be able to use the registered XQuery
+                    modules from anywhere within the database instance without knowing the exact
+                    import path. Thus the following import statement will be sufficient to import
+                    the <ph>functx</ph> module:</p>
+                <pre outputclass="xquery">import module namespace functx="http://www.functx.com";
+
+functx:capitalize-first('hello')</pre>
+            </section>
+
+            
+
+            <section id="java-lib">
+                    <title>Java Libraries</title>
+                
+
+                <p>eXist-db also supports XQuery extension modules written in Java. These require
+                    a slightly different mechanism for integration into a <ph>.xar</ph>
+                    package. This is an extension to the standard EXPath format and should goes into
+                    a separate file, named <ph>exist.xml</ph>. </p>
+                <p>As an example, the <ph>exist.xml</ph> descriptor of the cryptographic
+                    extension module is shown below:</p>
+                <pre outputclass="xml">&lt;package xmlns="http://exist-db.org/ns/expath-pkg"&gt;
+  &lt;jar&gt;
+    expath-crypto.jar
+  &lt;/jar&gt;
+  &lt;java&gt;
+    &lt;namespace&gt;
+      http://expath.org/ns/crypto
+    &lt;/namespace&gt;
+    &lt;class&gt;
+      org.expath.exist.crypto.ExistExpathCryptoModule
+    &lt;/class&gt;
+  &lt;/java&gt;
+&lt;/package&gt;</pre>
+                <p>The descriptor may contain one or more <ph>jar</ph> elements, each pointing
+                    to a Java <ph>.jar</ph> archive to be installed. Arbitrary
+                    <ph>.jar</ph> files can be listed here: they do not need to be XQuery
+                    extension modules. Again, the <ph>.jar</ph> files should be placed into the
+                    "content" subdirectory of the <ph>.xar</ph> file.</p>
+                <p>All <ph>.jar</ph> files will be dynamically added to eXist-db's class
+                    loader and become immediately available after deploying a package. A restart of
+                    eXist-db is not required.</p>
+                <p>The <ph>java</ph> element registers an XQuery extension module written in
+                    Java. This is similar to the <ph>xquery</ph> element for library modules,
+                    except that the namespace is mapped to a Java class instead of an XQuery file.
+                    The Java class should point to the <ph>Module</ph> class which defines
+                    the module.</p>
+            </section>
+
+        </section>
+
+        
+
+        <section id="sect-repoxml">
+                <title>
+                    <ph>repo.xml</ph>
+                </title>
+            
+
+            <p>The deployment descriptor contains additional metadata and defines how the package
+                will be installed into an eXist-db database instance. For example:</p>
+            <pre outputclass="xml">&lt;meta xmlns="http://exist-db.org/xquery/repo"&gt;
+  &lt;description&gt;
+    eXist-db Documentation
+  &lt;/description&gt;
+  &lt;author&gt;
+    eXist-db
+  &lt;/author&gt;
+  &lt;website&gt;
+    https://www.github.com/exist-db/documentation
+  &lt;/website&gt;
+  &lt;status&gt;
+    stable
+  &lt;/status&gt;
+  &lt;license&gt;
+    GNU Lesser General Public License, version 2.1
+  &lt;/license&gt;
+  &lt;copyright&gt;
+    true
+  &lt;/copyright&gt;
+  &lt;type&gt;
+    application
+  &lt;/type&gt;
+  &lt;target&gt;
+    doc
+  &lt;/target&gt;
+  &lt;prepare&gt;
+    pre-install.xql
+  &lt;/prepare&gt;
+  &lt;deployed/&gt;
+&lt;/meta&gt;</pre>
+            <p>The two settings: <ph>type</ph> and <ph>target</ph> determine how a
+                package is handled by the installer:</p>
+            <simpletable>
+                    <sthead>
+                        <stentry>
+                                Type of package
+                            </stentry>
+                        <stentry>
+                                type
+                            </stentry>
+                        <stentry>
+                                target
+                            </stentry>
+                    </sthead>
+                    <strow>
+                        <stentry>
+                                Application package
+                            </stentry>
+                        <stentry>
+                                <ph>application</ph>
+                            </stentry>
+                        <stentry>
+                                specified
+                            </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                                Resource package
+                            </stentry>
+                        <stentry>
+                                <ph>library</ph>
+                            </stentry>
+                        <stentry>
+                                specified
+                            </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                                Library package
+                            </stentry>
+                        <stentry>
+                                <ph>library</ph>
+                            </stentry>
+                        <stentry>
+                                not specified
+                            </stentry>
+                    </strow>
+                </simpletable>
+            <p>An application package has <ph>type</ph> set to <ph>application</ph> and
+                specifies a <ph>target</ph> because it needs to be deployed into the database.
+                Contrary to this, a library package only registers XQuery or other modules, but no
+                resources need to be stored into the database, so <ph>target</ph> is empty.</p>
+
+            <dl>
+                    <dlentry>
+                        <dt>
+                            <ph>type</ph>
+                        </dt>
+                        <dd>
+                        <p>Should be set to either <ph>application</ph> or
+                            <ph>library</ph>. We assume a library has no GUI. A library will
+                            therefore not be shown on the main Dashboard page, which only lists
+                            applications.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>target</ph>
+                        </dt>
+                        <dd>
+                        <p>Specifies the collection where the contents of the package will be
+                            stored. Top-level files in the package will end up in this collection,
+                            resources in sub-directories will go into sub-collections. Please note
+                            that the target collection can be changed by the package manager during
+                            install: It is a recommendation, not a requirement.</p>
+                        <p>The collection path should be relative to the repository root
+                            collection defined in the configuration (usually
+                            <ph>/db/apps</ph>).</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>permissions</ph>
+                        </dt>
+                        <dd>
+                        <p>You can define package specific permissions in the
+                                <ph>repo.xml</ph> to use when uploading package contents
+                            like this: </p>
+                        <pre outputclass="xml">&lt;permissions user="app-user" password="123" group="app-group" mode="rw-rw-r--"/&gt;</pre>
+                        <p> All resources and collections will be owned by the specified user and
+                            permissions will be changed to those given in <ph>mode</ph>.
+                            If the user does not exist, the deploy function will try to create it,
+                            using the password specified in the <ph>password</ph>
+                            attribute.</p>
+                        <p>Concerning permissions: the execute <ph>x</ph> flag will be set
+                            automatically on all XQuery files, in addition to the default
+                            permissions defined in the descriptor. For more control over
+                            permissions, use a post-install XQuery script (see element
+                                <ph>finish</ph> below).</p>
+                        <p> It is generally recommended to specify users in this manner when a
+                            package requires write privileges to the database, and to use a custom
+                            user-group (i.e. not <ph>dba</ph>). To avoid conflicts with locally
+                            defined user-names and group names, packages that do not require write
+                            access can omit permissions in their <ph>repo.xml</ph>. These
+                            packages will be assigned to the <ph>guest</ph> user group by
+                            default.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>prepare</ph>
+                        </dt>
+                        <dd>
+                        <p>Points to an XQuery script inside the root of the package archive,
+                            which will be executed before any package data is uploaded to the
+                            database. By convention the XQuery script is called
+                                <ph>pre-install.xql</ph>, but this is not a
+                            requirement.</p>
+                        <p>If you create a package via eXide, it will generate a default
+                                <ph>pre-install.xql</ph> which uploads the default
+                            collection configuration to the system collection. This needs to be done
+                            before deployment to guarantee that index definitions are applied when
+                            data is uploaded to the db.</p>
+                        <p>The target collection, the file system path to the current package
+                            directory and eXist-db's home directory, are passed to the script as
+                            external variables:</p>
+                        <pre outputclass="xquery">(: file path pointing to the eXist-db installation directory :)
+declare variable $home external;
+(: path to the directory containing the unpacked .xar package :)
+declare variable $dir external;
+(: the target collection into which the app is deployed :)
+declare variable $target external;</pre>
+                        <p>The script can use these to read files contained in the
+                            package.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>finish</ph>
+                        </dt>
+                        <dd>
+                        <p>Like <ph>prepare</ph>, this element must point to an XQuery script.
+                            This will be executed <i>after</i> all data has been
+                            uploaded to the database. It receives the same external variables as the
+                            prepare script. The convention is to name the script
+                                <ph>post-install.xql</ph>.</p>
+                        <p>Use the <ph>finish</ph> script to run additional tasks or move data
+                            into different collections. For example, the XQuery function
+                            documentation app runs an indexing task from the finish trigger to
+                            extract documentation from all XQuery modules known to the database at
+                            the time.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+                            <ph>deployed</ph>
+                        </dt>
+                        <dd>
+                        <p>This element is set automatically when the package is deployed into a
+                            database instance. It is used by eXide to track changes and does not
+                            need to be specified in the original <ph>repo.xml</ph>
+                            descriptor.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+    </section>
+        <section id="considerations">
+            <title>General considerations when writing a package</title>
+        
+
+        <p>Packages should be portable and should not make any assumptions about the collection
+            path in which they will be installed. So best to use relative paths throughout XQuery
+            modules, in particular for import statements. Just as a reminder: a relative path in an
+            "import module namespace..." expression is always relative to the XQuery which contains
+            the import.</p>
+        <p>If an XQuery needs to access data provided by another package, it should locate the
+            other package by its package name and not by using an absolute collection path which may
+            change in the future. For example, if an application requires access to data stored in
+            another package called "data-pkg", it could define a variable to point to the correct
+            collection as follows:</p>
+        <pre outputclass="xquery">declare namespace expath = "http://expath.org/ns/pkg";
+
+declare variable $local:data-pkg-collection :=
+    let $descriptor :=
+        collection(repo:get-root())//expath:package[@name = "http://foo.com/data-pkg"]
+    return
+        util:collection-name($descriptor)
+;
+
+(: Query data provided by data-pkg :)
+collection($local:data-pkg-collection)//foo</pre>
+    </section>
+        <section id="config-root">
+            <title>Configuring the repository root</title>
+        
+
+        <p>The root collection for deployed packages can be configured in
+                <ph>conf.xml</ph>:</p>
+        <pre outputclass="xml">&lt;repository root="/db/apps"/&gt;</pre>
+        <p>The install location specified in the <ph>target</ph> element of
+                <ph>repo.xml</ph> will always be relative to this root collection.</p>
+        <p>eXist-db's URL rewriting is by default configured to map any path starting with
+            <ph>/apps</ph> to the repository root collection. Check
+                <ph>etc/webapp/WEB-INF/controller-config.xml</ph> and the <xref href="urlrewrite" scope="external">URL rewriting documentation</xref>.</p>
+    </section>
+        <section id="programm-install">
+            <title>Programmatically installing packages</title>
+        
+
+        <p>The <ph>repo</ph> XQuery module provides a number of functions to
+            programmatically install, remove or inspect packages. The Dashboard Package Manager
+            relies on the same functions.</p>
+        <p>The module distinguishes between <i>installation</i> and
+                <i>deployment</i> steps. The reason for this distinction is: while the
+            installation process is standardized by the EXPath packaging specification, the
+            deployment step is implementation defined and specific to eXist-db.
+                <i>Installation</i> will register a package with the EXPath packaging
+            system, but not copy anything into the database. <i>Deployment</i> will
+            deploy the application into the database as specified by the <ph>repo.xml</ph>
+            descriptor.</p>
+        <p>The most convenient way to install a package are the
+            <ph>repo:install-and-deploy</ph> and <ph>repo:install-and-deploy-from-db</ph>
+            functions. <ph>repo:install-and-deploy</ph> downloads the specified package from a
+            public repository. For example, one can install the eXist-db demo apps using the
+            following call:</p>
+        <pre outputclass="xquery">repo:install-and-deploy("http://www.functx.com", "1.0", "https://exist-db.org/exist/apps/public-repo/find")</pre>
+        <p>The first parameter denotes the unique name of the package to install. The second may
+            contain a specific version or the empty sequence. The third parameter is the URI for the
+            public repository. The function call will download, install and deploy the package as
+            well as any dependencies it defines. If the installation succeeds, an element will be
+            returned to indicate the target collection into which the package was deployed.</p>
+        <p>The <ph>repo:install-and-deploy-from-db</ph> function works in a similar way, but
+            reads the package data to install from a resource stored in the database.</p>
+        <p>To uninstall a package, you should first call <ph>repo:undeploy</ph>, followed by
+            <ph>repo:remove</ph>. For instance:</p>
+        <pre outputclass="xquery">repo:undeploy("http://exist-db.org/apps/demo"), repo:remove("http://exist-db.org/apps/demo")</pre>
+        <p>To list all installed packages, call <ph>repo:list</ph>. This will return the
+            unique name of every installed package. </p>
+    </section>
+        <section id="run-repo">
+            <title>Running your own repository</title>
+        
+
+        <p>You can run your private repository and install packages from it, for instance to
+            distribute applications to your customers. The eXist-db repository is implemented by the
+            application package <ph>http://exist-db.org/apps/public-repo</ph>. The code can be
+            downloaded from the <xref href="https://github.com/eXist-db/public-xar-repo" scope="external">eXist-db GitHub</xref>
+            repo.</p>
+        <p>Once you have built and installed the app, you can upload the package
+            <ph>.xar</ph> files you wish to distribute into the collection
+                <ph>public-repo/public</ph>. To make the uploaded <ph>.xar</ph> files
+            available, run the query <ph>public-repo/modules/update.xql</ph> once as an
+            <ph>admin</ph> user. This will create a document <ph>apps.xml</ph> in
+                <ph>public-repo/public</ph>.</p>
+    </section>
+    </body>
+</topic>

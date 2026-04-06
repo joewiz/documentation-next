@@ -1,0 +1,322 @@
+<topic id="advanced-installation">
+    <title>Advanced Installation Methods</title>
+    <prolog>
+        <data name="date" value="4Q24"/>
+        <data name="keyword" value="installation"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>The eXist-db <xref href="basic-installation" scope="external">Basic Installation</xref> article
+        describes how to install and start eXist-db for basic usage. This article explains more
+        advanced methods of installing and running eXist, for instance for a headless (no GUI)
+        system, running it as a service, etc.</p>
+        <section id="headless">
+            <title>Headless Installation</title>
+        
+        <p>The <xref href="basic-installation" scope="external">Basic Installation</xref> of eXist-db
+            requires a graphical desktop. You can also install eXist on a headless (no GUI) system.
+            For this launch the installer from the command line, using the <ph>-console</ph>
+            option:</p>
+        <pre>java -jar eXist-{version}.jar -console</pre>
+        <p>In console mode, the installer will prompt for several parameters (almost like the GUI
+            version does). A dump of a sample interaction is shown below:</p>
+        <pre>$ java -jar exist-installer/target/exist-installer-5.0.0-RC8-SNAPSHOT.jar
+Select target path [/Users/wolf/Source/trunk/eXist] 
+/Applications/eXist/
+press 1 to continue, 2 to quit, 3 to redisplay
+1
+Set Data Directory
+Please select a directory where eXist will keep its data files. On Vista and Windows 7, this should be outside the usual 'Program Files' directory:
+Data dir:  [data] 
+
+press 1 to continue, 2 to quit, 3 to redisplay
+1
+Set Admin Password
+Enter password:  [] 
+xyz
+Enter password:  [xyz] 
+xyz
+------------------------------------------
+
+Max memory in mb: [1024] 
+
+Cache memory in mb: [128] 
+
+press 1 to continue, 2 to quit, 3 to redisplay
+1
+[ Starting to unpack ]
+[ Processing package: Core (1/13) ]
+[ Processing package: Sources (2/13) ]
+[ Processing package: Apps (3/13) ]
+[ Processing package: bfDemos (4/13) ]
+[ Processing package: bfReferences (5/13) ]
+[ Processing package: dashboard (6/13) ]
+[ Processing package: demo (7/13) ]
+[ Processing package: doc (8/13) ]
+[ Processing package: eXide (9/13) ]
+[ Processing package: fundocs (10/13) ]
+[ Processing package: shared (11/13) ]
+[ Processing package: xsltforms (12/13) ]
+[ Processing package: xsltforms-demo (13/13) ]
+[ Unpacking finished ]
+[ Starting processing ]
+Starting process Setting admin password ... (1/1)
+--- Starting embedded database instance ---
+File lock last access timestamp: 30.12.2012 /Applications/eXist/data/dbx_dir.lck
+Found a stale lockfile. Trying to remove it:  /Applications/eXist/data/dbx_dir.lck
+File lock last access timestamp: 30.12.2012 /Applications/eXist/data/journal.lck
+Found a stale lockfile. Trying to remove it:  /Applications/eXist/data/journal.lck
+Dez 30, 2012 10:13:26 PM org.expath.pkg.repo.util.Logger info
+INFO: Create a new repository with storage: File system storage in /Applications/eXist/data/expathrepo
+Setting admin user password...
+--- Initialization complete. Shutdown embedded database instance ---
+[ Console installation done ]</pre>
+        <section id="docker-compose">
+                <title>Multi-container environments</title>
+            <p>We highly recommend configuring a <ph>docker-compose.yml</ph> for local development or integration into multi-container environments.</p>
+            <pre># starting eXist-db
+docker-compose up -d
+# stop eXist-db
+docker-compose down</pre>
+            <p>You can see an example configuration file below. Note that e.g.<ph>${EXIST_DATA_DIR}</ph> can be passed from an external file, and the use of the <ph>volume</ph> instructions. For all the available options please consult the <xref href="https://docs.docker.com/compose/" scope="external">docker compose</xref> documentation.</p>
+            <pre>version: '3.6'
+services:
+  exist:
+    image: existdb/existdb:release
+    container_name: exist
+    ports:
+        - 8080:8080
+        - 8443:8443
+    networks:
+      - www
+    volumes:
+      - type: volume
+        source: data
+        target: ${EXIST_HOME}/${EXIST_DATA_DIR}
+      - type: volume
+        source: config
+        target: ${EXIST_HOME}/${EXIST_CONFIG_DIR}
+
+volumes:
+  data:
+    driver: local
+    name: exist-data
+  config:
+    driver: local
+    name: exist-config
+
+networks:
+  www:
+    name: www
+    driver: bridge</pre>
+        </section>
+    </section>
+        <section id="service">
+            <title>Running eXist-db as a Service</title>
+        
+        <p>Instead of manually running the eXist-db server in a shell window, you can run it as a
+            background service which is automatically launched during system start-up. This can be
+            convenient, especially for servers. eXist-db continues to run even after users have
+            logged off.</p>
+
+        
+
+        <section id="windows">
+                <title>Windows</title>
+            
+            <p>On Windows there are three identical options:</p>
+            <ul>
+                    <li>
+                    <p>Choose <ph>Install eXist-db as Service</ph> from the
+                        eXist-db's system tray application.</p>
+                </li>
+                    <li>
+                    <p>Choose <ph>Install eXist-db as Service</ph> from
+                        eXist-db's entry in the Windows start menu.</p>
+                </li>
+                </ul>
+            <p>Installing eXist-db as a service on Windows requires full administrator
+                rights.</p>
+
+            <p>After installing eXist-db as a service, you'll find eXist-db in the list of
+                services registered with Windows:</p>
+            <fig>
+                    <image href="assets/services.png"/>
+                </fig>
+        </section>
+
+        
+
+        <section id="linux">
+                <title>Unix/Linux</title>
+            
+            <p> If your system supports <ph>systemd</ph> you can run the service wrapper as a
+                non-privileged user.</p>
+            <p>Begin by creating a new user in your system which is being created specifically to
+                run eXist-db as a service. You can do this by typing the following command:</p>
+            <pre>sudo useradd --system --shell /sbin/nologin --comment "eXist-db Service Account" existdb</pre>
+            <p>To follow the examples here this user is part of an existdb user group:</p>
+            <pre>sudo groupadd existdb</pre>
+            <p>This command creates a new system user named "existdb" which does not need to
+                login in order to run a service. In order for this new system user to be able to run
+                eXist-db, we need to change the permission of eXist-db to match this new user. You
+                do so by navigating to your <ph>$EXIST_HOME</ph> folder and typing the
+                following two commands:</p>
+            <pre>sudo chown -R existdb:existdb .
+</pre>
+            <p>These two commmands modify the ownership and group permissions recursively
+                throughout the whole eXist-db project to your new existdb system user. Now only this
+                user can run eXist-db. Next, navigate to the <ph>/etc/systemd/system</ph>
+                sub-directory. Once there, create an existdb.service file which contains the
+                following information at a minimum:</p>
+            <pre>[Unit]
+Description=eXist-db Server
+Documentation=https://exist-db.org/exist/apps/doc/
+After=syslog.target
+
+[Service]
+Type=simple
+User=existdb
+Group=existdb
+Environment="JAVA_HOME=/path/to/jdk8"
+Environment="JAVA_OPTS=-XX:+UseG1GC -XX:+UseStringDeduplication -XX:MaxRAMPercentage=75.0"
+ExecStart=/path/to/exist-5.0.0/bin/startup.sh
+
+[Install]
+WantedBy=multi-user.target
+</pre>
+            <p>Once this file is stored in this location, you need to update permissions. Give
+                ownership of this file to the exist user by using the following commands:</p>
+            <pre>sudo chown existdb:existdb existdb.service
+</pre>
+            <p>You can then install the existdb service, by runniung <ph>sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable existdb</ph>.
+                If you then want to start eXist-db as a service, run <ph>sudo systemctl start existdb</ph>.</p>
+            <p>Below is a list of common commands to interact with the newly created and
+                configured service:</p>
+            <ul>
+                    <li>
+                    <p>
+                            <ph>sudo systemctl start existdb</ph> - Enter command to
+                        start eXist-db</p>
+                </li>
+                    <li>
+                    <p>
+                            <ph>sudo systemctl stop existdb</ph> - Enter command to stop
+                        eXist-db</p>
+                </li>
+                    <li>
+                    <p>
+                            <ph>sudo systemctl enable existdb</ph> - Enter command to
+                        enable eXist-db to automatically start running after a reboot of your
+                        system</p>
+                </li>
+                    <li>
+                    <p>
+                            <ph>sudo systemctl disable existdb</ph> - Enter commande to
+                        disable eXist-db from automatically starting after a reboot of your
+                        system</p>
+                </li>
+                    <li>
+                    <p>
+                            <ph>sudo systemctl restart existdb</ph> - Enter command to
+                        restart eXist-db</p>
+                </li>
+                    <li>
+                    <p>
+                            <ph>systemctl status existdb</ph> - Enter command to check the status
+                        of eXist-db</p>
+                </li>
+                    <li>
+                    <p>
+                            <ph>journalctl</ph> - Run the following command to check systemd
+                        journal</p>
+                </li>
+                </ul>
+        </section>
+    </section>
+        <section id="bin-executables">
+            <title>Alternatives for scripts in the bin Directory</title>
+        
+
+        <p>Included in the distribution are a number of useful <ph>.sh</ph> (Unix
+            Shell) and <ph>.bat</ph> (Windows batch) programs located in the
+            <ph>bin</ph> sub-directory. Their names speak for themselves.</p>
+        <p>However, if you find that programs do not launch, you can try to manually launch them
+            on the command-line without the scripting wrapper. This often provides useful debugging
+            information.</p>
+        <p>To manually launch these scripts, give the following commands:</p>
+        <dl>
+                <dlentry>
+                    <dt> <ph>startup.sh</ph> (Unix) / <ph>startup.bat</ph> (Windows)</dt>
+                    <dd>
+                    <p>Starts the included Jetty web server at port 8080. eXist runs as a web
+                        application, located at <xref href="http://localhost:8080/exist/" scope="external">http://localhost:8080/exist/</xref>.
+                        For further options have a look at the following section about 
+                        <xref href="#cli-flags" scope="external">command line flags</xref>.
+                    </p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>shutdown.sh</ph> (Unix) / <ph>shutdown.bat</ph> (Windows)</dt>
+                    <dd>
+                    <pre>shutdown.sh -p youradminpassword</pre>
+                    <p>Closes the running instance of eXist. If eXist has been started with
+                        <ph>startup.sh</ph>, calling <ph>shutdown.sh</ph> will
+                        also stop the Jetty web server. Otherwise, only the database is stopped by
+                        this call (since eXist has no control over the environment in which it is
+                        running). You should <i>always</i> call
+                        <ph>shutdown</ph> before killing the server process.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>client.sh</ph> (Unix) / <ph>client.bat</ph> (Windows)</dt>
+                    <dd>
+                    <p>Use one of these scripts to launch the <xref href="java-admin-client" scope="external">Java Admin Client</xref>.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="cli-flags">
+            <title>Command line flags to set host, ports and configuration</title>
+        
+        <p>There are several java tool options available to change the host, http and
+            https port on which existdb will listen.
+        </p>
+        <dl>
+                <dlentry>
+                    <dt> <ph>jetty.host</ph>
+                    </dt>
+                    <dd>
+                    <p>controls on which IP jetty binds to (default is 0.0.0.0)</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>jetty.http.port</ph>
+                    </dt>
+                    <dd>
+                    <p>controls on which port jetty will listen for HTTP-requests (default is
+                        8080)</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>jetty.ssl.port</ph>
+                    </dt>
+                    <dd>
+                     <p>controls on which port jetty will listen for HTTPS-requests
+                          (default is 8443)</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>JAVA_OPTS='-Djetty.host=127.0.0.1 -Djetty.http.port=9999' startup.sh</ph>
+                </dt>
+                    <dd>
+                    <p>Example for linux/unix:</p>
+                    <p>Starts the included Jetty web server at port 9999 that will only listen
+                        on the local IP 127.0.0.1. eXist runs as a web application, located at
+                        <xref href="http://127.0.0.1:9999/exist/" scope="external">http://127.0.0.1:9999/exist/</xref>.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+    </body>
+</topic>

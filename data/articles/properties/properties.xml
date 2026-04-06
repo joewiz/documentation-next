@@ -1,0 +1,78 @@
+<topic id="properties">
+    <title>Application properties</title>
+    <prolog>
+        <data name="date" value="3Q20"/>
+        <data name="keyword" value="properties"/>
+    </prolog>
+    <body>
+        <p>This article provides information on working with property files for exist
+        applications.</p>
+        <section id="intro">
+            <title>Introduction</title>
+        
+
+        <p>For most applications it is a good idea to provide settings in a property file. An
+                <xref href="https://search.maven.org/search?q=a:exist-db-addons" scope="external">exist-db-addons</xref> library, available in maven central, enables you to do so. </p>
+    </section>
+        <section id="usage">
+            <title>usage</title>
+        
+        <p>Below a setup for exist-db for properties.</p>
+        <section id="classpath">
+                <title>Include exist-db-addons</title>
+            
+            <p>For example in a Dockerfile:</p>
+            <pre outputclass="Dockerfile">ARG EXISTADDONSERSION=2.3
+COPY exist-db-addons-${EXISTADDONSERSION}.jar $EXIST_HOME/lib/
+ENV CLASSPATH=$EXIST_HOME/lib/exist.uber.jar:$EXIST_HOME/lib/exist-db-addons-${EXISTADDONSERSION}.jar</pre>
+            <p>Or include a dependency in exist-db's pom.xml:</p>
+            <pre outputclass="xml">&lt;dependency&gt;
+  &lt;groupId&gt;
+    org.fryske-akademy
+  &lt;/groupId&gt;
+  &lt;artifactId&gt;
+    exist-db-addons
+  &lt;/artifactId&gt;
+  &lt;version&gt;
+    2.3
+  &lt;/version&gt;
+&lt;/dependency&gt;</pre>
+        </section>
+        <section id="conf.xml">
+                <title>configure in conf.xml</title>
+            
+            <p>add the module to exist:</p>
+            <pre outputclass="xml">&lt;module uri="http://exist-db.org/xquery/properties" class="org.fryske_akademy.exist.properties.PropertiesModule"&gt;
+  &lt;parameter name="basePath" value="/run/secrets"/&gt;
+&lt;/module&gt;</pre>
+        </section>
+        <section id="xquery">
+                <title>use properties in xquery</title>
+            
+            <p>load and use properties in your xquery</p>
+            <pre outputclass="xquery">declare namespace properties="http://exist-db.org/xquery/properties";
+
+declare variable $teidictjson:props := properties:loadProperties("teidictjson.properties");
+
+declare function teidictjson:getProperty($key as xs:string, $default as xs:string) as xs:string {
+    if (map:contains($teidictjson:props,$key)) then
+        map:get($teidictjson:props,$key)
+    else
+        $default
+};</pre>
+        </section>
+        <section id="docker-secret">
+                <title>optionally mount properties as docker secret</title>
+            
+            <p>In docker-compose.yml:</p>
+            <pre outputclass="yaml">secrets:
+  - source: ${APPNAME}.properties
+    target: teidictjson.properties
+    mode: 0444
+secrets:
+  fhwbjson.properties:
+    external: true</pre>
+        </section>
+    </section>
+    </body>
+</topic>

@@ -1,0 +1,460 @@
+<topic id="scheduler">
+    <title>Scheduler Module</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="operations"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist has a job scheduler based on <xref href="http://www.quartz-scheduler.org/" scope="external">Quartz</xref>, a full-featured, open source job scheduling system. This article will
+        explain how to use the scheduler.</p>
+        <section id="job-schedule">
+            <title>Scheduling Jobs</title>
+        
+
+        <p>Jobs can be configured for execution by the scheduler in one of two ways:</p>
+
+        <dl>
+                <dlentry>
+                    <dt>System Start-up</dt>
+                    <dd>
+                    <p>Jobs may be statically scheduled by configuring them in the
+                        <ph>scheduler</ph> element of eXist-db's <ph>conf.xml</ph>
+                        configuration file. When eXist-db starts-up this configuration is read and
+                        the jobs will be scheduled with the scheduler. The configuration file
+                        contains (commented out) example jobs. An example of a scheduler
+                        entry:</p>
+
+                    <pre outputclass="xml">&lt;scheduler&gt;
+  &lt;job type="user" class="com.example.MyJob" period="600000" delay="300000" repeat="10" unschedule-on-exception="false"/&gt;
+&lt;/scheduler&gt;</pre>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Scheduler XQuery Module</dt>
+                    <dd>
+                    <note type="note">
+                            <p>The XQuery function module for initiating and managing scheduled jobs
+                            is not activated <i>out-of-the-box</i>. It
+                            has to be activated through the <ph>conf.xml</ph> file. See below
+                        </p>
+                        </note>
+                    <p>There is an XQuery library module, <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/scheduler" scope="external">Scheduler Module</xref>, which provides functions for scheduling jobs and
+                        managing jobs scheduled for execution. The scheduler XQuery library module
+                        is activated by uncommenting the following in eXist-db's
+                        <ph>conf.xml</ph> configuration file:</p>
+                    <pre outputclass="xml">&lt;module class="org.exist.xquery.modules.scheduler.SchedulerModule" uri="http://exist-db.org/xquery/scheduler"/&gt;</pre>
+                    <p>Once the scheduler XQuery library module is active, XQuery code can be
+                        written to invoke and manage <i>user</i> jobs (see <xref href="#sect-job-types" scope="local"/>).</p>
+
+                </dd>
+                </dlentry>
+            </dl>
+        <p>The scheduler keeps a log file of its actions and issues that occur when executing
+            jobs in <ph>logs/scheduler.log</ph>.</p>
+    </section>
+        <section id="sect-job-types">
+            <title>Job Types</title>
+        
+
+        <p>The scheduler supports three different types of job, each of which has a distinct
+            purpose:</p>
+        <dl>
+                <dlentry>
+                    <dt> <ph>Startup</ph> </dt>
+                    <dd>
+                    <p>Start-up jobs are executed only once during the database start-up. This
+                        execution occurs before the database becomes available for general use. Each
+                        start-up job is executed in-turn to completion.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>User</ph> </dt>
+                    <dd>
+                    <p>User jobs are a general class of job, authored by a user of the system.
+                        They can be scheduled for execution either periodically or as a one-off. A
+                        user job can also be configured to execute concurrently with another
+                        instance of itself, should schedules overlap due to execution time, or be
+                        mutually exclusive.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <ph>System</ph> </dt>
+                    <dd>
+                    <p>System jobs are similar to user jobs, but require the database to be in a
+                        consistent state: no other concurrent operations are running and all
+                        in-memory buffers have been flushed to disk. These are typically used for
+                        internal tasks such as flushing the database Journal. In general users
+                        should avoid scheduling this type of job because all other database
+                        operations will be paused until the job finishes or raises an exception. Any
+                        exception will be caught and a warning is written to the scheduler
+                        log.</p>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="job-author">
+            <title>Authoring Jobs</title>
+        
+
+        <p>The scheduler supports jobs that are authored in either XQuery or Java:</p>
+
+        <dl>
+                <dlentry>
+                    <dt>XQuery Jobs</dt>
+                    <dd>
+                    <p>Jobs coded in XQuery can be <ph>user</ph> type jobs only.</p>
+                    <p>An XQuery job is a standard XQuery Main Module which is stored in the
+                        database. You configure the scheduling of the job by providing the database
+                        path to the XQuery, for example: <ph>/db/my-collection/my-job.xq</ph>. </p>
+                    <p>XQuery job's are launched under the <i>guest</i> account. If
+                        you wish to perform tasks as another user , either switch permissions by
+                        calling <ph>xmldb:login()</ph> from within your job, or set the
+                        <ph>SetUid</ph>/<ph>SetGid</ph> bits on the XQuery file's
+                        permissions (see <xref href="security" scope="external">Security</xref> for more
+                        information).</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Java Jobs</dt>
+                    <dd>
+                    <p>Jobs coded in Java can be <ph>startup</ph>, <ph>system</ph> or
+                        <ph>user</ph> type jobs.</p>
+                    <p>A Java job is a class (available on eXist-db's classpath) which extends
+                        either <ph>org.exist.scheduler.UserJavaJob</ph> (for <ph>user</ph>
+                        type jobs) or <ph>org.exist.storage.SystemTask</ph>
+                        (<ph>startup</ph> or <ph>system</ph> type jobs). For example:</p>
+
+                    <pre outputclass="java">package com.example;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.exist.storage.BrokerPool;
+
+public class MyJob extends UserJavaJob {
+
+    private static final AtomicInteger COUNTER = new AtomicInteger();
+    private String jobName = "MyJob";
+    
+	public void execute(final BrokerPool brokerpool, final Map&lt;String, ?&gt; params) throws JobException {
+
+		System.out.println("****** My Job count=" + COUNTER.incrementAndGet());
+
+	}
+
+	public String getName() {
+		return jobName;
+	}
+
+    public void setName(final String name) {
+        this.jobName = name;
+    }
+}</pre>
+                </dd>
+                </dlentry>
+            </dl>
+    </section>
+        <section id="schedule">
+            <title>Job Schedule</title>
+        
+        <p>Job's may be scheduled using one of two mechanisms, a simple mechanism for periodic
+            execution, or a more complex mechanism which uses the Cron syntax to offer greater
+            flexibility.</p>
+        <section id="period">
+                <title>Periodic Scheduling</title>
+            
+
+            <p>For period scheduling enables you can specify for the job to run every
+                <ph>n</ph> milliseconds. There are additional options to specify a delay before
+                the first execution of the job, and to only repeat the execution of the job schedule
+                a fixed number of times.</p>
+        </section>
+
+        <section id="cron">
+                <title>Cron Scheduling</title>
+            
+            <p>Cron scheduling enables you to specify the execution schedule of a job using the
+                more complicated but flexible <xref href="https://en.wikipedia.org/wiki/Cron" scope="external">Cron</xref> syntax.</p>
+            <note type="note">
+                    <p>This section was copied from the <xref href="http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html" scope="external">Quartz Cron Trigger Tutorial</xref>.</p>
+                </note>
+
+            <section id="cron-intro">
+                    <title>Cron Introduction</title>
+                
+
+                <p> <ph>cron</ph> is a UNIX tool that has been around for a long time, so its
+                    scheduling capabilities are powerful and proven. The <ph>CronTrigger</ph>
+                    class is based on the scheduling capabilities of <ph>cron</ph>. </p>
+                <p> <ph>CronTrigger</ph> uses "<ph>cron</ph> expressions", which are able
+                    to create firing schedules such as: "At 8:00am every Monday through Friday" or
+                    "At 1:30am every last Friday of the month". </p>
+                <p> <ph>cron</ph> expressions are powerful, but can be confusing. This
+                    tutorial aims to take some of the mystery out of creating a <ph>cron</ph>
+                    expression, giving users a resource which they can visit before having to ask in
+                    a forum or mailing list. </p>
+            </section>
+
+            <section id="cron-format">
+                    <title>Cron Format</title>
+                
+
+                <p>A <ph>cron</ph> expression is a string comprised of 6 or 7 fields
+                    separated by white space. Fields can contain any of the allowed values, along
+                    with various combinations of the allowed special characters for that field. The
+                    fields are as follows: </p>
+                <simpletable>
+                        <sthead>
+                            <stentry> Field Name </stentry>
+                            <stentry> Mandatory? </stentry>
+                            <stentry> Allowed Values </stentry>
+                            <stentry> Allowed Special Characters </stentry>
+                        </sthead>
+                        <strow>
+                            <stentry> Seconds </stentry>
+                            <stentry> YES </stentry>
+                            <stentry> 0-59 </stentry>
+                            <stentry> , - * / </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Minutes </stentry>
+                            <stentry> YES </stentry>
+                            <stentry> 0-59 </stentry>
+                            <stentry> , - * / </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Hours </stentry>
+                            <stentry> YES </stentry>
+                            <stentry> 0-23 </stentry>
+                            <stentry> , - * / </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Day of month </stentry>
+                            <stentry> YES </stentry>
+                            <stentry> 1-31 </stentry>
+                            <stentry> , - * ? / L W </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Month </stentry>
+                            <stentry> YES </stentry>
+                            <stentry> 1-12 or JAN-DEC </stentry>
+                            <stentry> , - * / </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Day of week </stentry>
+                            <stentry> YES </stentry>
+                            <stentry> 1-7 or SUN-SAT </stentry>
+                            <stentry> , - * ? / L # </stentry>
+                        </strow>
+                        <strow>
+                            <stentry> Year </stentry>
+                            <stentry> NO </stentry>
+                            <stentry> empty, 1970-2099 </stentry>
+                            <stentry> , - * / </stentry>
+                        </strow>
+                    </simpletable>
+                <p>So <ph>cron</ph> expressions can be as simple as this: <ph>* * * * ?
+                    *</ph> </p>
+                <p>Or more complex, like this: <ph>0 0/5 14,18,3-39,52 ? JAN,MAR,SEP MON-FRI
+                    2002-201</ph>0 </p>
+            </section>
+
+            <section id="cron-characters">
+                    <title>Cron special characters</title>
+                
+
+                <ul>
+                        <li>
+                        <p> <ph>*</ph> ("all values") - used to select all values within a
+                            field. For example, "*" in the minute field means "every minute".
+                        </p>
+                    </li>
+                        <li>
+                        <p> <ph>?</ph> ("no specific value") - useful when you need to
+                            specify something in one of the two fields in which the character is
+                            allowed, but not the other. For example, if I want my trigger to fire on
+                            a particular day of the month (say, the 10th), but don't care what day
+                            of the week that happens to be, I would put "10" in the day-of-month
+                            field, and "?" in the day-of-week field. See the examples below for
+                            clarification. </p>
+                    </li>
+                        <li>
+                        <p> <ph>-</ph> - used to specify ranges. For example, "10-12" in the
+                            hour field means "the hours 10, 11 and 12". </p>
+                    </li>
+                        <li>
+                        <p> <ph>,</ph> - used to specify additional values. For example,
+                            "MON,WED,FRI" in the day-of-week field means "the days Monday,
+                            Wednesday, and Friday". </p>
+                    </li>
+                        <li>
+                        <p> <ph>/</ph> - used to specify increments. For example, "0/15" in
+                            the seconds field means "the seconds 0, 15, 30, and 45". And "5/15" in
+                            the seconds field means "the seconds 5, 20, 35, and 50". You can also
+                            specify '/' after the '' character - in this case '' is equivalent to
+                            having '0' before the '/'. '1/3' in the day-of-month field means "fire
+                            every 3 days starting on the first day of the month". </p>
+                    </li>
+                        <li>
+                        <p> <ph>L</ph> ("last") - has different meaning in each of the two
+                            fields in which it is allowed. For example, the value "L" in the
+                            day-of-month field means "the last day of the month" - day 31 for
+                            January, day 28 for February on non-leap years. If used in the
+                            day-of-week field by itself, it simply means "7" or "SAT". But if used
+                            in the day-of-week field after another value, it means "the last xxx day
+                            of the month" - for example "6L" means "the last friday of the month".
+                            When using the 'L' option, it is important not to specify lists, or
+                            ranges of values, as you'll get confusing results. </p>
+                    </li>
+                        <li>
+                        <p> <ph>W</ph> ("weekday") - used to specify the weekday
+                            (Monday-Friday) nearest the given day. As an example, if you were to
+                            specify "15W" as the value for the day-of-month field, the meaning is:
+                            "the nearest weekday to the 15th of the month". So if the 15th is a
+                            Saturday, the trigger will fire on Friday the 14th. If the 15th is a
+                            Sunday, the trigger will fire on Monday the 16th. If the 15th is a
+                            Tuesday, then it will fire on Tuesday the 15th. However if you specify
+                            "1W" as the value for day-of-month, and the 1st is a Saturday, the
+                            trigger will fire on Monday the 3rd, as it will not 'jump' over the
+                            boundary of a month's days. The 'W' character can only be specified when
+                            the day-of-month is a single day, not a range or list of days. The 'L'
+                            and 'W' characters can also be combined in the day-of-month field to
+                            yield 'LW', which translates to "last weekday of the month". </p>
+                    </li>
+                        <li>
+                        <p> <ph>#</ph> - used to specify "the nth" XXX day of the month. For
+                            example, the value of "6#3" in the day-of-week field means "the third
+                            Friday of the month" (day 6 = Friday and "#3" = the 3rd one in the
+                            month). Other examples: "2#1" = the first Monday of the month and "4#5"
+                            = the fifth Wednesday of the month. Note that if you specify "#5" and
+                            there is not 5 of the given day-of-week in the month, then no firing
+                            will occur that month. The legal characters and the names of months and
+                            days of the week are not case sensitive. MON is the same as mon. </p>
+                    </li>
+                    </ul>
+            </section>
+
+            <section id="ex-cron">
+                    <title>Cron examples</title>
+                
+
+                <p>Here are some full examples:</p>
+                <simpletable>
+                        <sthead>
+                            <stentry> Expression </stentry>
+                            <stentry> Meaning </stentry>
+                        </sthead>
+                        <strow>
+                            <stentry>  <ph>0 0 12 * * ? </ph>  </stentry>
+                            <stentry>  Fire at 12pm (noon) every day  </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 * * ?</ph>  </stentry>
+                            <stentry> Fire at 10:15am every day </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 * * ? *</ph>  </stentry>
+                            <stentry> Fire at 10:15am every day </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 * * ? 2005</ph>  </stentry>
+                            <stentry> Fire at 10:15am every day during the year 2005
+                                </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 * 14 * * ?</ph>  </stentry>
+                            <stentry> Fire every minute starting at 2pm and ending at
+                                    2:59pm, every day </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 0/5 14 * * ?</ph>  </stentry>
+                            <stentry> Fire every 5 minutes starting at 2pm and ending at
+                                    2:55pm, every day </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 0/5 14,18 * * ?</ph>  </stentry>
+                            <stentry> Fire every 5 minutes starting at 2pm and ending at
+                                    2:55pm, AND fire every 5 minutes starting at 6pm and ending at
+                                    6:55pm, every day </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 0-5 14 * * ?</ph>  </stentry>
+                            <stentry> Fire every minute starting at 2pm and ending at
+                                    2:05pm, every day </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 10,44 14 ? 3 WED</ph>  </stentry>
+                            <stentry> Fire at 2:10pm and at 2:44pm every Wednesday in the
+                                    month of March. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 ? * MON-FRI</ph>  </stentry>
+                            <stentry> Fire at 10:15am every Monday, Tuesday, Wednesday,
+                                    Thursday and Friday </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 15 * ?</ph>  </stentry>
+                            <stentry> Fire at 10:15am on the 15th day of every month
+                                </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 L * ?</ph>  </stentry>
+                            <stentry> Fire at 10:15am on the last day of every month
+                                </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 ? * 6L</ph>  </stentry>
+                            <stentry> Fire at 10:15am on the last Friday of every
+                                    month </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 ? * 6L</ph>  </stentry>
+                            <stentry> Fire at 10:15am on the last Friday of every
+                                    month </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 ? * 6L 2002-2005</ph>  </stentry>
+                            <stentry> Fire at 10:15am on every last friday of every month
+                                    during the years 2002, 2003, 2004 and 2005 </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 15 10 ? * 6#3</ph>  </stentry>
+                            <stentry> Fire at 10:15am on the third Friday of every
+                                    month </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 0 12 1/5 * ?</ph>  </stentry>
+                            <stentry> Fire at 12pm (noon) every 5 days every month, starting
+                                    on the first day of the month. </stentry>
+                        </strow>
+                        <strow>
+                            <stentry>  <ph>0 11 11 11 11 ?</ph>  </stentry>
+                            <stentry> Fire every November 11th at 11:11am. </stentry>
+                        </strow>
+                    </simpletable>
+                <p>Pay attention to the effects of '?' and '*' in the day-of-week and
+                    day-of-month fields!</p>
+            </section>
+
+            <section id="cron-notes">
+                    <title>Cron additional notes</title>
+                
+
+                <ul>
+                        <li>
+                        <p>Support for specifying both a day-of-week and a day-of-month value is
+                            not complete (you must currently use the '?' character in one of these
+                            fields). </p>
+                    </li>
+                        <li>
+                        <p>Be careful when setting fire times between mid-night and 1:00 AM -
+                            "daylight savings" can cause a skip or a repeat depending on whether the
+                            time moves back or jumps forward.</p>
+                    </li>
+                    </ul>
+            </section>
+        </section>
+    </section>
+    </body>
+</topic>

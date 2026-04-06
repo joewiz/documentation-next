@@ -1,0 +1,423 @@
+<topic id="exist-building">
+    <title>Building eXist-db</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="operations"/>
+        <data name="keyword" value="java-development"/>
+    </prolog>
+    <body>
+        <p>This article will tell you how to build eXist-db from source, please also check the <xref href="https://github.com/eXist-db/exist/blob/develop/BUILD.md" scope="external">build instructions</xref>
+    in the source-code repo.</p>
+        <section id="GitHub">
+            <title>Building eXist-db from GitHub</title>
+    
+
+    <p>Building eXist-db is quite easy and requires four simple steps:</p>
+    <ol>
+                <li>
+        <p>
+          <b>Make sure you have the required build tools installed</b>
+        </p>
+          <ul>
+                        <li>
+              <p>Java JDK - Building eXist-db requires JDK 8 or newer. If you are looking for an OpenJDK, then the <xref href="https://www.azul.com/downloads/zulu/" scope="external">Azul Zulu JDK</xref> may suite you.</p>
+            </li>
+                        <li>
+              <p>Apache Maven - Building eXist-db requires <xref href="https://maven.apache.org/" scope="external">Maven 3.6.0 or newer</xref>.</p>
+            </li>
+                        <li>
+              <p>Docker (<i>optional</i>) - If you wish to build the Docker image, then <xref href="https://www.docker.com/" scope="external">Docker</xref> is required.</p>
+            </li>
+                        <li>
+              <p>HFS Support (<i>optional</i>) - If you are on Linux and wish to build a DMG for Mac platforms.</p>
+              <ul>
+                                <li>
+                  <p>CentOS etc. - <ph>sudo yum install hfsutils hfsplus-tools</ph>
+                                    </p>
+                </li>
+                                <li>
+                  <p>Debian etc. - <ph>sudo apt-get install hfsprogs hfsplus</ph>
+                                    </p>
+                </li>
+                            </ul>
+            </li>
+                        <li>
+              <p>Apple Developer Code signing certificate (<i>optional</i>) - If you are on a Mac and wish to build and sign a DMG.</p>
+            </li>
+                    </ul>
+      </li>
+                <li>
+        <p>
+          <b>Clone from Github</b>
+        </p>
+        <p>The GitHub URL for the develop branch is:</p>
+        <pre>https://github.com/eXist-db/exist.git</pre>
+        <p>Please follow the instructions on <xref href="https://github.com/eXist-db/exist" scope="external">our GitHub page</xref> page (<xref href="https://github.com/eXist-db/exist/blob/develop/README.md" scope="external">
+                        <ph>README.md</ph>
+                    </xref> section)</p>
+        <p>You can clone it by running:</p>
+        <pre>git clone --single-branch --branch=develop https://github.com/eXist-db/exist.git</pre>
+        <note type="note">
+                        <p>The above will only clone the <ph>develop</ph> branch, if you require all branches, you should omit the <ph>--single-branch --branch=develop</ph> arguments.</p>
+                    </note>
+      </li>
+                <li>
+        <p>
+          <b>Set <ph>JAVA_HOME</ph>
+                    </b>
+        </p>
+        <p>Before starting the build, your <ph>JAVA_HOME</ph> environment variable should be
+          set to point to the root directory of the JAVA JDK (note: JDK, not JRE!). Open a console on Unix/Linux, or a DOS cmd prompt on
+          Windows and type:</p>
+        <pre>set JAVA_HOME=c:\path\to\jdk</pre>
+        <p>on Windows or</p>
+        <pre>export JAVA_HOME=/path/to/jdk</pre>
+        <p>on Unix/Linux.</p>
+      </li>
+                <li>
+        <p>
+          <b>Build eXist</b>
+        </p>
+        <p>Change into the eXist-db directory you just checked out and call</p>
+        <pre>mvn -DskipTests clean compile</pre>
+      </li>
+            </ol>
+  </section>
+        <section id="build-system">
+            <title>Using the Build System</title>
+    
+
+    <p>You can rebuild all eXist-db packages and distributions from the cloned source code:</p>
+    <pre>mvn -DskipTests clean package</pre>
+    <p>This will create a fresh distributions in the <ph>exist-distribution/target</ph> directory, and a fresh installer in the <ph>exist-installer/target</ph> directory.</p>
+    <note type="note">
+                <p>If you wish to also build a Docker image, you should add the property <ph>-Ddocker=true</ph>.</p>
+                <p>If you wish to also build a signed DMG on Mac, you should add the properties <ph>-Dmac-signing=true -Dmac.codesign.identity="The ID of your Apple Developer Certificate"</ph>.</p>
+            </note>
+    <p>
+                <b>Useful Maven targets</b>
+            </p>
+            <simpletable>
+                <sthead>
+                    <stentry>Command</stentry>
+                    <stentry>Description</stentry>
+                </sthead>
+                <strow>
+                    <stentry>
+              <ph>mvn clean</ph>
+            </stentry>
+                    <stentry>
+              Cleans the files and directories generated by a previous build. Data is not preserved unless you have overriden the path to the data directory.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>mvn compile</ph>
+            </stentry>
+                    <stentry>
+              Recompiles any changed source code.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>mvn dependency:analyze</ph>
+            </stentry>
+                    <stentry>
+              Checks for any problems with the dependencies that eXist-db depends on.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>mvn test</ph>
+            </stentry>
+                    <stentry>
+              Runs all tests across all modules. Surefire HTML reports can be found in the modules <ph>target/surefire-reports/html</ph> folder.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>mvn install</ph>
+            </stentry>
+                    <stentry>
+              Installs all Maven artifacts to your local Maven repository (i.e. Unix/Linux: <ph>~/.m2/repository</ph>, or Windows: <ph>%USERPROFILE%\.m2\repository</ph>.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>mvn package</ph>
+            </stentry>
+                    <stentry>
+              Performs the full lifecycle build, after which eXist-db distributions can be found in <ph>exist-distribution/target</ph>, and an eXist-db IzPack installer can be found in <ph>exist-installer/target</ph>.
+            </stentry>
+                </strow>
+            </simpletable>
+    <p>
+                <b>Useful Maven properties and arguments</b>
+            </p>
+            <simpletable>
+                <sthead>
+                    <stentry>Argument</stentry>
+                    <stentry>Description</stentry>
+                </sthead>
+                <strow>
+                    <stentry>
+              <ph>-V</ph>
+            </stentry>
+                    <stentry>
+              Show the version of Maven and Java used for the build.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-o</ph>
+            </stentry>
+                    <stentry>
+              Execute Maven in offline (i.e. no Internet access!) mode.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-U</ph>
+            </stentry>
+                    <stentry>
+              Force Maven to check online for any updates to dependency versions.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-T</ph>
+            </stentry>
+                    <stentry>
+              Force Maven to execute the lifecycle for the reactor modules in parallel. For example <ph>-T 2C</ph> instructs Maven to use <i>2x</i> the core count of threads to parallelise the build. This can have a large positive imapact on build times.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-P profileName</ph> (Enable named profile)
+              <ph>-P !profileName</ph> (Disable named Profile)
+            </stentry>
+                    <stentry>
+              Enables of disables build profiles, see the <xref href="#build-profiles" scope="local">list of profiles</xref> below.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Ddocker=true</ph>
+            </stentry>
+                    <stentry>
+              Enable buiding eXist-db Docker images.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Ddocker.tag=tag-name</ph>
+            </stentry>
+                    <stentry>
+              Tags the built eXist-db Docker image with a specific tagname.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Dmac.signing=true</ph>
+            </stentry>
+                    <stentry>
+              Enable signing of Mac <ph>.app</ph> and <ph>.DMG</ph> files (only on Mac platforms).
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Dmac.codesign.identity="The ID of your Apple Developer
+                  Certificate"</ph>
+            </stentry>
+                    <stentry>
+              Specify the certificate for signing of Mac <ph>.app</ph> and <ph>.DMG</ph> files (only on Mac platforms).
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Dxar.resolve.offline=true</ph>
+            </stentry>
+                    <stentry>
+              Do not attempt to download the latest version of any EXPath Packages which are set to be auto-deployed. Useful for offline working; inferred by Maven's `-O` option.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-DskipTests</ph>
+            </stentry>
+                    <stentry>
+              Do not execute any tests.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Ddependency-check.skip=true</ph>
+            </stentry>
+                    <stentry>
+              Skip the OWASP dependency security analysis.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-Dtest=MyTestClassName</ph>
+            </stentry>
+                    <stentry>
+              The name of a single test to run. If running Maven from the root of the project as opposed to inside the specific module which houses the test, you sould also add <ph>-DfailIfNoTests=false</ph>.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>-DtrimStackTrace=false</ph>
+            </stentry>
+                    <stentry>
+              When running tests, if a stacktrace is produced as part of an error, show the full output instead of trimming it.
+            </stentry>
+                </strow>
+                <strow>
+                    <stentry>
+              <ph>MAVEN_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"</ph>
+            </stentry>
+                    <stentry>
+              When this precedes the <ph>mvn</ph> command, Maven will be run through the Java debugger, which allows you to connect from IntelliJ or another IDE which support JDWP.
+            </stentry>
+                </strow>
+            </simpletable>
+    <section id="build-profiles">
+                <title>Build Profiles</title>
+      
+      <p>Some aspects of the build are separated into profiles which may be enabled or disabled as needed.</p>
+      <p>
+                    <b>Build Profiles</b>
+                </p>
+                <simpletable>
+                    <sthead>
+                        <stentry>Profile Name</stentry>
+                        <stentry>Description</stentry>
+                        <stentry>Default</stentry>
+                    </sthead>
+                    <strow>
+                        <stentry>
+                <ph>skip-build-dist-archives</ph>
+              </stentry>
+                        <stentry>
+                Skip building eXist-db .tar.bz2 and .zip packages
+              </stentry>
+                        <stentry>
+                Disabled
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>docker</ph>
+              </stentry>
+                        <stentry>
+                Build/Publish an eXist-db Docker Container
+              </stentry>
+                        <stentry>
+                Disabled
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>installer</ph>
+              </stentry>
+                        <stentry>
+                Build/Publish an eXist-db IzPack installer
+              </stentry>
+                        <stentry>
+                Enabled
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>codesign-mac-app</ph>
+              </stentry>
+                        <stentry>
+                Codesign the eXist-db .app package. Requires macOS and an Apple Developer Certificate
+              </stentry>
+                        <stentry>
+                Enabled on macOS when <ph>-Dmac-signing=true</ph>
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>mac-dmg-on-mac</ph>
+              </stentry>
+                        <stentry>
+                Build/Publish a DMG for eXist-db from Mac. Requires macOS.
+              </stentry>
+                        <stentry>
+                Enabled on macOS when <ph>-Denv.CI=true</ph> is not set, e.g. Travis-CI
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>mac-dmg-on-unix</ph>
+              </stentry>
+                        <stentry>
+                Build/Publish a DMG for eXist-db from Unix. Requires Unix like OS with loopback filesystem and HFS tools.
+              </stentry>
+                        <stentry>
+                Enabled on Linux when <ph>-Denv.CI=true</ph> is not set, e.g. Travis-CI
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>codesign-mac-dmg</ph>
+              </stentry>
+                        <stentry>
+                Codesign the eXist-db DMG. Requires macOS and an Apple Developer Certificate
+              </stentry>
+                        <stentry>
+                Enabled on macOS when <ph>-Dmac-signing=true</ph>
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>java8-runtime-compatibility</ph>
+              </stentry>
+                        <stentry>
+                Ensure runtime compatibility with Java 8. Sets the <ph>-release 8</ph> to javac.
+              </stentry>
+                        <stentry>
+                Enabled on JDK 9+
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>micro-benchmarks</ph>
+              </stentry>
+                        <stentry>
+                eXist-db Micro-benchmarks
+              </stentry>
+                        <stentry>
+                Enabled
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>concurrency-stress-tests</ph>
+              </stentry>
+                        <stentry>
+                eXist-db JCStress Tests
+              </stentry>
+                        <stentry>
+                Enabled
+              </stentry>
+                    </strow>
+                    <strow>
+                        <stentry>
+                <ph>windows-disable-parallel-testing</ph>
+              </stentry>
+                        <stentry>
+                Causes the test suite to run without parallelism
+              </stentry>
+                        <stentry>
+                Enabled on AppVeyor Windows Builds
+              </stentry>
+                    </strow>
+                </simpletable>
+    </section>
+  </section>
+    </body>
+</topic>

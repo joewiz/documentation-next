@@ -1,0 +1,332 @@
+<topic id="basic-installation">
+    <title>Basic Installation</title>
+    <prolog>
+        <data name="date" value="2Q25"/>
+        <data name="keyword" value="installation"/>
+        <data name="keyword" value="getting-started"/>
+    </prolog>
+    <body>
+        <p>This article describes eXist-db's basic installation procedure. It will help you install
+        and setup eXist-db in a quick and easy way on, for instance, your laptop or a development
+        server. Before you know it you'll be up and running and programming XQuery!</p>
+        <section id="system-requirements">
+            <title>System Requirements</title>
+        
+
+        <p>eXist-db runs on any system Java runs on. So all recent versions of Linux, macOS, and
+            Windows are ok. The following requirements must be met:</p>
+        <ul>
+                <li>
+                <p>Java version 8 (eXist-db 3.x - 6.x)</p>
+                <p>Java version 21 (eXist-db 7.x)</p>
+            </li>
+                <li>
+                <p>About 500Mb of disk space for the installation</p>
+            </li>
+                <li>
+                <p>At least 512Mb memory to run</p>
+            </li>
+            </ul>
+        <p>Administrative privileges are not required to install or run eXist-db, but certain
+            installation procedures are not possible without administrative privileges. </p>
+
+
+        <note type="note">
+                <p>eXist-db is built on Java, a free, cross-platform software development
+                environment. Java comes in a number of versions, so it is important that you use the
+                version that eXist-db requires: Java 8 (since eXist-db 3.0). For instructions about
+                running Java on your operating system, see Oracle's <xref href="https://www.java.com/en/download/help/index_installing.xml" scope="external">Installing
+                Java</xref> page. <xref href="https://openjdk.java.net" scope="external">OpenJDK</xref> is a good open source alternative to the Oracle JVM and known to
+                work well with eXist-db.</p>
+                <p>eXist-db runs with both the Java JRE (Java Runtime Environment) and the JDK (Java
+                Development Kit). The JRE usually suffices. You only need the JDK to compile
+                eXist-db from its source code.</p>
+                <p>Details of the Java installation can be obtained with the <ph>java
+                -version</ph> command:</p>
+                <pre>…&gt; java -version
+openjdk version "1.8.0_442"
+OpenJDK Runtime Environment (build 1.8.0_442-b07)
+OpenJDK 64-Bit Server VM (build 25.442-b07, mixed mode)</pre>
+                <p>For Linux users: Unfortunately, Oracle's own pages (such as the link above) focus
+                on commercial Linux distributions. Users of other distributions are better served by
+                distribution-specific instructions. More information for specific versions of Linux
+                can be found at <xref href="https://livingtao.blogspot.com/2012/01/few-easy-steps-to-install-sunoracle-jdk.html" scope="external">Amazon Linux</xref>, <xref href="http://www.webupd8.org/2012/01/install-oracle-java-jdk-7-in-ubuntu-via.html" scope="external">Ubuntu</xref> and <xref href="http://www.webupd8.org/2012/06/how-to-install-oracle-java-7-in-debian.html" scope="external">Debian</xref>.</p>
+                <p>Note for pre eXist-db v2.2 versions: Due to compatibility issues it is NOT
+                recommended to use "OpenJDK6" (IcedTea) and "GNU Compiler for Java" (GCJ) which are
+                shipped by several Linux distributions.</p>
+            </note>
+
+        <note type="warning">
+                <p> If you have installed Saxon as a JRE extension (via the extensions folder), this
+                can cause a critical error during installation. To avoid this error either remove
+                the JRE extension, or install a second JRE just for use with eXist-db and set
+                JAVA_HOME accordingly.</p>
+            </note>
+    </section>
+        <section id="installation">
+            <title>Installing eXist-db</title>
+        
+
+        <p>The first steps in installing eXist-db are downloading the installer and firing it
+            up:</p>
+        <ul>
+                <li>
+                <p>Download the installer by following the download link on the 
+					<xref href="https://exist-db.org/" scope="external">eXist-db homepage</xref> page. We recommend
+                    that you download the latest stable release.</p>
+                <p>The installer is a single file called
+                    <ph>exist-installer-[version].jar</ph> (for instance
+                    <ph>exist-installer-6.3.0.jar</ph>). </p>
+            </li>
+                <li>
+                <p>Launch the eXist-db installer:</p>
+                <ul>
+                        <li>
+                        <p>On Mac and Windows, simply double-click the downloaded
+                            <ph>.jar</ph> file.</p>
+                        <note type="note">
+                                <p>On Mac OS X 10.7 and higher, a security feature called 
+								<xref href="https://support.apple.com/kb/HT5290" scope="external">Gatekeeper</xref>
+                                may prevent the installer from running since eXist-db is not
+                                registered with Apple. To circumvent the warning dialog and allow
+                                the installer to run, right-click or control-click the file and
+                                select Open.</p>
+                            </note>
+                    </li>
+                        <li>
+                        <p>On Linux distributions with a graphical desktop interface (e.g.,
+                            Ubuntu), you can launch the installer by making the <ph>.jar</ph>
+                            file executable, right-clicking it, and selecting the "Open With ...
+                            Java" option.</p>
+                    </li>
+                        <li>
+                        <p>If necessary you can launch the installer from the command line with
+                            the following command:</p>
+                        <pre>java -jar exist-installer-[version].jar</pre>
+                    </li>
+                    </ul>
+            </li>
+                <li>
+                <p>More advanced installation methods (like installing on a headless system) are
+                    described in the <xref href="advanced-installation#headless" scope="external">Advanced
+                    Installation</xref> article. If you wish to compile and run exist from source
+                    please see the article on <xref href="exist-building.xml" scope="external">building
+                    eXist</xref>
+                </p>
+            </li>
+            </ul>
+
+        <p>After the installer is launched, follow the prompts described below to complete the
+            installation. We recommend that you accept the default options, since these are designed
+            to make using eXist-db easy. The installer's dialog panes are as follows:</p>
+
+        <dl>
+                <dlentry>
+                    <dt>Installation Directory:</dt>
+                    <dd>
+                    <p>You will be asked where to install eXist-db on your hard disk. The
+                        installer will suggest an appropriate directory, but if you want, you can
+                        install eXist-db anywhere on your system.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Data Directory</dt>
+                    <dd>
+                    <p>The data directory is where eXist-db keeps its data files. The installer
+                        will suggest keeping the data files inside the application directory, but
+                        you can select a different location if you want.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Admin Password:</dt>
+                    <dd>
+                    <fig>
+                            <image href="assets/installer1.png"/>
+                        </fig>
+                    <p>The Admin Password is a password for the eXist-db administrator account,
+                        or more commonly, the "admin" account. This admin account belongs to you,
+                        and certain key functions in eXist-db can only be performed by the admin.
+                        While you can leave the admin password blank, we strongly recommend setting
+                        the password in order to secure access your installation of eXist-db. Why?
+                        Keep in mind that while eXist-db is running, it can be accessed by other
+                        users on your local network (be it in your home or office, or at a cafe or
+                        on a train). So, securing your administrator's account on eXist-db is a good
+                        way to protect your data and prevent others from abusing the account.</p>
+                    
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Package Installation:</dt>
+                    <dd>
+                    <fig>
+                            <image href="assets/installer2.png"/>
+                        </fig>
+                    <ul>
+                            <li>
+                            <p>The "Server" package is required to run eXist-db.</p>
+                        </li>
+                            <li>
+                            <p>The "Apps" package allows you to select or deselect a number of
+                                applications which will be installed into eXist-db when it starts
+                                the first time. If you are new to eXist-db, we recommend to install
+                                all applications. You'll
+                                need those to make your first steps in XQuery development.</p>
+                        </li>
+                        </ul>
+
+
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>After this the installer will go through a number of additional steps and screens
+            installing files and configuring the system. Once finished you're ready to run!</p>
+
+        <note type="note">
+                <p>For macOS users installing via disk image the default data directory will be:
+                <ph>/Users/$username$/Library/Application Support/org.exist</ph> </p>
+                <p>Change the default (empty) password via the <ph>Open dashboard</ph>
+                option from the menubar icon once installation has finished. <i>Watch
+                out:</i> during the initial run of eXist-db its Dock icon may remain active
+                even after eXist-db has been shut down. Simply right-click on the eXist-db Dock icon
+                and select <ph>Quit</ph>. On subsequent runs the dock icon should behave
+                as expected. </p>
+            </note>
+
+    </section>
+        <section id="launching">
+            <title>Launching eXist-db</title>
+        
+
+        <p>To launch eXist-db:</p>
+        <ul>
+                <li>
+                <p>On the Mac, double-click eXist-db's application icon where you installed
+                    eXist-db.</p>
+            </li>
+                <li>
+                <p>On Linux or Windows, select the <i>eXist-db Database
+                    Start-up</i> desktop shortcut icon or Start Menu entry.</p>
+            </li>
+            </ul>
+
+        <note type="note">
+                <p>eXist-db can also be run as a background service. For more information see the
+                <xref href="advanced-installation#headless" scope="external">Advanced Installation</xref>
+                article.</p>
+            </note>
+
+
+        <p>A splash screen appears showing the eXist-db logo. Upon first start-up, eXist-db will
+            upload the applications you selected in the installer. This may take a while and is only
+            done once.</p>
+        <fig>
+                <title>Splash screen during start-up</title>
+                <image href="assets/launch1.png" width="40%"/>
+            </fig>
+        <p>Once eXist is started, a menu bar icon (Mac) or system tray icon (Linux/Windows)
+            appears. This gives you access to eXist-db's tools and lets you shutdown or restart the
+            database. Click on it to see a menu providing direct access to the most important
+            tools.</p>
+        <fig>
+                <title>Menu bar icon on Mac</title>
+                <image href="assets/launch2.png" width="40%"/>
+            </fig>
+        <note type="note">
+                <p>Installing into the system tray does not work equally well on all operating
+                systems. If the system tray icon cannot be installed, you'll see a small toolbar
+                dialog pop up instead.</p>
+                <p>Also, the desktop integration does not work properly on all versions of Linux.
+                However, you may always use the provided shell scripts
+                (<ph>bin/startup.sh</ph>) to launch eXist-db without desktop
+                integration.</p>
+            </note>
+
+        
+
+        <section id="launch-cli">
+                <title>Launching from the command line</title>
+            
+
+            <p>You can also start eXist-db from the command line:</p>
+            <ol>
+                    <li>
+                    <p>Open your terminal or command prompt.</p>
+                </li>
+                    <li>
+                    <p>Change (<ph>cd</ph>) to the directory where you installed eXist-db
+                        (for instance, <ph>/opt/exist/</ph> for Linux,
+                        <ph>/Applications/eXist/</ph> for Mac, or <ph>C:\eXist</ph> for Windows).</p>
+                </li>
+                    <li>
+                    <p>Simply calling <ph>launcher.sh</ph> or <ph>launcher.bat</ph> will start eXist-db via the
+                        desktop launcher:</p>
+                    <pre>$EXIST_HOME/bin/launcher.sh</pre>
+
+                </li>
+                </ol>
+
+            <p>If you want to launch eXist-db without a GUI, use the shell scripts in the
+                <ph>bin/</ph> sub-directory. On Linux or Mac, enter
+                <ph>bin/startup.sh</ph>, on Windows <ph>bin\startup.bat</ph>. More
+                information about these start-up scripts in the <xref href="advanced-installation#headless" scope="external">Advanced Installation</xref>
+                article.</p>
+
+            <note type="note">
+                    <p>If you're having trouble launching eXist-db, see our articles on <xref href="troubleshooting" scope="external">Troubleshooting</xref> and <xref href="advanced-installation#headless" scope="external">Advanced
+                    Installation</xref>.</p>
+                </note>
+        </section>
+    </section>
+        <section id="diving-in">
+            <title>Diving In</title>
+        
+
+        <p>After a successful installation and launch, access eXist-db's <xref href="{dashboard}/" scope="external">Dashboard</xref>, the central administration and application
+            hub of eXist-db. If the system tray icon works on your system, select <ph>Open
+            Dashboard</ph> from the pop-up menu. Or just open a web browser and enter the
+            following URL: <xref href="http://localhost:8080/exist/" scope="external">http://localhost:8080/exist/</xref> </p>
+        <p>The following page appears:</p>
+        <fig>
+                <image href="assets/index1.png"/>
+            </fig>
+        <p>Seeing it? Congratulations! (Not seeing it? See our article on <xref href="troubleshooting" scope="external">Troubleshooting</xref>).</p>
+
+        <p>All right, ready to dive in! Your local installation includes everything you need.
+            Access is easy, through the applications on the <xref href="{dashboard}/" scope="external">Dashboard</xref> (see also the <xref href="dashboard" scope="external">article on the
+            Dashboard</xref>).</p>
+
+    </section>
+        <section id="shutting-down">
+            <title>Shutting Down the Database</title>
+        
+
+        <p>Improperly shutting down the database can corrupt your data files. Follow one of the
+            following procedures to properly shut down eXist-db:</p>
+        <ul>
+                <li>
+                <p>The system tray pop-up menu has an option <ph>Stop
+                    server</ph>. You may also choose <ph>Quit (and stop
+                    server)</ph> to shut down eXist-db and the system tray launcher at the
+                    same time.</p>
+            </li>
+                <li>
+                <p>From the <xref href="{dashboard}" scope="external">Dashboard</xref>: select the Shutdown
+                    button</p>
+            </li>
+                <li>
+                <p>From the command line, run the <ph>bin/shutdown.sh</ph> (Linux/Mac)
+                    or <ph>shutdown.bat</ph> (DOS/Windows) shutdown scripts, using your
+                    admin account's credentials:</p>
+                <pre>bin/shutdown.sh -u admin -p youradminpassword</pre>
+                <pre>bin/shutdown.bat -u admin -p youradminpassword</pre>
+            </li>
+                <li>
+                <p>From the <xref href="java-admin-client" scope="external">Java Admin Client</xref>: select
+                    <ph>Connection</ph>, <ph>Shutdown</ph> from
+                    the menu.</p>
+            </li>
+            </ul>
+    </section>
+    </body>
+</topic>

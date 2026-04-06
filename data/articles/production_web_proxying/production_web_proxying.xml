@@ -1,0 +1,140 @@
+<topic id="production_web_proxying">
+    <title>Production use - Proxying eXist-db behind a Web Server</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="operations"/>
+    </prolog>
+    <body>
+        <p>From a security perspective it is recognised best practice to proxy Web Application
+        Servers behind dedicated Web Servers. eXist-db is no exception. This article will provide
+        you with some examples on how to do this.</p>
+        <section id="intro">
+            <title>Introduction</title>
+        
+
+        <p>Interesting side-effects of proxying eXist-db behind a Web Server:</p>
+        <dl>
+                <dlentry>
+                    <dt>Unified web namespace</dt>
+                    <dd>
+                    <p>You can map eXist-db, or an application build on eXist-db, into an
+                        existing web namespace. If your website is -
+                        <ph>http://www.mywebsite.com</ph>, then your eXist-db application could
+                        be mapped into <ph>http://www.mywebsite.com/myapplication/</ph>.
+                        However, if you are tempted to shorten the URL of WebDAV resources with such
+                        a mapping, you will not succeed, due to the specifications of WebDAV that
+                        are not designed to handle such cases.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Virtual Hosting</dt>
+                    <dd>
+                    <p>Providing your Web Server supports Virtual Hosting, you should be able to
+                        proxy many URLs from different domains onto different eXist-db REST URLs,
+                        which may belong to one or more eXist-db instances. This allows a single
+                        eXist-db instance to perform virtual hosting.</p>
+                </dd>
+                </dlentry>
+            </dl>
+
+        <p>Examples are provided for:</p>
+        <dl>
+                <dlentry>
+                    <dt> <xref href="https://wiki.nginx.org/Main" scope="external">Nginx</xref> </dt>
+                    <dd>
+                    <p>A very small but extremely powerful Web Server which is also simple to
+                        configure. It powers some of the biggest sites on the Web. See <xref href="#sect-nginx" scope="local"/>.</p>
+                </dd>
+                </dlentry>
+                <dlentry>
+                    <dt> <xref href="https://httpd.apache.org/" scope="external">Apache
+                    HTTPD</xref> </dt>
+                    <dd>
+                    <p>Likely the most prolific Web Server used on the web. See <xref href="#sect-apache" scope="local"/>.</p>
+                </dd>
+                </dlentry>
+            </dl>
+        <note type="note">
+                <p>Be aware that many proxies by default limit the maximum size of request bodies, eg. <ph>client_max_body_size 1m;</ph>. When working with large xml files in eXist-db such a limitation will intefere with its normal operations. To fix this increase the value in line with your application's demands.</p>
+            </note>
+    </section>
+        <section id="ex-proxy">
+            <title>Example: Proxying a Web Domain Name to an eXist-db Collection</title>
+        
+
+        <p>In this example we look at how to proxy a web domain name onto an eXist-db Collection.
+            We make the following assumptions:</p>
+        <ol>
+                <li>
+                <p>
+                        <ph>http://www.mywebsite.com</ph> is our website domain name
+                    address</p>
+            </li>
+                <li>
+                <p>eXist-db is running in standalone mode (i.e.
+                    <ph>http://localhost:8088/</ph>) on the same host as the Web Server (i.e.
+                    <ph>http://localhost:80/</ph>)</p>
+            </li>
+                <li>
+                <p>
+                        <ph>/db/apps/mywebsite.com</ph> is the eXist-db collection we want to
+                    proxy</p>
+            </li>
+                <li>
+                <p>Web Server access logging will be written to
+                    <ph>/srv/www/vhosts/mywebsite.com/logs/access.log</ph>
+                    </p>
+            </li>
+            </ol>
+
+        
+
+        <section id="sect-nginx">
+                <title>Using Nginx</title>
+            
+
+            <p>This needs to be added to the <ph>http</ph> section of the
+                <ph>nginx.conf</ph> file:</p>
+            <pre outputclass="nginx"># header helpers for reverse proxied servers
+proxy_set_header        Host                    $host;                          # Ensures the actual hostname is sent to eXist-db and not 'localhost' (needed in eXist-db for server-name in controller-config.xml)
+proxy_set_header        X-Real-IP               $remote_addr;                   # The Real IP of the client and not the IP of nginx proxy
+proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
+proxy_set_header        nginx-request-uri       $request_uri;                   # The original URI before proxying
+
+# virtual host configuration, reverse proxy to eXist-db
+server {
+    listen 80;
+    server_name *.mywebsite.com;
+    charset utf-8;
+    access_log /srv/www/vhosts/mywebsite.com/logs/access.log;
+
+    location / {
+        proxy_pass http://localhost:8088/exist/apps/mywebsite.com/;
+    }
+}</pre>
+        </section>
+
+        
+
+        <section id="sect-apache">
+                <title>Using Apache HTTPD</title>
+            
+
+            <p>This needs to be added to your <ph>httpd.conf</ph>:</p>
+            <pre outputclass="xml">&lt;VirtualHost *:80&gt;
+    ProxyRequests	    off
+    ServerName	    www.mywebsite.com
+    ServerAlias     *.mywebsite.com
+    ProxyPass	    /	http://localhost:8088/exist/apps/mywebsite.com
+    ProxyPassReverse	/	http://localhost:8088/exist/apps/mywebsite.com
+    ProxyPassReverseCookieDomain localhost mywebsite.com
+    ProxyPassReverseCookiePath /exist /
+
+    RewriteEngine       on
+    RewriteRule         ^/(.*)$     /$1   [PT]
+&lt;/VirtualHost&gt;</pre>
+        </section>
+
+    </section>
+    </body>
+</topic>

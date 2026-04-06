@@ -1,0 +1,663 @@
+<topic id="devguide_log4j">
+    <title>Log4j Logging Guide</title>
+    <prolog>
+        <data name="date" value="1Q20"/>
+        <data name="keyword" value="java-development"/>
+    </prolog>
+    <body>
+        <p>This article explains logging and eXist-db's use of <xref href="https://logging.apache.org/log4j/" scope="external">Log4j</xref>.</p>
+        <section id="overview">
+            <title>Overview</title>
+        
+
+        <p>Logging may seem like a less important part of an application. After all, it consumes
+            resources: programmer time, increasing class file size, CPU cycles, etc. All while doing
+            nothing to provide end-user functionality. However, logging is an important part of any
+            substantial body of software and is absolutely critical in enterprise software. A big
+            issue with the use of the logging system when troubleshooting is that it changes to the
+            log configuration require a <i>restart</i>. Yet, users are often
+            extremely reluctant to restart their production servers. <xref href="https://logging.apache.org/log4j/" scope="external">Log4j</xref> is the most powerful
+            Java-based logging library available today. It provides a many features to address such
+            concerns.</p>
+
+        
+
+        <section id="intro">
+                <title>Introducing Log4j</title>
+            
+
+            <p>Log4j is based on the following core concepts:</p>
+            <ul>
+                    <li>
+                    <p>Each log event is issued by a hierarchically named <ph>logger</ph>,
+                        e.g. <ph>xx.method.server.httpgw</ph> which can correspond to Java class
+                        names.</p>
+                </li>
+                    <li>
+                    <p>All log events have an associated severity level:</p>
+                    <simpletable>
+                            <sthead>
+                                <stentry> Level </stentry>
+                                <stentry> Usage </stentry>
+                            </sthead>
+                            <strow>
+                                <stentry>  <ph>Trace</ph>  </stentry>
+                                <stentry> Very low-level debugging “execution is here”
+                                        debugging/troubleshooting messages. </stentry>
+                            </strow>
+                            <strow>
+                                <stentry>  <ph>Debug</ph>  </stentry>
+                                <stentry> Messages of interest to those debugging or
+                                        troubleshooting (with greater importance than trace
+                                        messages). Probably only meaningful to developers
+                                    </stentry>
+                            </strow>
+                            <strow>
+                                <stentry>  <ph>Info</ph>  </stentry>
+                                <stentry> General informational messages. Understandable by
+                                        and/or of interest to non-developers as well.
+                                    </stentry>
+                            </strow>
+                            <strow>
+                                <stentry>  <ph>Warn</ph>  </stentry>
+                                <stentry> Warnings of potential problems </stentry>
+                            </strow>
+                            <strow>
+                                <stentry>  <ph>Error</ph>  </stentry>
+                                <stentry> Error conditions </stentry>
+                            </strow>
+                            <strow>
+                                <stentry>  <ph>Fatal</ph>  </stentry>
+                                <stentry> Fatal error conditions, For instance a shut down,
+                                        a likely crash or something equally severe </stentry>
+                            </strow>
+                        </simpletable>
+                </li>
+                    <li>
+                    <p>Logging is controlled either via a Log4j configuration file. Exist-db's
+                        main log configuration file responsible for the <ph>exist.log</ph>
+                        is located at <ph>exist/etc/log4j2.xml</ph>. To issue log events
+                        programmatically you must acquire a logger by name and specify a log message
+                        and its severity level (and optionally a <ph>Throwable</ph> where
+                        applicable). </p>
+                </li>
+                </ul>
+            <p>Based on these core concepts, Log4j provides a powerful set of
+                functionalities:</p>
+            <dl>
+                    <dlentry>
+                        <dt>Many “appender” choices</dt>
+                        <dd>
+                        <p>Each log event may be output to zero or more “appenders”. These are
+                            generalized output pipes, e.g. <ph>System.out/err</ph>,
+                            <ph>JDBC</ph>, <ph>syslog</ph> etc. </p>
+                        <p>When outputing to a file various options for log rolling are
+                            available. For instance daily creation of new log files, segmenting when
+                            a given file size is reached, and externally controlled log rotation.
+                            These appenders can be run synchronously to the threads generating the
+                            log events or as separate asynchronous queues.</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Flexible layout options</dt>
+                        <dd>
+                        <p>Each appender can specify a layout, for formatting the log message.
+                            The administrator can choose from <ph>HTML</ph>,
+                            <ph>XML</ph>, and <ph>text</ph> formats – including
+                            the flexible <ph>PatternLayout</ph>, which allows selecting the data
+                            to include (timestamps, originating thread, logger name, etc.).</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Hierarchical logger configuration</dt>
+                        <dd>
+                        <p>Administrators can configure log event cutoff levels and appenders for
+                            entire branches of the hierarchical logger tree.</p>
+                        <p>For instance, by adding a <ph>console</ph> appender targeting
+                            <ph>System.out</ph> to the root logger, all Log4j output will go to
+                            <ph>System.out</ph>. One can configure the overall cutoff level as
+                            <ph>error</ph> at the root logger level so that only error and fatal
+                            messages are output, unless otherwise specified. One could then
+                            configure the <ph>xx.method</ph> logger to have an <ph>info</ph>
+                            level cutoff and an appender to capture all output to a specified file
+                            (in addition to <ph>System.out</ph>). These <ph>xx.method</ph>
+                            settings would then affect all loggers whose names begin with
+                            <ph>xx.method</ph>. (e.g.
+                            <ph>xx.method.server.httpgw</ph>).</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Log viewers</dt>
+                        <dd>
+                        <p>Various free and commercial products provide specialized viewing
+                            capabilities for Log4j logs. Apache provides a very useful Log4j log
+                            viewer <xref href="https://logging.apache.org/chainsaw" scope="external">Chainsaw</xref>.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+            <p>For more information visit the <xref href="https://logging.apache.org/log4j/" scope="external">Log4j website</xref> website. </p>
+
+            <note type="note">
+                    <p>Java 1.4 and higher’s <ph>java.util.logging</ph> API is very similar to
+                    Log4j’s. However Log4j is much more powerful in a number of critical areas. </p>
+                    <p>In conjunction with our JMX MBeans for Log4j, one can also: </p>
+                    <ul>
+                        <li>
+                        <p>Dynamically examine and reconfigure the Log4j configuration for the
+                            duration of the process via a JMX console.</p>
+                    </li>
+                        <li>
+                        <p>Have all processes using a Log4j configuration file periodically check
+                            its modification date and automatically re-load it upon any
+                            change.</p>
+                    </li>
+                        <li>
+                        <p>Force an immediate reload from a configuration file via a JMX
+                            console.</p>
+                    </li>
+                    </ul>
+                </note>
+
+        </section>
+    </section>
+        <section id="config">
+            <title>Configuring Log4j</title>
+        
+        
+        <note type="note">
+                <p>A full listing of the default log configuration files and the contents of
+                <ph>$EXIST_HOME/logs/</ph> is not yet included in this guide. Contributions
+                are welcome.</p>
+            </note>
+
+        <p>The <ph>$EXIST_HOME/etc/log4j2.xml</ph> configuration file controls Log4j’s
+            behavior. Log files are written <ph>$EXIST_HOME/logs/</ph>. The configuration file
+            is used mainly to set a given level of log output for loggers. Without such
+            configuration only ERROR and FATAL log events will show up. Therefore you have to change
+            the configuration to see <ph>trace</ph>, <ph>debug</ph>, <ph>info</ph>, or
+            <ph>warn</ph> log events in the Log4j output. </p>
+        <p>To turn on a given logging level for all loggers, find the <ph>Log4j.root</ph>
+            property and change its priority value to the desired level. For instance:</p>
+        <pre outputclass="xml">&lt;root&gt;
+  &lt;priority value="debug"/&gt;
+  &lt;appender-ref ref="exist.core"/&gt;
+&lt;/root&gt;</pre>
+        <p>Change the priority level to <ph>info</ph> to see informational messages:</p>
+        <pre outputclass="xml">&lt;root&gt;
+  &lt;priority value="info"/&gt;
+  &lt;appender-ref ref="exist.core"/&gt;
+&lt;/root&gt;</pre>
+        <p>This will result in a cacophony of log output, so you’ll generally want to adjust the
+            logging level to a more specific level. For instance:</p>
+        <pre outputclass="xml">&lt;category name="org.exist.security" additivity="false"&gt;
+  &lt;priority value="info"/&gt;
+  &lt;appender-ref ref="exist.security"/&gt;
+&lt;/category&gt;</pre>
+        <p>This sets the <ph>org.exist.security</ph> logger’s level to
+            <ph>info</ph>.</p>
+        <p>Note that doing this causes the default log level of all
+            <ph>org.exist.security</ph> loggers to be set to <ph>info</ph>. For example, the
+            level of the <ph>org.exist.security.xacml</ph> logger would also be set to
+            <ph>info</ph>, unless of course the level for this logger is specified explicitly. </p>
+        <p>Checking the Log4j configuration file is done periodically so changes may go unnoticed
+            for a few minutes.</p>
+        <p>To make temporary changes to the Log4j configuration without changing the
+            configuration files, use JMX MBeans:</p>
+
+        <ol>
+                <li>
+                <p>Start <ph>jconsole</ph> </p>
+                <p> <ph>jconsole</ph> is located in the Java SDK’s bin directory. You can
+                    either double-click on it or run it from the command line.</p>
+            </li>
+                <li>
+                <p>Select the target JVM</p>
+                <p> <ph>jconsole</ph> will list the Java processes running on your machine
+                    under the current user, which have been configured to allow local JMX
+                    connections.</p>
+            </li>
+                <li>
+                <p>Navigate to the Logging node in the MBean tree:</p>
+                <ul>
+                        <li>
+                        <p>Select the MBeans tab.</p>
+                    </li>
+                        <li>
+                        <p>Expand the right folder.</p>
+                    </li>
+                        <li>
+                        <p>In the servlet engine expand the <ph>WebAppContext</ph> folder and
+                            the folder named after your web app.</p>
+                    </li>
+                        <li>
+                        <p>Select the <ph>Logging</ph> node (which should now be
+                            visible).</p>
+                    </li>
+                    </ul>
+            </li>
+                <li>
+                <p>Perform desired operations and/or modifications:</p>
+                <ul>
+                        <li>
+                        <p>To change the configuration file check interval, change the
+                            <ph>ConfigurationCheckInterval</ph> attribute to the desired number
+                            of seconds. Note that this change will apply only for the duration of
+                            the JVM process unless you select the Loader node and its save
+                            operation.</p>
+                    </li>
+                        <li>
+                        <p>To force an immediate reload of the configuration file, press the
+                            <ph>reconfigure</ph> button on the operations
+                            tab.</p>
+                    </li>
+                        <li>
+                        <p>To examine other aspects of the configuration and make temporary
+                            changes, press the <ph>registerLoggers</ph> button on
+                            the operation tab. Expand the <ph>Logging</ph> tree
+                            node and examine/operate upon its children.</p>
+                    </li>
+                    </ul>
+            </li>
+            </ol>
+    </section>
+        <section id="use">
+            <title>Using Log4j in Java</title>
+        
+
+        <ol>
+                <li>
+                <p>Acquire a logger: </p>
+                <pre outputclass="java">import org.apache.logging.log4j.LogManager; import org.apache.logging.log4j.Logger; … private Logger logger = LogManager.getLogger("xx.method.server.httpgw");
+</pre>
+
+                <p>Remarks:</p>
+                <ul>
+                        <li>
+                        <p>This is a somewhat time-consuming operation and should be done in
+                            constructors of relatively long-lived objects or in static
+                            initializers.</p>
+                    </li>
+                        <li>
+                        <p>Many classes can separately acquire a logger using the same logger
+                            name. They will all end up with their own reference to the same shared
+                            logger object.</p>
+                    </li>
+                    </ul>
+            </li>
+                <li>
+                <p>Use the logger: </p>
+                <pre outputclass="java">logger.info( "Something I really wanted to say" );</pre>
+                <p>Remarks:</p>
+                <ul>
+                        <li>
+                        <p> <ph>info()</ph> is just one of Logger’s methods for issuing Log4j
+                            log events. It implicitly assigns the event a severity level of
+                            <ph>info</ph> and does not specify a <ph>Throwable</ph>. Logger
+                            methods for issuing log events include:</p>
+                        <pre outputclass="java">public void trace(Object message); 
+    public void trace(Object message, Throwable t); 
+    public void debug(Object message); 
+    public void debug (Object message, Throwable t); 
+    public void info(Object message); 
+    public void info(Object message, Throwable t); 
+    public void warn(Object message); 
+    public void warn(Object message, Throwable t); 
+    public void error(Object message); 
+    public void error(Object message, Throwable t); 
+    public void fatal(Object message); 
+    public void fatal(Object message, Throwable t);</pre>
+                    </li>
+                        <li>
+                        <p>Note that in each case the message is an Object, not a
+                            <ph>String</ph>. If (and only if) Log4j decides to output the given
+                            log event (based on the configuration), it will render this object as a
+                            <ph>String</ph> (essentially via <ph>toString()</ph>).</p>
+                    </li>
+                    </ul>
+            </li>
+            </ol>
+        <p> You emit log events with appropriate log levels to appropriately named loggers. The
+            Log4j configuration determines which appenders (if any) should output/record the event
+            and how this should be done. </p>
+        <section id="converting">
+                <title>Converting existing logging code to Log4j</title>
+            
+
+            <p>Conversion of existing logging code to Log4j can be as simple as replacing
+                <ph>System.out.println()</ph> calls, etc, with use of the Log4j API. There are a
+                few special considerations worth noting.</p>
+            <dl>
+                    <dlentry>
+                        <dt>Dealing with Legacy Properties</dt>
+                        <dd>
+                        <p>You'll have to check the functionality of existing logging properties: </p>
+                        <ul>
+                                <li>
+                                <p> For instance, properties specifying output files can be
+                                    removed, as customers can now siphon Log4j output to specific
+                                    files via Log4j’s configuration files. </p>
+                                <p/>
+                            </li>
+                                <li>
+                                <p>To preserve well-known logging properties regardless, given
+                                    the following example code:</p>
+                                <pre outputclass="java">private static final boolean VERBOSE_SERVER;
+   static
+   {
+     XXProperties properties = XXProperties.getLocalProperties();
+     VERBOSE_SERVER = properties.getProperty("xx.method.verboseServer", false);
+   }
+   …
+   if ( VERBOSE_SERVER )
+     System.out.println( "some message" );</pre>
+                                <p>The static portions above can be left as is and the remainder
+                                    changed to:</p>
+                                <pre outputclass="java">import org.apache.log4j.Level;
+   import org.apache.log4j.Logger;
+
+   // place VERBOSE_SERVER declaration and static block from above here
+   private static final Logger  serverLogger =
+                                     Logger.getLogger( "xx.method.server" );
+   static
+   {
+     if ( VERBOSE_SERVER )
+       serverLogger.setLevel( Level.ALL );
+   }
+   …
+   serverLogger.debug( "some message" );</pre>
+                                <p>This example assumes that output from the given Log4j logger
+                                    should be completely enabled when the existing property is
+                                    set.</p>
+                                <p>One can also use this:</p>
+                                <pre outputclass="java">if ( VERBOSE_SERVER )
+     if ( !serverLogger.isDebugEnabled() )
+       serverLogger.setLevel( Level.DEBUG );</pre>
+                                <p>This causes the existing property to enable output from the
+                                    given Log4j logger up through the severity level,
+                                    <ph>debug</ph>. </p>
+                                <p>This approach to preserving existing “enabling” properties a
+                                    partal fix. The intended minimum log verbosity is ensured upon
+                                    initialization but cannot be reset via the property without a
+                                    restart. The ability to change the log-level on the fly or make
+                                    fine grained log-level adjustments is only available through the
+                                    Log4j configuration. </p>
+                            </li>
+                            </ul>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Conditional Computation of Data for Logging</dt>
+                        <dd>
+                        <p>When log messages are constructed conditionallys:</p>
+                        <pre outputclass="java">if ( VERBOSE_SERVER )  // static final boolean
+   {
+     // various computations and assignment
+   }</pre>
+                        <p>The <ph>if</ph> block may include
+                            <ph>System.out.println()</ph>’s or the results of the block may be
+                            used in later <ph>System.out.println()</ph>’s. The code is intended
+                            to avoid computations and assignments unless their results are
+                            used.</p>
+                        <p>You can now use one of Log4j’s <ph>is*Enabled()</ph> methods for
+                            this. For example: </p>
+                        <pre outputclass="java">if ( serverLogger.isDebugEnabled() )
+   {
+     // various computations and assignment that will only be used
+     // if serverLogger.debug() calls
+   }</pre>
+                        <p>The Log4j Logger class provides a set of methods for this:</p>
+                        <pre outputclass="java">public boolean isTraceEnabled();
+   public boolean isDebugEnabled();
+   public boolean isInfoEnabled();
+   public Boolean isEnabledFor(Level);</pre>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+    </section>
+        <section id="tips">
+            <title>Tips and Tricks</title>
+        
+        <p>This section contains useful hints based on our user's experiences.</p>
+        <section id="general">
+                <title>General</title>
+            
+
+            <dl>
+                    <dlentry>
+                        <dt>Carefully select appropriate logger names</dt>
+                        <dd>
+                        <p>Logger names should be meaningful and facilitate hierarchical
+                            configuration by administrators. Use a namespace prefix, either
+                            <ph>xx</ph> or <ph>com.xxx</ph> to avoid collision with logger
+                            names from 3rd-party libraries and customizations. </p>
+                        <p>For instance, one might have <ph>xx.method.server</ph> for general
+                            logging related to various low-level aspects of the method server and
+                            <ph>xx.method.server.timing</ph> for logging specifically related to
+                            the method timing. Use Java class and package names where these make
+                            sense. </p>
+                        <p/>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Document your logger if appropriate</dt>
+                        <dd>
+                        <p>If appropriate, document your logger in
+                            <ph>/xxx/src_web/loggers.html</ph>. For instance when the output is
+                            of interest to your customer. The logger should be documented (by name)
+                            in <ph>/xxx/src_web/loggers.html</ph> (which ends up in xxx’s
+                            codebase in an installation).</p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Select appropriate levels for log events</dt>
+                        <dd>
+                        <p> See the table above for an outline of levels and their intended
+                            usage. <xref href="#loglevel" scope="local"/>
+                            </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Don’t go overboard with the Log4j configuration files</dt>
+                        <dd>
+                        <p>Log4j provides a great deal of ease and flexibility in its
+                            configuration. Its log viewers also make it easy to merge log data from
+                            multiple Log4j logs or filter out the data of interest from a general
+                            purpose log. Given this it makes little sense to provide a complex Log4j
+                            configuration file. The customer can change the configuration to have
+                            more or less specific log outputs as dictated by their needs and
+                            desires. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Adjust log levels in Log4j configuration files where appropriate</dt>
+                        <dd>
+                        <p>By default only <ph>error</ph> and <ph>fatal</ph> log messages
+                            are created. This generates relatively "quiet" logs that only alert
+                            administrators to issues. There are however sometimes log messages
+                            classified as <ph>informational</ph> that should be output at this
+                            log level as well. Such as periodic information about process health
+                            summaries. Simply enable info level debig ouput in the for the logger in
+                            question. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Don’t include redundant data in log messages</dt>
+                        <dd>
+                        <p>Log4j includes current time, thread name, logger name, evernt level,
+                            etc information in a standard fashion so it is easily interpreted by log
+                            viewers. Inclusion of any of these pieces of information in the log
+                            message itself is therefore redundant. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>make use of <ph>AttributeListWrapper</ph> where appropriate</dt>
+                        <dd>
+                        <p>For some particularly significant logs it is important to have even
+                            more control, including: </p>
+                        <ul>
+                                <li>
+                                <p>To select which attributes should be included in a given log
+                                    message</p>
+                            </li>
+                                <li>
+                                <p>To specify the order of these attributes</p>
+                            </li>
+                                <li>
+                                <p>To specify the formatting of these attributes (e.g. comma
+                                    delimited, with or without attribute names, etc)</p>
+                            </li>
+                            </ul>
+                        <p>Examples of such cases include request access and periodic statistics
+                            logging. </p>
+                        <p>There is a re-usable utility for just this purpose,
+                            <ph>xx.jmx.core.AttributeListWrapper</ph>. </p>
+                    </dd>
+                    </dlentry>
+                </dl>
+        </section>
+
+        
+
+        <section id="performance">
+                <title>Performance</title>
+            
+
+            <p>The operation of Log4j’s Logger class’s logging methods for issuing log events can
+                be summed up as: </p>
+            <pre outputclass="java">public void  log( Level level, Object message )
+{
+  if ( isEnabledFor( level ) )
+  {
+    String  string = render( messasge );
+    for ( Appender appender : myAppenders )
+      appender.output( string );
+  }
+}</pre>
+
+            <ul>
+                    <li>
+                    <p> <ph>render()</ph> is simply a <ph>toString()</ph> call, except
+                        when <ph>message</ph> is an instance of a class for which a specialized
+                        render has been registered.</p>
+                </li>
+                    <li>
+                    <p> <ph>trace()</ph>, <ph>debug()</ph>, <ph>info()</ph>,
+                        <ph>warn()</ph>, <ph>error()</ph>, etc, call <ph>log()</ph> with
+                        the appropriate level.</p>
+                </li>
+                </ul>
+
+            <p>Note that Log4j's documentation claims that <ph>isEnabledFor()</ph>, and the
+                <ph>Logger.is*Enabled()</ph> method are extremely fast. Therefore
+                <ph>log()</ph> should take very little time as well (unless
+                <ph>isEnabledFor()</ph> returns <ph>true</ph>). </p>
+            <p>Given this, a few additional performance tips and tricks: </p>
+
+            <dl>
+                    <dlentry>
+                        <dt>Don’t reacquire a logger on each usage</dt>
+                        <dd>
+                        <p>The <ph>LogR.getLogger()</ph> (and underlying
+                            <ph>Logger.getLogger()</ph>) calls are relatively expensive. One
+                            should acquire these objects once per class (or once per instance of a
+                            class) and re-use them in subsequent logging calls. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Don’t assume a log’s level cannot change</dt>
+                        <dd>
+                        <p>One of the big advantages of Log4j is that administrators can easily
+                            change the level setting of any logger at any time. One can however
+                            easily undo this by following conventions common in existing logging
+                            code, e.g.: </p>
+                        <pre outputclass="java">static boolean  LOG_ENABLED = logger.isInfoEnabled ();
+…
+public void someMethod()
+{
+  if ( LOG_ENABLED )
+    logger.info( … );
+}</pre>
+                        <p> <ph>Logger</ph>’s <ph>isEnabledFor()</ph> and
+                            <ph>is*Enabled()</ph> routines are fast enough to allow calling them
+                            more frequently in order to obtain the benefits of dynamically
+                            configurable logging levels. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Don’t check whether the log level is enabled before every log call</dt>
+                        <dd>
+                        <p>Do not write code as: </p>
+                        <pre outputclass="java">if ( logger.isDebugEnabled() )
+  logger.debug( "Some constant string" );</pre>
+                        <p>This results in essentially no savings when
+                            <ph>isDebugEnabled()</ph> is <ph>true</ph>. It also makes the
+                            code more verbose and harder to read. Instead do: </p>
+                        <pre outputclass="java">logger.debug( "Some constant string" );</pre>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Do avoid doing additional work for logging unless the logger is
+                        enabled</dt>
+                        <dd>
+                        <p>Assume the last example looked like: </p>
+                        <pre outputclass="java">if ( logger.isDebugEnabled() )
+  logger.debug( "Object " + object.getDisplayIdentity() + 
+                " is being deleted" );</pre>
+                        <p>Then the <ph>isDebugEnabled()</ph> check should be performed. In
+                            this case, two string concatenations and a potentially (somewhat)
+                            expensive method call can be saved when the logger is not debug enabled.
+                            See the “Conditional Computation of Data for Logging” section above for
+                            another example of this pattern. </p>
+                        <p>On the other hand, this technique should not be used when you are all
+                            but certain the given logger will be enabled. Usually this applies only
+                            to log events being emitted with an <ph>error</ph> or
+                            <ph>fatal</ph> level. In this case saving times for the few cases in
+                            which someone has actually disabled this level of logging is not
+                            worthwhile. </p>
+                        <p>Another technique to avoid unnecessary work is to leverage the fact
+                            that <ph>Logger</ph>’s take objects, not strings, as arguments. Thus
+                            one might write: </p>
+                        <pre outputclass="java">SomeClass  someObj = new SomeClass(…);
+logger.info( someObj );</pre>
+                        <p>Here one will pay for the construction of <ph>someObj</ph> in all
+                            cases but will only pay for <ph>someObj.toString()</ph> when logging
+                            is enabled for info-level log events. Thus if very little work is done
+                            in the constructor and most is done in toString() this avoids doing work
+                            except when necessary. <ph>AttributeListWrapper</ph> (see above) is
+                            an example of this technique. </p>
+                    </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Hoist log level checks outside of very tight loops</dt>
+                        <dd>
+                        <p>For cases where a given log level will usually not be enabled, for
+                            instance for trace and debug log messages, one should avoid repeated
+                            checks within a tight loop. For example: </p>
+                        <pre outputclass="java">{
+  final boolean  traceEnabled = logger.isTraceEnabled();
+  for ( int ii = 0; ii &lt; n; ++ii )
+  {
+    // do some very quick stuff
+    if ( traceEnabled )
+      logger.trace( ... );
+    // do a little more very quick stuff
+  }
+}</pre>
+                        <p>Trace level logging is rarely enabled and so in this example checking
+                            for this case ahead of time can save us from repeatedly verifying this
+                            in a tight loop. This does, however, come at the cost of making it
+                            impossible to dynamically enable trace logging for this logger in the
+                            middle of this loop. Due to this, this technique should only be used for
+                            tight loops where the duration of the execution represented by the loop
+                            (and thus the time during which the logging behavior may lag the
+                            intended setting) is small.</p>
+                    </dd>
+                    </dlentry>
+                </dl>
+
+        </section>
+    </section>
+    </body>
+</topic>

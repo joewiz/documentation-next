@@ -1,0 +1,1232 @@
+<topic id="devguide_xmlrpc">
+    <title>XML-RPC API Developer's Guide</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="java-development"/>
+        <data name="keyword" value="interfaces"/>
+    </prolog>
+    <body>
+        <p>This article explains how to interface with eXist-db using the XML-RPC API. This API can be used to access eXIst-db from multiple languages and environments.</p>
+        <section id="intro">
+            <title>Introduction</title>
+    
+
+    <p>XML-RPC (XML Remote Procedural Call) provides a simple way to access eXist-db by calling remote procedures from a wide variety of programming languages and environments, like CGI scripts, PHP, JSP and more.
+    </p>
+    <p>For a Java server, eXist uses the XML-RPC library created by Hannes Wallnoefer which recently has moved to Apache (see:
+      <xref href="https://xml.apache.org/xmlrpc" scope="external">http://xml.apache.org/xmlrpc</xref>).
+    </p>
+    <p>Perl examples use the RPC::XML package, which should be available at every CPAN mirror (see
+      <xref href="https://www.cpan.org" scope="external">CPAN</xref>).</p>
+    <p>The following is a small example, which shows how to talk to eXist-db from Java using the Apache XML-RPC library. This example can be found in
+      <ph>samples/org/exist/examples/xmldb/Retrieve.java</ph>.</p>
+
+    <pre outputclass="java">public class Retrieve {
+
+protected final static String uri = 
+    "http://localhost:8080/exist/xmlrpc";
+
+protected static void usage() {
+    System.out.println( "usage: org.exist.examples.xmlrpc.Retrieve " +
+        "path-to-document" );
+    System.exit( 0 );
+}
+
+public static void main( String args[] ) throws Exception {
+    if ( args.length &lt; 1 ) {
+        usage();
+    }
+    XmlRpc.setEncoding("UTF-8");
+    XmlRpcClient xmlrpc = new XmlRpcClient( uri );
+    Hashtable options = new Hashtable();
+    options.put("indent", "yes");
+    options.put("encoding", "UTF-8");
+    options.put("expand-xincludes", "yes");
+    options.put("highlight-matches", "elements");
+    
+    Vector params = new Vector();
+    params.addElement( args[0] ); 
+    params.addElement( options );
+    String xml = (String)
+        xmlrpc.execute( "getDocumentAsString", params );
+    System.out.println( xml );
+}
+}</pre>
+    <p>As shown above, the
+      <ph>execute</ph>
+      method of
+      <ph>XmlRpcClient</ph>
+      expects as its parameters a method (passed as a string) to call on the server and a
+      <ph>Vector</ph>
+      of parameters to pass to this executed method. In this example, the method
+      <ph>getDocumentAsString</ph>
+      is called as the first parameter, and a
+      <ph>Vector params</ph>. Various output properties can also be set through the
+      <ph>hashtable</ph>
+      argument (see the method description below). Since all parameters are passed in a
+      <ph>Vector</ph>, they are necessarily Java objects.</p>
+    <note type="note">
+                <p>XML-RPC messages (requests and responses sent between the server and client) are themselves XML documents. In some cases, these documents may use a character encoding which is in conflict with the encoding of the document we would like to
+        receive. It is therefore important to set the
+        <i>transport</i>
+        encoding to
+        <ph>UTF-8</ph>
+        as shown in the example above. However, conflicts may persist depending on which client library is used. To avoid such conflicts, eXist provides alternative declarations for selected methods, which expect string parameters as byte arrays. The XML-RPC
+        library will send them as binary data (using Base64 encoding for transport). With this approach, document encodings are preserved regardless of the character encoding used by the XML-RPC transport layer.</p>
+            </note>
+    <note type="note">
+                <p>The XML-RPC API uses
+        <ph>int</ph>
+        to encode booleans. This is because some clients do not correctly pass boolean parameters.</p>
+            </note>
+    <p>Querying is easy using XML-RPC:</p>
+
+    <pre outputclass="java">#!/usr/bin/perl
+use RPC::XML;
+use RPC::XML::Client;
+
+$query = &lt;&lt;'END';
+for $speech in //SPEECH[LINE &amp;= 'tear*']
+order by $speech/SPEAKER[1]
+return
+    $speech
+END
+
+$URL = "http://guest:guest\@localhost:8080/exist/xmlrpc";
+print "connecting to $URL...\n";
+$client = new RPC::XML::Client $URL;
+
+# Output options
+$options = RPC::XML::struct-&gt;new(
+    'indent' =&gt; 'yes', 
+    'encoding' =&gt; 'UTF-8',
+    'highlight-matches' =&gt; 'none');
+
+$req = RPC::XML::request-&gt;new("query", $query, 20, 1, $options);
+$response = $client-&gt;send_request($req);
+if($response-&gt;is_fault) {
+    die "An error occurred: " . $response-&gt;string . "\n";
+}
+print $response-&gt;value;</pre>
+    <p>You will find the source code of this example in
+      <ph>samples/xmlrpc/search2.pl</ph>. It uses the simple query method, which executes the query and returns a document containing the specified number of results. The result set is
+      <i>not</i>
+      cached on the server.
+    </p>
+    <p>The following example calls the
+      <ph>executeQuery</ph>
+      method, which returns a unique session id. In this case, the actual results are cached on the server and can be retrieved using the
+      <ph>retrieve</ph>
+      method.
+    </p>
+
+    <pre outputclass="java">use RPC::XML;
+#!/usr/bin/perl
+
+use RPC::XML;
+use RPC::XML::Client;
+
+# Execute an XQuery through XML-RPC. The query is passed
+# to the "executeQuery" method, which returns a handle to
+# the created result set. The handle can then be used to
+# retrieve results.
+
+$query = &lt;&lt;'END';
+for $speech in //SPEECH[LINE &amp;= 'corrupt*']
+order by $speech/SPEAKER[1]
+return
+    $speech
+END
+
+$URL = "http://guest:guest\@localhost:8080/exist/xmlrpc";
+print "connecting to $URL...\n";
+$client = new RPC::XML::Client $URL;
+
+# Execute the query. The method call returns a handle
+# to the created result set.
+$req = RPC::XML::request-&gt;new("executeQuery", 
+    RPC::XML::base64-&gt;new($query), 
+	"UTF-8", {});
+$resp = process($req);
+$result_id = $resp-&gt;value;
+
+# Get the number of hits in the result set
+$req = RPC::XML::request-&gt;new("getHits", $result_id);
+$resp = process($req);
+$hits = $resp-&gt;value;
+print "Found $hits hits.\n";
+
+# Output options
+$options = RPC::XML::struct-&gt;new(
+    'indent' =&gt; 'no', 
+    'encoding' =&gt; 'UTF-8');
+# Retrieve query results 1 to 10
+for($i = 1; $i &lt; 10 &amp;&amp; $i &lt; $hits; $i++) {
+    $req = RPC::XML::request-&gt;new("retrieve", $result_id, $i, $options);
+    $resp = process($req);
+    print $resp-&gt;value . "\n";
+}
+
+# Send the request and check for errors
+sub process {
+    my($request) = @_;
+    $response = $client-&gt;send_request($request);
+    if($response-&gt;is_fault) {
+        die "An error occurred: " . $response-&gt;string . "\n";
+    }
+    return $response;
+}</pre>
+  </section>
+        <section id="methods">
+            <title>Available Methods</title>
+    
+
+    <p>This section gives you an overview of the methods implemented by eXist-db's XML-RPC server. Only the most common methods are presented here. For a complete list see the Java interface
+      <ph>RpcAPI.java</ph>.
+    </p>
+    <note type="note">
+                <p>Method signatures are presented using Java data types. Some methods like
+        <ph>getDocument()</ph>
+        and
+        <ph>retrieve()</ph>
+        accept a
+        <ph>struct</ph>
+        to specify optional output properties.</p>
+            </note>
+    <p>The following general fields for methods are supported:</p>
+    <dl>
+                <dlentry>
+                    <dt>
+          <ph>indent</ph>
+        </dt>
+                    <dd>
+          <p>Returns indented pretty-print XML. [<ph>yes | no</ph>]</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>encoding</ph>
+        </dt>
+                    <dd>
+          <p>Specifies the character encoding used for the output. If the method returns a string, only the XML declaration will be modified accordingly.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>omit-xml-declaration</ph>
+        </dt>
+                    <dd>
+          <p>Add XML declaration to the head of the document. [<ph>yes | no</ph>]</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>expand-xincludes</ph>
+        </dt>
+                    <dd>
+          <p>Expand XInclude elements. [<ph>yes | no</ph>]</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>process-xsl-pi</ph>
+        </dt>
+                    <dd>
+          <p>Specifying
+            <ph>yes</ph>
+            XSL processing instructions in the document will be processed and the corresponding stylesheet applied to the output. [<ph>yes | no</ph>]</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>highlight-matches</ph>
+        </dt>
+                    <dd>
+          <p>The database will add special tags to highlight the strings in the text that have triggered a fulltext match. Set to
+            <ph>elements</ph>
+            to highlight matches in element values,
+            <ph>attributes</ph>
+            for attribute values or
+            <ph>both</ph>
+            for both elements and attributes.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>stylesheet</ph>
+        </dt>
+                    <dd>
+          <p>Use this parameter to specify an XSL stylesheet which should be applied to the output. If the parameter contains a relative path, the stylesheet will be loaded from the database.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>stylesheet-param.key1 ... stylesheet-param.key2</ph>
+        </dt>
+                    <dd>
+          <p>If a stylesheet has been specified with
+            <ph>stylesheet</ph>, you can pass it parameters. Stylesheet parameters are recognized if they start with the prefix
+            <ph>stylesheet-param.</ph>, followed by the name of the parameter. The leading
+            <ph>stylesheet-param.</ph>
+            string will be removed before the parameter is passed to the stylesheet.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+    
+
+    <section id="retrieve">
+                <title>Retrieving documents</title>
+      
+
+      <ul>
+                    <li>
+          <pre>byte[] getDocument(String name, Hashtable parameters)</pre>
+          <pre>String getDocumentAsString(String name, Hashtable parameters)</pre>
+          <p>Retrieves a document from the database.</p>
+          <dl>
+                            <p>
+                                <b>Parameters:</b>
+                            </p>
+                            <dlentry>
+                                <dt>
+                <ph>name</ph>
+              </dt>
+                                <dd>
+                <p>Path of the document to be retrieved (e.g.
+                  <ph>/db/shakespeare/plays/r_and_j.xml</ph>).</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>parameters</ph>
+              </dt>
+                                <dd>
+                <p>A
+                  <ph>struct</ph>
+                  containing
+                  <ph>key=value</ph>
+                  pairs for configuring the output.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>Hashtable getDocumentData(String name, Hashtable parameters)</pre>
+          <pre>Hashtable getNextChunk(String handle, Int offset)</pre>
+          <pre>Hashtable getNextExtendedChunk(String handle, String offset)</pre>
+          <p>These methods retrieve a document from the database, but limit the number of bytes transmitted in one chunk to avoid memory shortage on the server.</p>
+          <p>
+            <ph>getDocumentData()</ph>
+            returns a
+            <ph>struct</ph>
+            containing the following fields:
+            <ph>data</ph>,
+            <ph>handle</ph>,
+            <ph>offset</ph>,
+            <ph>supports-long-offset</ph>.
+            <ph>data</ph>
+            contains the document's data (as
+            <ph>byte[]</ph>) or the first chunk of data if the document size exceeds the predefined internal limit.
+            <ph>handle</ph>
+            and
+            <ph>offset</ph>
+            can be passed to
+            <ph>getNextChunk()</ph>
+            or
+            <ph>getNextExtendedChunk()</ph>
+            to retrieve the remaining data chunks.
+          </p>
+
+          <p>If
+            <ph>offset</ph>
+            is
+            <ph>0</ph>, no more chunks are available and all of the data is already contained in the
+            <ph>data</ph>
+            field. Otherwise, further chunks can be retrieved by passing the handle and the offset (as returned by the last call) to
+            <ph>getNextChunk()</ph>
+            or
+            <ph>getNextExtendedChunk()</ph>. Once the last chunk is read,
+            <ph>offset</ph>
+            will be
+            <ph>0</ph>
+            and the handle becomes invalid.</p>
+          <p>
+            <ph>supports-long-offset</ph>, when available, tells whether the server understands
+            <ph>getNextExtendedChunk()</ph>
+            method:
+            <ph>getNextChunk()</ph>
+            and
+            <ph>getNextExtendedChunk()</ph>
+            do more or less the same, but with the difference that
+            <ph>getNextExtendedChunk()</ph>
+            does not have the 2GB limitation in
+            <ph>offset</ph>., which previous eXist servers could not handle. Use the
+            <ph>supports-long-offset</ph>
+            parameter from
+            <ph>getDocumentData()</ph>
+            returned structure to verify this.
+          </p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>name</ph>
+              </dt>
+                                <dd>
+                <p>Path of the document to be retrieved (e.g.
+                  <ph>/db/shakespeare/plays/r_and_j.xml</ph>).</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>parameters</ph>
+              </dt>
+                                <dd>
+                <p>A
+                  <ph>struct</ph>
+                  containing
+                  <ph>key=value</ph>
+                  pairs to configure the output.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>handle</ph>
+              </dt>
+                                <dd>
+                <p>The handle returned by the call to
+                  <ph>getDocumentData()</ph>
+                  (this identifies a temporary file on the server).</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>offset</dt>
+                                <dd>
+                <p>The data offset in the document at which the next chunk in the sequence will be read.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="store">
+                <title>Storing Documents</title>
+      
+
+      <ul>
+                    <li>
+          <pre>boolean parse(byte[] xml, String docName, int overwrite)</pre>
+          <pre>boolean parse(byte[] xml, String docName)</pre>
+          <p>Insert a new document into the database or replace an existing one.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>xml</ph>
+              </dt>
+                                <dd>
+                <p>XML content of this document as a UTF-8 encoded byte array.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>docName</ph>
+              </dt>
+                                <dd>
+                <p>Path to the database location where the new document is to be stored.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>overwrite</ph>
+              </dt>
+                                <dd>
+                <p>Set this value to &gt;
+                  <ph>0</ph>
+                  to automatically replaces an existing document at the same location.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>String upload(byte[] chunk, int length)</pre>
+          <pre>String upload(String file, byte[] chunk, int length)</pre>
+          <pre>boolean parseLocal(String localFile, String docName, boolean replace)</pre>
+          <p>Uploads an entire document on to the database before parsing it.</p>
+          <p>The
+            <ph>parse</ph>
+            method receives the document as a large single chunk, but the
+            <ph>upload</ph>
+            method allows you to upload the whole document to the server
+            <i>before</i>
+            parsing. Doing it this way
+            <i>out-of-memory</i>
+            exceptions can be avoided since the document is not entirely kept in memory. To identify the file on the server, upload returns an identifier string. After uploading all chunks, you can call
+            <ph>parseLocal</ph>
+            and pass it this identifier string as its first argument.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>file</ph>
+              </dt>
+                                <dd>
+                <p>The name of the file to which the uploaded chunk is appended. This is the name of a temporary file on the server. Use the two-argument version of upload for the first chunk. The method creates a temporary file and returns its name.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>chunk</ph>
+              </dt>
+                                <dd>
+                <p>A byte array containing the data to be appended.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>length</ph>
+              </dt>
+                                <dd>
+                <p>Defines the number of bytes to be read from chunk.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>localFile</ph>
+              </dt>
+                                <dd>
+                <p>The name of the local file on the server that is to be stored in the database. This should be the same as the name returned by
+                  <ph>upload</ph>.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>docName</ph>
+              </dt>
+                                <dd>
+                <p>The full path specifying the location where the document should be stored in the database.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>replace</ph>
+              </dt>
+                                <dd>
+                <p>Set this to
+                  <ph>true</ph>
+                  if an existing document with the same name should be automatically overwritten.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="create">
+                <title>Creating a Collection</title>
+      
+
+      <ul>
+                    <li>
+          <pre>boolean createCollection(String name)</pre>
+          <p>Creates a new collection.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>name</ph>
+              </dt>
+                                <dd>
+                <p>Path to the new collection.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="remove">
+                <title>Removing Documents or Collections</title>
+      
+
+      <ul>
+                    <li>
+          <pre>boolean remove(String docName)</pre>
+          <p>Removes a document from the database.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>docName</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the database document.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>boolean removeCollection( String collection)</pre>
+          <p>Removes a collection from the database (including all of its documents and sub-collections).</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>collection</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="query">
+                <title>Querying</title>
+      
+
+      <ul>
+                    <li>
+          <pre>int executeQuery(String xquery, HashMap parameters)</pre>
+          <pre>int executeQuery(byte[] xquery, HashMap parameters)</pre>
+          <pre>int executeQuery(byte[] xquery, String encoding, HashMap parameters)</pre>
+          <p>Executes an XQuery and returns a reference identifier to the generated result set. This reference can be used to retrieve the results.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>xquery</ph>
+              </dt>
+                                <dd>
+                <p>A valid XQuery expression.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>parameters</ph>
+              </dt>
+                                <dd>
+                <p>The parameters as HashMap values (<ph>sort-expr</ph>,
+                  <ph>namespaces</ph>,
+                  <ph>variables</ph>,
+                  <ph>base-uri</ph>,
+                  <ph>static-documents</ph>,
+                  <ph>protected</ph>).</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>encoding</ph>
+              </dt>
+                                <dd>
+                <p>The character encoding used for the query string.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>Hashtable querySummary(int result-Id)</pre>
+          <p>Returns a summary of query results for the result-set referenced by
+            <ph>result-Id</ph>.</p>
+          <p>The
+            <ph>result-Id</ph>
+            value is taken from a previous call to
+            <ph>executeQuery</ph>
+            (see above). The
+            <ph>querySummary</ph>
+            method returns a
+            <ph>struct</ph>
+            with the following fields:
+            <ph>queryTime</ph>,
+            <ph>hits</ph>,
+            <ph>documents</ph>,
+            <ph>doctype</ph>.</p>
+          <p>
+            <ph>queryTime</ph>
+            and
+            <ph>hits</ph>
+            are integer values that describe the processing time in milliseconds for the query execution and the number of hits in the result-set respectively. The field
+            <ph>documents</ph>
+            is an array of an array (i.e.
+            <ph>Object[][3]</ph>) that represents a table in which each row identifies one document. The first field in each row contains the
+            <ph>document-id</ph>
+            (integer value). The second has the document's name as a string value. The third contains the number of hits found in this document (integer value).</p>
+          <p>The<ph>doctype</ph>
+            field is also an array of an array (Object[][2]) that contains the
+            <ph>doctype</ph>
+            public identifier and the number of hits found for this
+            <ph>doctype</ph>
+            in each row.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>resultId</ph>
+              </dt>
+                                <dd>
+                <p>Reference to a result-set as returned by a previous call to
+                  <ph>executeQuery</ph>.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>byte[] retrieve(int resultId, int pos, Hashtable parameters)</pre>
+          <p>Retrieves a single result-fragment from the result-set referenced by
+            <ph>resultId</ph>. The result-fragment is identified by its position in the result-set.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>resultId</ph>
+              </dt>
+                                <dd>
+                <p>Reference to a result-set as returned by a previous call to
+                  <ph>executeQuery</ph>.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>pos</ph>
+              </dt>
+                                <dd>
+                <p>The position of the item in the result-sequence, starting at 0.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>parameters</ph>
+              </dt>
+                                <dd>
+                <p>A
+                  <ph>struct</ph>
+                  containing
+                  <ph>key=value</ph>
+                  pairs to configure the output.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>Hashtable retrieveFirstChunk(int resultId, int pos, Hashtable parameters)</pre>
+          <p>Retrieves a single result-fragment from the result-set referenced by
+            <ph>resultId</ph>, but limiting the number of bytes transmitted in one chunk to avoid memory shortage on the server. The result-fragment is identified by its position in the result-set, which is passed in the parameter
+            <ph>pos</ph>. It returns the same structure as
+            <ph>getDocumentData()</ph>, and its fields behaves the same, so next chunks must be fetched using either
+            <ph>getNextChunk()</ph>
+            or
+            <ph>getNextExtendedChunk()</ph>
+            (see
+            <ph>getDocumentData()</ph>
+            documentation for further details).</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>resultId</ph>
+              </dt>
+                                <dd>
+                <p>Reference to a result-set as returned by a previous call to
+                  <ph>executeQuery</ph>.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>pos</ph>
+              </dt>
+                                <dd>
+                <p>The position of the item in the result-sequence, starting at 0.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>parameters</ph>
+              </dt>
+                                <dd>
+                <p>A
+                  <ph>struct</ph>
+                  containing
+                  <ph>key=value</ph>
+                  pairs to configure the output.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>int getHits(int resultId)</pre>
+          <p>Get the number of hits in the result-set identified by
+            <ph>resultId</ph>.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>resultId</ph>
+              </dt>
+                                <dd>
+                <p>Reference to a result-set as returned by a previous call to
+                  <ph>executeQuery</ph>.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>String query(byte[] xquery, int howmany, int start, Hashtable parameters)</pre>
+          <p>Executes an XQuery expression and returns a specified subset of the results. This method will directly return a subset of the result-sequence, starting at
+            <ph>start</ph>, as a new XML document. The number of results returned is determined by parameter
+            <ph>howmany</ph>. The result-set will be deleted on the server, so later calls to this method will again execute the query.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>xquery</ph>
+              </dt>
+                                <dd>
+                <p>An XQuery expression.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>start</ph>
+              </dt>
+                                <dd>
+                <p>The position of the first item to be retrieved from the result-sequence.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>howmany</ph>
+              </dt>
+                                <dd>
+                <p>The maximum number of items to retrieve.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>parameters</ph>
+              </dt>
+                                <dd>
+                <p>A struct containing
+                  <ph>key=value</ph>
+                  pairs to configure the output.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>void releaseQueryResult(int resultId)</pre>
+          <p>Forces the result-set identified by its result id to be released on the server.</p>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="info">
+                <title>Retrieving Information on Collections and Documents</title>
+      
+
+      <ul>
+                    <li>
+          <pre>Hashtable describeCollection(String collection)</pre>
+          <p>Returns a
+            <ph>struct</ph>
+            describing a specified collection.</p>
+          <p>The returned
+            <ph>struct</ph>
+            has the following fields:
+            <ph>name</ph>
+            (the collection path),
+            <ph>owner</ph>
+            (identifies the collection owner),
+            <ph>group</ph>
+            (identifies the group that owns the collection),
+            <ph>created</ph>
+            (the creation date of the collection expressed as a long value),
+            <ph>permissions</ph>
+            (the active permissions that apply to the collection as an integer value).</p>
+          <p>
+            <ph>collections</ph>
+            is an array listing the names of available sub-collections in this collection.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>collection</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>Hashtable describeResource(String resource)</pre>
+          <p>Returns a
+            <ph>struct</ph>
+            describing a specified resource.</p>
+          <p>The returned
+            <ph>struct</ph>
+            has the following fields:
+            <ph>name</ph>
+            (the collection path),
+            <ph>owner</ph>
+            (identifies the collection owner),
+            <ph>group</ph>
+            (identifies the group that owns the collection),
+            <ph>created</ph>
+            (the creation date of the collection expressed as a long value),
+            <ph>permissions</ph>
+            (the active permissions that apply to the collection as an integer value),
+            <ph>type</ph>
+            (either
+            <ph>XMLResource</ph>
+            for XML documents or
+            <ph>BinaryResource</ph>
+            for binary files),
+            <ph>content-length</ph>
+            (the estimated size of the resource in bytes). The
+            <ph>content-length</ph>
+            is based on the number of pages occupied by the resource in the DOM storage. For binary resources, the value will always be
+            <ph>0</ph>.</p>
+        </li>
+                    <li>
+          <pre>Hashtable getCollectionDesc(String collection)</pre>
+          <p>Returns a struct describing a collection.</p>
+          <p>The returned struct has the following fields:
+            <ph>name</ph>
+            (the collection path),
+            <ph>owner</ph>
+            (identifies the collection owner),
+            <ph>group</ph>
+            (identifies the group that owns the collection),
+            <ph>created</ph>
+            (the creation date of the collection expressed as a long value),
+            <ph>permissions</ph>
+            (the active permissions that apply to the collection as an integer value).</p>
+          <p>
+            <ph>collections</ph>
+            is an array listing the names of available sub-collections in this collection.</p>
+          <p>
+            <ph>documents</ph>
+            is an array listing information on all of the documents in this collection. Each item in the array is a struct with the following fields: name, owner, group, permissions, type. The type field contains a string describing the type of the resource:
+            either
+            <ph>XMLResource</ph>or
+            <ph>BinaryResource</ph>.
+          </p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>collection</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="xupdate">
+                <title>XUpdate</title>
+      
+
+      <ul>
+                    <li>
+          <pre>int xupdate(String collectionName, byte[] xupdate)</pre>
+          <pre>int xupdateResource(String documentName, byte[] xupdate)</pre>
+          <p>Applies a set of XUpdate modifications to a collection or document.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>collectionName</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection to which the XUpdate modifications should be applied.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>documentName</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the document to which the XUpdate modifications should be applied.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>xupdate</ph>
+              </dt>
+                                <dd>
+                <p>The XUpdate document containing the modifications. This should be send as an
+                  <ph>UTF-8</ph>
+                  encoded binary array.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="perm">
+                <title>Managing Accounts and Permissions</title>
+      
+
+      <ul>
+                    <li>
+          <pre>boolean addAccount(String name, String passwd, String digestPasswd, Vector groups)</pre>
+          <pre>boolean updateAccount(String name, String passwd, String digestPasswd, Vector groups, String home)</pre>
+          <p>Modifies or creates a user account.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>name</ph>
+              </dt>
+                                <dd>
+                <p>Username .</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>passwd</ph>
+              </dt>
+                                <dd>
+                <p>The plain-text (!) password for the user.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>digestPasswd</ph>
+              </dt>
+                                <dd>
+                <p>The md5 encoded password for the user.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>groups</ph>
+              </dt>
+                                <dd>
+                <p>A vector of groups assigned to the user. The first group in the vector will become the user's primary group.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>home</ph>
+              </dt>
+                                <dd>
+                <p>An optional setting for the accounts's home collection path. The collection will be created if it does not exist, and provides the user with full access.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>boolean setPermissions(String resource, String permissions)</pre>
+          <pre>boolean setPermissions(String resource, int permissions)</pre>
+          <pre>boolean setPermissions(String resource, String owner, String ownerGroup, String permissions)</pre>
+          <pre>boolean setPermissions(String resource, String owner, String ownerGroup, int permissions)</pre>
+          <p>Sets the permissions assigned to a given collection or document.</p>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>resource</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection or document on which the specified permissions will be set. The method first checks if the specified path points to a collection or resource.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>owner</ph>
+              </dt>
+                                <dd>
+                <p>The name of the user owning this resource.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>ownerGroup</ph>
+              </dt>
+                                <dd>
+                <p>The name of the group owning this resource.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>permissions</ph>
+              </dt>
+                                <dd>
+                <p>The permissions assigned to the resource, which can be specified either as an integer value constructed using the
+                  <ph>Permission</ph>
+                  class, or using a modification string. The bit encoding of the integer value corresponds to Unix conventions. The modification string has the following syntax:</p>
+                <pre>[user|group|other]=[+|-][read|write|update][, ...]</pre>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>Hashtable getPermissions(String resource)</pre>
+          <p>Returns the active permissions for the specified document or collection.</p>
+          <p>The returned
+            <ph>struct</ph>
+            has the following fields:
+            <ph>name</ph>
+            (the collection path),
+            <ph>owner</ph>
+            (identifies the collection owner),
+            <ph>group</ph>
+            (identifies the group that owns the collection),
+            <ph>created</ph>
+            (the creation date of the collection expressed as a long value),
+            <ph>permissions</ph>
+            (the active permissions that apply to the collection as an integer value).</p>
+        </li>
+                    <li>
+          <pre>boolean removeAccount(String name)</pre>
+          <p>Removes the identified account.</p>
+        </li>
+                    <li>
+          <pre>Hashtable getAccount(String name)</pre>
+          <p>Returns a struct describing the account identified by its name.</p>
+          <p>The returned struct has the following fields:
+            <ph>name</ph>
+            (the collection path),
+            <ph>home</ph>
+            (identifies the user's home directory),
+            <ph>groups</ph>
+            (an array specifying all groups to which the user belongs).</p>
+        </li>
+                    <li>
+          <pre>Vector getAccount()</pre>
+          <p>Returns a list of all accounts currently known to the system.</p>
+          <p>Each account in the list is described by the same struct returned by the
+            <ph>getAccount()</ph>
+            method.</p>
+        </li>
+                    <li>
+          <pre>Vector getGroups()</pre>
+          <p>Returns a list of all group names (as string values) currently defined.</p>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="access">
+                <title>Access to the Index Contents</title>
+      
+
+      <p>The following methods provide access to eXist's internal index structure.</p>
+      <ul>
+                    <li>
+          <pre>Vector getIndexedElements(String collectionName, boolean inclusive)</pre>
+          <p>Returns a list (i.e.
+            <ph>array[][4]</ph>) of all indexed element names for the specified collection.</p>
+          <p>For each element, an array of four items is returned:</p>
+          <ol>
+                            <li>
+              <p>name of the element</p>
+            </li>
+                            <li>
+              <p>optional namespace URI</p>
+            </li>
+                            <li>
+              <p>optional namespace prefix</p>
+            </li>
+                            <li>
+              <p>number of occurrences of this element as an integer value</p>
+            </li>
+                        </ol>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>collectionName</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>inclusive</ph>
+              </dt>
+                                <dd>
+                <p>If set to
+                  <ph>true</ph>, the sub-collections of the specified collection will be included into the result.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                    <li>
+          <pre>Vector scanIndexTerms(String collectionName, String start, String end, boolean inclusive)</pre>
+          <p>Return a list (<ph>array[][2]</ph>) of all index terms contained in the specified collection.</p>
+          <p>For each term, an array with two items is returned:</p>
+          <ol>
+                            <li>
+              <p>the term itself</p>
+            </li>
+                            <li>
+              <p>number occurrences of the term in the specified collection</p>
+            </li>
+                        </ol>
+          <dl>
+                            <dlentry>
+                                <dt>
+                <ph>collectionName</ph>
+              </dt>
+                                <dd>
+                <p>The full path to the collection.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>start</ph>
+              </dt>
+                                <dd>
+                <p>The start position for the returned range expressed as a string value. Returned index terms are positioned after the start position in ascending, alphabetical order.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>end</ph>
+              </dt>
+                                <dd>
+                <p>The end position for the returned range expressed as a string value. Returned index terms are positioned before the end position in ascending, alphabetical order.</p>
+              </dd>
+                            </dlentry>
+                            <dlentry>
+                                <dt>
+                <ph>inclusive</ph>
+              </dt>
+                                <dd>
+                <p>If set to<ph>true</ph>, sub-collections of the specified collection will be included into the result.</p>
+              </dd>
+                            </dlentry>
+                        </dl>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="other">
+                <title>Other Methods</title>
+      
+
+      <ul>
+                    <li>
+          <pre>boolean shutdown()</pre>
+          <p>Shuts down the database engine. All dirty pages are written to disk.</p>
+        </li>
+                    <li>
+          <pre>boolean sync()</pre>
+          <p>Causes the database to write all dirty pages to disk.</p>
+        </li>
+                </ul>
+    </section>
+  </section>
+    </body>
+</topic>

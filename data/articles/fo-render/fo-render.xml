@@ -1,0 +1,213 @@
+<topic id="fo-render">
+    <title>FO Rendering</title>
+    <prolog>
+        <data name="date" value="1Q22"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>eXist-db can perform FO (Formatting Objects) rendering inside XQuery code. The FO can be
+    generated used XSL (i.e. XSL:FO) if desired. For this you need to use the <ph>xslfo</ph>
+    module.</p>
+        <section id="render-module">
+            <title>The <ph>xslfo</ph> module</title>
+    
+
+    <p>eXist-db XSL:FO module allows you to do FO rendering from XQuery code using an appropriate
+      FO Renderer; eXist-db supports <xref href="https://xmlgraphics.apache.org/fop/" scope="external">Apache FOP</xref> and <xref href="http://www.renderx.com/tools/xep.html" scope="external">RenderX XEP</xref>. Previously there was also support
+      for AntennaHouse, but that was removed as it was unmaintained, we would welcome a new
+      contribution to support AntennaHouse again.</p>
+    <p>Selection of the renderer is configured in eXist-db's <ph>conf.xml</ph> file.
+      By default eXist-db ships with and is configured to use Apache FOP, see: <xref href="#apachefop" scope="local">Using
+        the Apache FOP Renderer</xref>
+            </p>
+    <p>If you wish to use RenderX XEP instead, see <xref href="#renderx" scope="local">Using
+        the RenderX XEP FO Renderer</xref>. </p>
+    <p>Its function namespace is <ph>http://exist-db.org/xquery/xslfo</ph>.</p>
+
+    
+
+    <section id="render">
+                <title>
+        <ph>xslfo:render()</ph>
+      </title>
+      
+
+      <p>The <ph>xslfo:render</ph> function renders an FO document and returns you the result.
+        It has two signatures:</p>
+      <pre outputclass="xquery">xslfo:render($document as node(), $media-type as xs:string, $parameters as node()?) as xs:base64Binary
+</pre>
+      <pre outputclass="xquery">xslfo:render($document as node(), $media-type as xs:string, $parameters as node()?, $processor-config as node()?) as xs:base64Binary</pre>
+
+      <dl>
+                    <dlentry>
+                        <dt>
+            <ph>$document</ph>
+          </dt>
+                        <dd>
+            <p>The FO document to be rendered.</p>
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+            <ph>$media-type</ph>
+          </dt>
+                        <dd>
+            <p>The Internet Media Type of the desired result. This provides a hint to the renderer as to what format it should render</p>
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>
+            <ph>$parameters</ph>
+          </dt>
+                        <dd>
+            <p>Specify any optional parameters for the rendering of the FO document, these are processor specific.</p>
+          </dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>$processor-config</dt>
+                        <dd>
+            <p>An optional configuration document for the processor, this is processor specific.</p>
+          </dd>
+                    </dlentry>
+                </dl>
+    </section>
+
+    
+
+    <section id="stream-render">
+                <title>
+        <ph>Streaming the result to a Web Browser</ph>
+      </title>
+      
+
+      <p>If you wish to Stream the result of <ph>xslfo:render</ph> directly to the Web Browser (i.e. HTTP Response), you
+        can send the output of <ph>xslfo:render</ph> directly to the function <ph>response:stream-binary</ph>. This can be
+        useful for example when you want an XQuery to download a PDF directly to the Web Browser.</p>
+    </section>
+
+  </section>
+        <section id="apachefop">
+            <title>Using the Apache FOP Renderer</title>
+    
+    <p>By default eXist-db ships with and is configured to use Apache FOP. It is configured in eXist-db's <ph>conf.xml</ph> file through the following configuration option:</p>
+      <pre outputclass="xml">&lt;module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule"&gt;
+  &lt;parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/&gt;
+&lt;/module&gt;</pre>
+    <p>
+      An example of using Apache FOP to transform FO and save the result to a PDF file in the database.
+    </p>
+    <section>
+                <title>Using Apache FOP from XQuery</title>
+                <pre outputclass="xquery">xquery version "1.0";
+
+declare namespace file = "http://exist-db.org/xquery/file";
+declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
+declare namespace xslfo = "http://exist-db.org/xquery/xslfo";
+
+let $fo := fn:doc('/db/test-fo.xml')
+let $pdf := xslfo:render($fo, "application/pdf", (), ())
+return
+  xmldb:store("/db", "result.pdf", $pdf, "application/pdf")</pre>
+            </section>
+    
+  </section>
+        <section id="renderx">
+            <title>Using the RenderX XEP FO Renderer</title>
+    
+    <p>To configure eXist-db to use RenderX XEP instead of Apache FOP, follow these steps:</p>
+    <ol>
+                <li>
+        <p>From a RenderX distribution, copy the files <ph>lib/xep.jar</ph> and <ph>lib/xt.jar</ph> into the folder <ph>$EXIST_HOME/lib</ph>.</p>
+      </li>
+                <li>
+        <p>eXist-db uses a number of configuration files, one per script, to determine which <ph>jar</ph> files to load. You should edit the XML files in the folder <ph>$EXIST_HOME/etc</ph> to add the following configuration (adjust the <i>version</i> numbers appropriately):</p>
+          <pre outputclass="xml">&lt;dependency&gt;
+  &lt;groupId&gt;com.renderx.xep&lt;/groupId&gt;
+  &lt;artifactId&gt;xep&lt;/artifactId&gt;
+  &lt;version&gt;4.30.961&lt;/version&gt;
+  &lt;relativePath&gt;xep.jar&lt;/relativePath&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;com.renderx.xep.thirdparty.com.jclark.xsl&lt;/groupId&gt;
+  &lt;artifactId&gt;xt&lt;/artifactId&gt;
+  &lt;version&gt;4.30.961&lt;/version&gt;
+  &lt;relativePath&gt;xt.jar&lt;/relativePath&gt;
+&lt;/dependency&gt;
+</pre>
+      </li>
+                <li>
+        <p>Create the folder <ph>$EXIST_HOME/renderx</ph>
+                    </p>
+      </li>
+                <li>
+        <p>From a RenderX distribution, copy the files <ph>xep.xml</ph> and <ph>rolemap.xml</ph>, and the folders <ph>fonts</ph>, <ph>hyphen</ph>, and <ph>images</ph> into the folder <ph>$EXIST_HOME/renderx</ph>.</p>
+      </li>
+                <li>
+        <p>Edit the file <ph>$EXIST_HOME/renderx/xep.xml</ph> to make the following changes:</p>
+        <ul>
+                        <li>
+            <p>From:</p>
+                            <pre outputclass="xml">&lt;option name="LICENSE" value="license.xml"/&gt;</pre>
+            <p>To:</p>
+                            <pre outputclass="xml">&lt;option name="LICENSE" value="renderx/license.xml"/&gt;</pre>
+          </li>
+                        <li>
+            <p>From:</p> <pre outputclass="xml">&lt;option name="BROKENIMAGE" value="images/404.gif"/&gt;
+&lt;option name="LOGO" value="images/logo-renderx.svg"/&gt;
+&lt;option name="STAMP_PNG" value="images/stamp-renderx.png"/&gt;
+&lt;option name="ROLE_MAP" value="rolemap.xml"/&gt;</pre>
+            <p>To:</p> <pre outputclass="xml">&lt;option name="BROKENIMAGE" value="renderx/images/404.gif"/&gt;
+&lt;option name="LOGO" value="renderx/images/logo-renderx.svg"/&gt;
+&lt;option name="STAMP_PNG" value="renderx/images/stamp-renderx.png"/&gt;
+&lt;option name="ROLE_MAP" value="renderx/rolemap.xml"/&gt;</pre>
+          </li>
+                        <li>
+            <p>From:</p> <pre outputclass="xml">&lt;fonts xml:base="fonts/" default-family="Helvetica"/&gt;</pre>
+            <p>To:</p> <pre outputclass="xml">&lt;fonts xml:base="renderx/fonts/" default-family="Helvetica"/&gt;</pre>
+          </li>
+                        <li>
+            <p>From:</p> <pre outputclass="xml">&lt;languages default-language="en-US" xml:base="hyphen"/&gt;</pre>
+            <p>To:</p> <pre outputclass="xml">&lt;languages default-language="en-US" xml:base="renderx/hyphen"/&gt;</pre>
+          </li>
+                    </ul>
+      </li>
+                <li>
+        <p>Copy your RenderX XEP license file (<ph>license.xml</ph>) that you have been provided by RenderX into <ph>$EXIST_HOME/renderx</ph>.</p>
+      </li>
+                <li>
+        <p>Edit the file <ph>$EXIST_HOME/conf.xml</ph> to make the following changes:</p>
+        <p>From:</p> <pre outputclass="xml">&lt;module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule"&gt;
+  &lt;parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/&gt;
+&lt;/module&gt;</pre>
+        <p>To: </p>
+                    <pre outputclass="xml">&lt;module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule"&gt;
+  &lt;parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter"/&gt;
+&lt;/module&gt;</pre>
+      </li>
+                <li>
+        <p>If eXist-db was running whilst you were making these changes, then you will need to restart it for the change to take effect.</p>
+      </li>
+            </ol>
+    <p>
+      An example of using RenderX XEP to transform FO and save the result to a PDF file on the filesystem.
+    </p>
+    <section>
+                <title>Using RenderX XEP from XQuery</title>
+                <pre outputclass="xquery">xquery version "3.0";
+
+declare namespace file = "http://exist-db.org/xquery/file";
+declare namespace system = "http://exist-db.org/xquery/system";
+declare namespace xslfo = "http://exist-db.org/xquery/xslfo";
+
+let $config := fn:parse-xml(file:read(system:get-exist-home() || "/renderx/xep.xml"))
+return
+
+  let $fo := fn:doc('/db/test-fo.xml')
+  let $pdf := xslfo:render($fo, "application/pdf", (), $config)
+  return
+  file:serialize-binary($pdf, "/tmp/fop.pdf")</pre>
+            </section>
+    
+  </section>
+    </body>
+</topic>

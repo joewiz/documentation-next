@@ -1,0 +1,107 @@
+<topic id="contentextraction">
+    <title>Extracting Content from Binary Files</title>
+    <prolog>
+        <data name="date" value="2Q19"/>
+        <data name="keyword" value="application-development"/>
+    </prolog>
+    <body>
+        <p>The Content Extraction module extends eXist-db's XML abilities to binary files. The module
+        contains functions for extracting the content of the binary files, and returning the content
+        as XML. In this form, the content can then be queried, indexed, and manipulated. It useful
+        especially in conjunction with Lucene indexes.</p>
+        <p>The Content Extraction is built on the <xref href="https://tika.apache.org/" scope="external">Apache
+        Tika</xref> library. Tika understands a large variety of formats, ranging from PDF documents
+        to spreadsheets and image metadata.</p>
+        <section id="usage">
+            <title>Usage</title>
+        
+
+        <p>To import the module use the following import statement:</p>
+        <pre>import module namespace content="http://exist-db.org/xquery/contentextraction"
+    at "java:org.exist.contentextraction.xquery.ContentExtractionModule";</pre>
+
+        <p>The module provides three functions:</p>
+        <pre>content:get-metadata($binary as xs:base64Binary) as document-node()
+content:get-metadata-and-content($binary as xs:base64Binary) as document-node()
+content:stream-content($binary as xs:base64Binary, $paths as xs:string*, $callback as function, $namespaces as element()?, $userData as item()*) as empty-sequence()</pre>
+
+        <p>The first two functions need little explanation: <ph>get-metadata()</ph> just
+            returns some metadata extracted from the resource, while
+            <ph>get-metadata-and-content()</ph> will also provide the text body of the resource
+            (if any). The third function is a streaming variant of the other two and is used to
+            process larger resources whose content may not fit into memory.</p>
+        <p>All functions produce XHTML. The metadata will be contained in the HTML head, the
+            contents goes into the body. The structure of the body HTML varies depending on the
+            media type of the binary file. For example, the HTML resulting from a PDF is a sequence
+            of <ph>div</ph> elements, one per page. That of a word processing document is often a
+            sequence of paragraphs.</p>
+    </section>
+        <section id="storage">
+            <title>Storage and Indexing Strategies</title>
+        
+
+        <p>While you could decide to just store the HTML returned by the content extraction
+            functions as an XML resource into the database, this may not be efficient. For example,
+            a document search applications may not need to retain the extracted HTML.</p>
+        <p>In such cases the <ph>ft:index()</ph> function from the full text indexing module
+            can be useful. This function allows users to associate a full text index with any
+            database resource, be it binary or XML. The index will be linked to the resource.</p>
+        <p>To create an index, call the function with the following arguments: </p>
+        <ol>
+                <li>
+                <p>The path of the resource to which the index should be linked as a
+                    string.</p>
+            </li>
+                <li>
+                <p>An XML fragment describing the fields you want to add and the text content to
+                    index.</p>
+            </li>
+            </ol>
+        <p>For example, to associate an index with the document <ph>test.txt</ph>, call
+            <ph>ft:index()</ph> as follows: </p>
+        <pre>ft:index("/db/apps/demo/test.txt", &lt;doc&gt;
+    &lt;field name="title" store="yes"&gt;Indexing&lt;/field&gt;
+    &lt;field name="para" store="yes"&gt;This is the first paragraph.&lt;/field&gt;
+    &lt;field name="para" store="yes"&gt;And a second paragraph.&lt;/field&gt;
+&lt;/doc&gt;)</pre>
+
+        <p>This creates a Lucene index document, indexes the content using the configured
+            analyzers, and links it to the eXist document with the given path. You may link more
+            than one Lucene document to the same eXist resource. The field elements map to Lucene
+            fields. You can use as many fields as you want or add multiple fields with the same
+            name.</p>
+        <p>The <ph>store="yes"</ph> attribute tells the indexer to also store the text
+            string, so you can retrieve it later.</p>
+        <p>To query the created index, use the <ph>ft:search()</ph> function: </p>
+        <pre>ft:search("/db/apps/demo/test.txt", "para:paragraph and title:indexing")</pre>
+        <p> The first parameter is the path to the resource or collection to query. Tthe second
+            specifies a Lucene query string. Note how we prefix the query term by the name of the
+            field.</p>
+        <p>Executing this query returns:</p>
+        <pre>&lt;results&gt;
+    &lt;search uri="/db/apps/demo/test.txt" score="6.3111067"&gt;
+        &lt;field name="para"&gt;This is the first
+            &lt;exist:match&gt;paragraph&lt;/exist:match&gt;.&lt;/field&gt;
+        &lt;field name="para"&gt;And a second
+            &lt;exist:match&gt;paragraph&lt;/exist:match&gt;.&lt;/field&gt;
+        &lt;field name="title"&gt;&lt;exist:match&gt;Indexing&lt;/exist:match&gt;&lt;/field&gt;
+    &lt;/search&gt;
+&lt;/results&gt;</pre>
+
+        <p>Each matching resource is described by a search element. The score attribute expresses
+            the relevance Lucene computed for the resource (the higher the better). Within the
+            search element, every field which contributed to the query result is returned, but only
+            if <ph>store="yes"</ph> was defined for this field at indexing time.</p>
+        <p> Note how the matches in the text are enclosed in <ph>match</ph> elements, just as
+            if you did a full text query on an XML document. This makes it easy to post-process the
+            query result, for example to create a keywords in context display using eXist's standard
+            KWIC module.</p>
+        <p>The document the index is linked to does not need to be a binary resource. One can
+            also create additional indexes on XML documents. This is a useful feature, because it
+            allows us to index and query information which is not directly contained in the XML
+            itself. For example, one could add metadata fields and retrieve them later using
+            <ph>get-field</ph>. Or we could use fields to pre-process and normalize information
+            already present in the XML to speed up later access.</p>
+    </section>
+    </body>
+</topic>

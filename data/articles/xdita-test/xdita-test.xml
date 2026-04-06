@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD LIGHTWEIGHT DITA Topic//EN" "lw-topic.dtd">
+<topic id="xdita-test">
+    <title>XDITA Test Article</title>
+    <prolog>
+        <data name="date" value="2Q26"/>
+        <data name="keyword" value="getting-started"/>
+    </prolog>
+    <body>
+        <section id="intro">
+            <title>Introduction</title>
+            <p>This is a <b>test article</b> written in <i>XDITA</i> (Lightweight DITA)
+               format. It exercises the XDITA rendering pipeline.</p>
+            <p>XDITA uses a simplified element set compared to DocBook, making it
+               easier to author and edit documentation.</p>
+        </section>
+
+        <section id="code-blocks">
+            <title>Code Blocks</title>
+            <p>Here is an XQuery code example:</p>
+            <pre outputclass="xquery">xquery version "3.1";
+
+let $greeting := "Hello from XDITA!"
+return
+    &lt;result&gt;{ $greeting }&lt;/result&gt;</pre>
+
+            <p>And an XML configuration example:</p>
+            <pre outputclass="xml">&lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+    &lt;index&gt;
+        &lt;lucene&gt;
+            &lt;text qname="p"/&gt;
+        &lt;/lucene&gt;
+    &lt;/index&gt;
+&lt;/collection&gt;</pre>
+        </section>
+
+        <section id="lists">
+            <title>Lists</title>
+            <p>An unordered list:</p>
+            <ul>
+                <li><p>First item with <b>bold</b> text</p></li>
+                <li><p>Second item with a <xref href="https://exist-db.org" scope="external">link</xref></p></li>
+                <li><p>Third item</p></li>
+            </ul>
+
+            <p>An ordered list:</p>
+            <ol>
+                <li><p>Step one</p></li>
+                <li><p>Step two</p></li>
+                <li><p>Step three</p></li>
+            </ol>
+
+            <p>A definition list:</p>
+            <dl>
+                <dlentry>
+                    <dt>XDITA</dt>
+                    <dd><p>The XML flavor of Lightweight DITA, using a simplified
+                        element set for technical documentation.</p></dd>
+                </dlentry>
+                <dlentry>
+                    <dt>ODD</dt>
+                    <dd><p>One Document Does-it-all. A TEI specification format that
+                        defines processing models for rendering XML to various outputs.</p></dd>
+                </dlentry>
+            </dl>
+        </section>
+
+        <section id="admonitions">
+            <title>Admonitions</title>
+            <note type="note">
+                <p>This is an informational note. It provides additional context
+                   that may be helpful.</p>
+            </note>
+            <note type="warning">
+                <p>This is a warning. Pay attention to this important caveat.</p>
+            </note>
+            <note type="notice">
+                <p>This is a notice (mapped from DocBook's "important" element).</p>
+            </note>
+        </section>
+
+        <section id="tables">
+            <title>Tables</title>
+            <simpletable>
+                <sthead>
+                    <stentry>Element</stentry>
+                    <stentry>Description</stentry>
+                    <stentry>Type</stentry>
+                </sthead>
+                <strow>
+                    <stentry>topic</stentry>
+                    <stentry>Root element of an XDITA document</stentry>
+                    <stentry>structural</stentry>
+                </strow>
+                <strow>
+                    <stentry>section</stentry>
+                    <stentry>Organizational division within a topic body</stentry>
+                    <stentry>structural</stentry>
+                </strow>
+                <strow>
+                    <stentry>p</stentry>
+                    <stentry>Paragraph</stentry>
+                    <stentry>block</stentry>
+                </strow>
+            </simpletable>
+        </section>
+
+        <section id="inline">
+            <title>Inline Elements</title>
+            <p>XDITA supports <b>bold</b>, <i>italic</i>, and <u>underline</u> text.
+               The <ph>ph element</ph> is used for generic inline phrases.
+               Links use <xref href="#intro" scope="local">xref with scope="local"</xref>
+               for internal references and
+               <xref href="https://github.com/eXist-db/exist" scope="external">xref with scope="external"</xref>
+               for external URLs.</p>
+        </section>
+    </body>
+</topic>

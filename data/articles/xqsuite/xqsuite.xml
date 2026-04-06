@@ -1,0 +1,610 @@
+<topic id="xqsuite">
+    <title>XQSuite - Annotation-based Test Framework for XQuery</title>
+    <prolog>
+        <data name="date" value="4Q24"/>
+        <data name="keyword" value="application-development"/>
+        <data name="keyword" value="testing"/>
+        <data name="keyword" value="xquery"/>
+    </prolog>
+    <body>
+        <p>XQSuite is a test framework for XQuery modules based on XQuery function annotations.</p>
+        <section id="introduction">
+            <title>Introduction</title>
+    
+
+    <p>The XQsuite test framework allows tests to be added to functions using function annotations. Since annotations are ignored during normal execution, this does not interfere. The framework has the following properties:</p>
+    <ul>
+                <li>
+        <p>Tests can be defined within the actual application code. A function can be tested where implemented.
+        </p>
+      </li>
+                <li>
+        <p>Tests are written as ordinary XQuery functions.</p>
+      </li>
+                <li>
+        <p>More complex integration tests can be combined into separate modules.
+        </p>
+      </li>
+                <li>
+        <p>To run a suite of tests, all you need is a small, main XQuery which imports the modules to be tested.</p>
+      </li>
+                <li>
+        <p>XQSuite is itself implemented in XQuery and can therefore be extended.
+        </p>
+      </li>
+            </ul>
+
+    <p>XQSuite has two main components:</p>
+    <ol>
+                <li>
+        <p>A number of XQuery function annotations to be used within the code module under test</p>
+      </li>
+                <li>
+        <p>A test runner, which takes a sequence of function items and interprets the test annotations</p>
+      </li>
+            </ol>
+    <p>To use test annotations in an XQuery module, the XQsuite namespace must be declared:</p>
+    <pre outputclass="xquery">declare namespace test="http://exist-db.org/xquery/xqsuite";</pre>
+
+    <p>A function will be processed by the test runner if it has at least one
+      <ph>test:assert*</ph>
+      annotation (<ph>assertEquals</ph>,
+      <ph>assertEmpty</ph>, etc.). Functions without such an annotation will be ignored. For example:</p>
+    <pre outputclass="xquery">declare %test:assertEquals("Hello world") function local:hello() {
+    "Hello world"
+};</pre>
+    <p>When the test runner encounters this function, it will evaluate it and compare its return value to the assertion.</p>
+
+    <note type="note">
+                <p>eXist-db previously used a descriptive XML format to define XQuery tests. XQSuite replaces this, though the old format and test runner is still supported.</p>
+            </note>
+
+  </section>
+        <section id="annotations">
+            <title>Supported Test Annotations</title>
+    
+
+    <p>The following annotations are supported:</p>
+
+    <dl>
+                <dlentry>
+                    <dt>
+          <ph>%test:arg($varName, $value1, $value2, ...)</ph>
+        </dt>
+                    <dd>
+          <p>Set the function parameter with variable name $varName to the sequence constructed by converting the remaining annotation parameters to the sequenceType as declared by the function parameter. See
+            <xref href="#sect-passing-parameters" scope="local"/>.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:args($arg1, $arg2, ...)</ph>
+        </dt>
+                    <dd>
+          <p>Run the function, using the supplied literal arguments. There must be one annotation argument for each parameter the function takes. See
+            <xref href="#sect-passing-parameters" scope="local"/>.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assertEmpty, %test:assertExists</ph>
+        </dt>
+                    <dd>
+          <p>Expects the function to return an empty sequence (<ph>assertEmpty</ph>) or a non-empty sequence (<ph>assertExists</ph>).
+          </p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assertTrue, %test:assertFalse</ph>
+        </dt>
+                    <dd>
+          <p>Checks if the effective boolean value of the returned result is
+            <ph>true</ph>
+            or
+            <ph>false</ph>.
+          </p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assertEquals($value1, $value2, ...)</ph>
+        </dt>
+                    <dd>
+          <p>Tests if the return value equals the specified argument.</p>
+          <ul>
+                            <li>
+              <p>If the function returns more than one item, each item is compared to the given annotation values in turn. The number of returned items has to correspond to the number of annotation values.</p>
+            </li>
+                            <li>
+              <p>If the function returns an atomic type, the assertion argument is cast into the same type and the two are compared using the
+                <ph>eq</ph>
+                operator.</p>
+            </li>
+                            <li>
+              <p>If the sequence returned by the function contains one or more XML elements, they will be normalized (ignorable whitespace is stripped). The assertion argument is then parsed into XML and the two node trees are compared using the deep-equals function.
+              </p>
+            </li>
+                        </ul>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assertEqualsPermutation($value1, $value2, ...)</ph>
+        </dt>
+                    <dd>
+          <p>Iterate over the items in the return sequence, of e.g., a <ph>for</ph> loop to check if the sequence contains the correct items in the correct order.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assertError($err)</ph>
+        </dt>
+                    <dd>
+          <p>Evaluating the tested function should result in a dynamic error. If a value is given for
+            <ph>$err</ph>, it should either be: 1) the error code of the dynamic error, or 2) a regular expression that matches the error description.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assertXPath($path-as-string)</ph>
+        </dt>
+                    <dd>
+          <p>Tests if the return value of the tested function using the given XPath expression. The annotation value is executed as an XPath expression. The assertion passes if the XPath expression returns a non-empty sequence or a single atomic item whose effective boolean value is true.</p>
+          <ul>
+                            <li>
+              <p>Within the XPath expression, you may refer to the sequence of items returned by
+                the tested function using the variable <ph>$result</ph>. For example, if the
+                result returns the element <ph>&lt;x/&gt;</ph>, you can test for this result with
+                the annotation <ph>%test:assertXPath("$result/self::x")</ph>. If the result
+                returns <ph>&lt;x&gt;&lt;y/&gt;&lt;/x&gt;</ph>, the presence of the
+                  <ph>&lt;y&gt;</ph> element can be tested with the annotation expression
+                  <ph>%test:assertXPath("$result/y")</ph>
+                                </p>
+            </li>
+                            <li>
+              <p>When selecting nodes with namespaces, use the namespace prefixes defined in the
+                result sequence. For example, if the result returns an element <ph>&lt;foo:x
+                  xmlns:foo="bar"/&gt;</ph>, the annotation can test for this result with
+                  <ph>%test:assertXPath("$result/self::foo:x")</ph>.</p>
+            </li>
+                            <li>
+              <p>If the result contains node with a default namespace declaration, XQSuite
+                assigns that namespace as the default element namespace for the annotation. For
+                example, a result <ph>&lt;x xmlns="foo"/&gt;</ph> can be tested with the
+                annotation <ph>%test:assertXPath("$result/self::x")</ph>.</p>
+            </li>
+                            <li>
+              <p>When selecting a result's descendant nodes that are assigned yet a different
+                default namespace declaration, address these via namespace wildcard or "braced URI
+                literal" notation. For example, the <ph>&lt;y&gt;</ph> element in the result
+                  <ph>&lt;x xmlns="foo"&gt;&lt;y xmlns="bar"/&gt;&lt;/x&gt;</ph> can be tested
+                with the annotation <ph>%test:assertXPath("$result/*:y")</ph> or
+                  <ph>%test:assertXPath("$result/Q{bar}y")</ph>.</p>
+            </li>
+                        </ul>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:assumeInternetAccess($uri)</ph>
+        </dt>
+                    <dd>
+          <p>Marks that a test
+            <i>assumes</i>
+            that Internet access is available. If the
+            <ph>$uri</ph>
+            can be reached over HTTP via a HEAD request, then the test will be executed as part of the test suite. If the connection to the
+            <ph>$uri</ph>
+            cannot be made, then the test has the same status as a test marked with
+            <ph>%test:pending</ph>. This can be useful when you have a test which relies on an external resource.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:name($name)</ph>
+        </dt>
+                    <dd>
+          <p>Provide a more descriptive name for your test than the XQuery function name, which is the default.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:pending($reason)</ph>
+        </dt>
+                    <dd>
+          <p>Marks a test as
+            <i>pending</i>, which means that it will not be executed as part of the test suite. This can be useful when you want to write a test for a problem or new feature but you have not had time to fix the problem or implement the feature yet. The number of
+            <i>pending</i>
+            tests is shown in the test suite report as a reminder.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:stats</ph>
+        </dt>
+                    <dd>
+          <p>Collects statistics using
+            <ph>system:trace()</ph>
+            and prepends them as element
+            <ph>&lt;stats:calls xmlns:stats="http://exist-db.org/xquery/profiling"&gt;</ph>
+            to the returned sequence of the test function.</p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:setUp, %test:tearDown</ph>
+        </dt>
+                    <dd>
+          <p>Special functions which will be called once before/after any other tests in the same XQuery module are run. Use these functions to upload data, create indexes, users or prepare anything else needed for the tests to run.
+          </p>
+        </dd>
+                </dlentry>
+                <dlentry>
+                    <dt>
+          <ph>%test:user($username, $password)</ph>
+        </dt>
+                    <dd>
+          <p>Executes the test function as a specific user.</p>
+        </dd>
+                </dlentry>
+            </dl>
+
+    
+
+    <section id="sect-passing-parameters">
+                <title>Passing parameters to tests</title>
+      
+
+      <p>To test a function which takes parameters, use the
+        <ph>%test:arg</ph>
+        or
+        <ph>%test:args</ph>
+        annotation in combination with one or more
+        <ph>%test:assert*</ph>
+        assertions. For example:</p>
+      <pre outputclass="xquery">declare
+    %test:arg("n", 1) %test:assertEquals(1)
+    %test:arg("n", 5) %test:assertEquals(120)
+function m:factorial($n as xs:int) as xs:int {
+    if ($n = 1) then
+        1
+    else
+        $n * m:factorial($n - 1)
+};</pre>
+      <ul>
+                    <li>
+          <p>The
+            <ph>%test:arg</ph>
+            annotation is used to set the parameters for the next test run triggered by the assertion.</p>
+        </li>
+                    <li>
+          <p>The tested function will be called once for every sequence of
+            <ph>%test:arg</ph>
+            annotations followed by one or more
+            <ph>%test:assert*</ph>. The order of the annotations is therefore important!</p>
+        </li>
+                    <li>
+          <p>The first argument to
+            <ph>%test:arg</ph>
+            denotes the name of the function parameter variable to set, the remaining arguments are used to create the sequence of values passed. So to test a function which takes a sequence with more than one item for a parameter, just append additional values
+            to
+            <ph>%test:arg</ph>. The test runner will convert these values into a sequence.</p>
+        </li>
+                    <li>
+          <p>There must be as many
+            <ph>%test:arg</ph>
+            annotations for every test run as the function takes parameters.</p>
+        </li>
+                    <li>
+          <p>The result returned by the function call is passed to each assertion in turn, which may either pass or fail. In the example above, we assert that the function returns 1 if the input parameter is 1, and 120 if the input is 5.</p>
+        </li>
+                    <li>
+          <p>If all function parameters expect exactly one value, you can also use
+            <ph>%test:args</ph>. Instead of specifying one
+            <ph>%test:arg</ph>
+            annotation for every parameter, use a single
+            <ph>%test:args</ph>
+            annotation to define all parameter values at once.
+            <ph>%test:args</ph>
+            takes a list of values. Each value is mapped to exactly one function parameter. Example:</p>
+          <pre outputclass="xquery">declare
+    %test:args("Hello", "world")
+    %test:assertEquals("Hello world")
+function local:hello($greet as xs:string, $user as xs:string) {
+    $greet || " " || $user
+};</pre>
+        </li>
+                </ul>
+    </section>
+
+    
+
+    <section id="type-conversion">
+                <title>Automatic Type Conversion</title>
+      
+
+      <p>XQuery annotation parameters need to be literal values, so only strings and numbers are allowed. XQSuite therefore applies type conversion to every argument and to values used in assertions.
+      </p>
+      <p>For example, the following function expects a parameter of type
+        <ph>xs:date</ph>:</p>
+      <pre outputclass="xquery">declare
+    %test:args("2012-06-26")
+    %test:assertEquals("26.6.2012")
+    %test:args("2012-06-01")
+    %test:assertEquals("1.6.2012")
+function fd:simple-date($date as xs:date) as xs:string {
+    format-date($date, "[D].[M].[Y]")
+};</pre>
+      <p>The string value passed to the
+        <ph>%test:args</ph>
+        annotation is automatically converted to the
+        <ph>xs:date</ph>
+        type declared for the function parameter. The same applies to the assertion values.</p>
+      <p>Type conversion works for atomic types as well as XML nodes.</p>
+      <p>If automatic type conversion fails the test case will fail as well.</p>
+    </section>
+
+    
+
+    <section id="custom-assertions">
+                <title>Custom Assertions</title>
+      
+
+      <p>Annotation based assertions are limited in so that you can
+      </p>
+      <ul>
+                    <li>
+          <p>a) can only use (sequences of) string and numeric literals</p>
+        </li>
+                    <li>
+          <p>b) the value must be static, meaning you cannot use variables in annotations</p>
+        </li>
+                    <li>
+          <p>c) there is no way to add assertions that are specific to your domain</p>
+        </li>
+                </ul>
+
+      <p>This is why the function <ph>test:fail</ph> was introduced allowing you to create
+      custom assertion functions.</p>
+      <pre outputclass="xquery">xquery version "3.1";
+
+module namespace t="http://exist-db.org/xquery/test/xqsuite";
+
+declare namespace test="http://exist-db.org/xquery/xqsuite";
+
+declare %test:assertTrue function t:test-type() as xs:boolean? {
+    t:assert-is-foo(())
+};
+
+(: will only return true  :)
+declare function t:assert-is-foo($actual as item()*) as xs:boolean? {
+    $actual eq "foo" or
+        test:fail("Is not foo", $actual, "foo")
+};
+</pre>
+      <p>These functions can also be in a module to re-use them.</p>
+      <pre outputclass="xquery">xquery version "3.1";
+
+module namespace assert="http://line-o.de/xq/assert";
+
+import module namespace test="http://exist-db.org/xquery/xqsuite"
+    at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+
+declare function assert:map ($e as map(*), $a as item()*) as xs:boolean? {
+    if (exists($a) and count($a) eq 1  and $a instance of map(*))
+    then (
+        for-each(map:keys($e), function ($key as xs:anyAtomicType) {
+            if (not(map:contains($a, $key)))
+            then test:fail("Key " || $key || " is missing", $e, $a, "map-assertion")
+            else if ($e($key) ne $a($key))
+            then test:fail("Value mismatch for key '" || $key || "'", $e, $a, "map-assertion")
+            else ()
+        })
+        ,
+        true()
+    )
+    else test:fail("Type mismatch", $e, $a, "map-assertion")
+};
+</pre>
+      <p>Here is an example using the above assertion library</p>
+      <pre outputclass="xquery">xquery version "3.1";
+
+module namespace assert="http://line-o.de/xq/assert";
+
+import module namespace test="http://exist-db.org/xquery/xqsuite"
+    at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+
+declare function assert:map ($e as map(*), $a as item()*) as xs:boolean? {
+    if (exists($a) and count($a) eq 1  and $a instance of map(*))
+    then (
+        for-each(map:keys($e), function ($key as xs:anyAtomicType) {
+            if (not(map:contains($a, $key)))
+            then test:fail("Key " || $key || " is missing", $e, $a, "map-assertion")
+            else if ($e($key) ne $a($key))
+            then test:fail("Value mismatch for key '" || $key || "'", $e, $a, "map-assertion")
+            else ()
+        })
+        ,
+        true()
+    )
+    else test:fail("Type mismatch", $e, $a, "map-assertion")
+};
+</pre>
+      <p>The output will look like this</p>
+      <pre outputclass="xml">&lt;testsuites&gt;
+  &lt;testsuite package="http://exist-db.org/xquery/test/xqsuite" timestamp="2022-04-12T14:24:15.72+02:00" tests="4" failures="3" errors="0" pending="0" time="PT0.008S"&gt;
+    &lt;testcase name="test-missing-key" class="t:test-missing-key"&gt;
+      &lt;failure message="Key 'b' is missing" type="map-assertion"/&gt;
+      &lt;output&gt;
+        map{"a":1,"c":4}
+      &lt;/output&gt;
+    &lt;/testcase&gt;
+    &lt;testcase name="test-passing" class="t:test-passing"/&gt;
+    &lt;testcase name="test-wrong-type" class="t:test-wrong-type"&gt;
+      &lt;failure message="Type mismatch" type="map-assertion"/&gt;
+      &lt;output&gt;
+        [1,2]
+      &lt;/output&gt;
+    &lt;/testcase&gt;
+    &lt;testcase name="test-wrong-value" class="t:test-wrong-value"&gt;
+      &lt;failure message="Value mismatch for key 'b'" type="map-assertion"/&gt;
+      &lt;output&gt;
+        map{"a":1,"b":3}
+      &lt;/output&gt;
+    &lt;/testcase&gt;
+  &lt;/testsuite&gt;
+&lt;/testsuites&gt;</pre>
+
+      <section id="custom-assertion-fallback">
+                    <title>Fallback for backwards compatibility</title>
+        
+        <p>If you want to run custom assertions on versions of eXist-db that do not have <ph>test:fail</ph>
+        there is a fallback that you can use. This could be the tests for a library package, for instance</p>
+        <pre outputclass="xquery">xquery version "3.1";
+
+module namespace assert="http://line-o.de/xq/assert";
+
+import module namespace test="http://exist-db.org/xquery/xqsuite"
+    at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+
+declare variable $assert:fail :=
+    let $builtin := function-lookup(xs:QName("test:fail"), 4)
+    return
+        if (exists($builtin))
+        then
+            $builtin
+        else (: fallback :)
+            function ($message, $expected, $actual, $type) {
+                error(xs:QName("assert:" || $type), $message, map {
+                    "expected": $expected,
+                    "actual": $actual
+                })
+            }
+
+declare function assert:map ($e as map(*), $a as item()*) as xs:boolean? {
+    if (exists($a) and count($a) eq 1  and $a instance of map(*))
+    then true()
+    else $assert:fail("Type mismatch", $e, $a, "map-assertion")
+};
+</pre>
+      </section>
+    </section>
+
+  </section>
+        <section id="running-testsuite">
+            <title>Running a Test Suite</title>
+    
+
+    <p>To run a suite of tests, create a main XQuery which:</p>
+    <ol>
+                <li>
+        <p>Imports the
+          <ph>xqsuite.xql</ph>
+          test framework</p>
+      </li>
+                <li>
+        <p>Calls
+          <ph>test:suite</ph>
+          with the sequence of function items to test</p>
+      </li>
+            </ol>
+    <p>Here is an example of a module for test, stored as
+      <ph>math.xql</ph>:</p>
+    <pre outputclass="xquery">xquery version "3.0";
+
+module namespace m="http://foo.org/xquery/math";
+
+declare namespace test="http://exist-db.org/xquery/xqsuite";
+
+declare
+    %test:arg("n", 1) %test:assertEquals(1)
+    %test:arg("n", 5) %test:assertEquals(120)
+function m:factorial($n as xs:int) as xs:int {
+    if ($n = 1) then
+        1
+    else
+        $n * m:factorial($n - 1)
+};</pre>
+    <p>To run the tests in this module, create a main XQuery, for example called
+      <ph>suite.xql</ph>, and store it in the same collection:</p>
+    <pre outputclass="xquery">xquery version "3.0";
+
+import module namespace test="http://exist-db.org/xquery/xqsuite" 
+at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+
+test:suite(
+    inspect:module-functions(xs:anyURI("math.xql"))
+)</pre>
+    <p>Executing the main XQuery, for instance within eXide, will return the test results as an XML fragment (see
+      <xref href="#sect-test-output" scope="local"/>).</p>
+    <p>In the main XQuery, the function:
+      <ph>inspect:module-functions</ph>
+      returns a function item for every public function defined in the module loaded from the location URI argument.</p>
+    <p>
+      The location URI is resolved in the same way as in a normal module import: a relative path is interpreted relative to the location of the main XQuery.</p>
+  </section>
+        <section id="sect-test-output">
+            <title>Test Suite Output</title>
+    
+
+    <p>
+      A call to
+      <ph>test:suite</ph>
+      returns the results of the tests as an XML fragment, using the schema defined by the
+      <ph>xUnit</ph>
+      test tool. The
+      <ph>xUnit</ph>
+      format is supported by many systems, for instance Jenkins.
+    </p>
+    <p>For every XQuery module tested,
+      <ph>test:suite</ph>
+      creates a single
+      <ph>testsuite</ph>
+      element. The result of each test run is output as a
+      <ph>testcase</ph>
+      element. It will be empty if the test passed. If the test failed (meaning that the test did not meet its assertions, or that it raised an
+      <ph>fn:error</ph>), there will be a
+      <ph>failure</ph>
+      element containing the expected result of the function, and an
+      <ph>output</ph>
+      element with the actual result. In the case that the test resulted in an unexpected error that is not covered by
+      <ph>fn:error</ph>, there will be an
+      <ph>error</ph>
+      element with the error type and message. The
+      <ph>testsuite</ph>
+      element will also contain the timestamp when the tests began, the duration of the tests, and a count of the number of tests, failed tests, pending tests, and tests that raised unexpected errors not covered by
+      <ph>fn:error</ph>. Here is a sample showing a failed test:</p>
+    <pre outputclass="xml">&lt;testsuites&gt;
+  &lt;testsuite package="http://exist-db.org/xquery/test/bang" timestamp="2012-10-16T10:30:12.966+02:00" failures="1" pending="0" errors="0" tests="19" time="PT0.046S"&gt;
+    &lt;testcase name="constructor" class="bang:constructor"/&gt;
+    &lt;testcase name="functions1" class="bang:functions1"/&gt;
+    &lt;testcase name="functions2" class="bang:functions2"/&gt;
+    &lt;testcase name="functions3" class="bang:functions3"&gt;
+      &lt;failure message="assertEquals failed." type="failure-error-code-1"&gt;
+        RED BLACK GREEN
+      &lt;/failure&gt;
+      &lt;output&gt;
+        RED BLUE GREEN
+      &lt;/output&gt;
+    &lt;/testcase&gt;
+    &lt;testcase name="functions4" class="bang:functions4"/&gt;
+    &lt;testcase name="nodepath" class="bang:nodepath"/&gt;
+    &lt;testcase name="nodepath-reverse" class="bang:nodepath-reverse"/&gt;
+    &lt;testcase name="nodes1" class="bang:nodes1"/&gt;
+    &lt;testcase name="nodes2" class="bang:nodes2"/&gt;
+    &lt;testcase name="numbers1" class="bang:numbers1"/&gt;
+    &lt;testcase name="position1" class="bang:position1"/&gt;
+    &lt;testcase name="position2" class="bang:position2"/&gt;
+    &lt;testcase name="position3" class="bang:position3"/&gt;
+    &lt;testcase name="position4" class="bang:position4"/&gt;
+    &lt;testcase name="position5" class="bang:position5"/&gt;
+    &lt;testcase name="precedence1" class="bang:precedence1"/&gt;
+    &lt;testcase name="precedence2" class="bang:precedence2"/&gt;
+    &lt;testcase name="precedence3" class="bang:precedence3"/&gt;
+    &lt;testcase name="sequence" class="bang:sequence"/&gt;
+  &lt;/testsuite&gt;
+&lt;/testsuites&gt;</pre>
+  </section>
+    </body>
+</topic>
