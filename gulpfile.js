@@ -54,6 +54,7 @@ function copyJinnTap() {
 function copyXarResources() {
   return src([
     "controller.xq",
+    "login.html",
     "pre-install.xq",
     "finish.xq",
     "collection.xconf",
