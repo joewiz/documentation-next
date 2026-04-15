@@ -6,7 +6,7 @@
  * - Category filter state from URL params
  */
 
-document.addEventListener("DOMContentLoaded", () => {
+function applyHighlighting() {
     // Apply syntax highlighting using CM6/Lezer (same engine as eXide + Notebook)
     const hl = globalThis.highlightCode;
     if (hl) {
@@ -29,6 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (lang) hl.highlightElement(code, lang);
         });
     }
+}
+
+function setup() {
+    applyHighlighting();
 
     // Keyboard shortcut: "/" to focus search input
     document.addEventListener("keydown", (e) => {
@@ -150,37 +154,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- XDITA Editor (admin page) ---
+    // Article slug is passed via ?edit=<slug> URL parameter (from "Edit Article" button on article pages)
 
     const editorEl = document.getElementById("xdita-editor");
-    const articleSelector = document.getElementById("article-selector");
     const saveBtn = document.getElementById("save-article-btn");
     const editorStatus = document.getElementById("editor-status");
 
-    if (editorEl && articleSelector) {
+    if (editorEl) {
         // Derive app base from the current page URL
         const appBase = document.querySelector("link[href*='/resources/css/docs.css']")
             ?.getAttribute("href")?.replace("/resources/css/docs.css", "") || "";
 
-        articleSelector.addEventListener("change", async () => {
-            const slug = articleSelector.value;
-            editorStatus.textContent = "";
-            if (!slug) {
-                saveBtn.disabled = true;
-                return;
-            }
+        const editSlug = new URLSearchParams(window.location.search).get("edit");
+        if (editSlug) {
             editorStatus.textContent = "Loading...";
-            // Use jinn-tap's url attribute to load XDITA content
-            editorEl.setAttribute("url", `${appBase}/api/articles/${slug}/xdita`);
-            saveBtn.disabled = false;
-            // Wait for the editor to finish loading
+            editorEl.setAttribute("url", `${appBase}/api/articles/${editSlug}/xdita`);
+            if (saveBtn) saveBtn.disabled = false;
             editorEl.addEventListener("ready", () => {
                 editorStatus.textContent = "Loaded.";
             }, { once: true });
-        });
+        }
 
         if (saveBtn) {
             saveBtn.addEventListener("click", async () => {
-                const slug = articleSelector.value;
+                const slug = new URLSearchParams(window.location.search).get("edit");
                 if (!slug) return;
                 saveBtn.disabled = true;
                 editorStatus.textContent = "Saving...";
@@ -204,20 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     }
+}
 
-    // Individual Convert buttons
-    document.querySelectorAll(".convert-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const status = document.getElementById("convert-status");
-            const data = await postAction(btn.dataset.url, status, btn, "Convert");
-            if (data && data.status === "ok") {
-                const tr = btn.closest("tr");
-                tr.querySelector("td:nth-child(2)").textContent = "xdita";
-                btn.replaceWith(
-                    Object.assign(document.createElement("span"),
-                        { className: "badge", textContent: "XDITA" })
-                );
-            }
-        });
-    });
-});
+// Run when DOM is ready — guard against DOMContentLoaded already having fired
+// (scripts placed at end of body may execute after the event has already fired)
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setup);
+} else {
+    setup();
+}

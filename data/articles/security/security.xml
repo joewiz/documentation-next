@@ -12,7 +12,7 @@
         possible we try and adhere to the POSIX standard. The security infrastructure is very
         flexible and extensible, which enables the more advanced user, to provide custom <xref href="#authentication-realms" scope="local"/> to enable different authentication models.</p>
         <p>As well as the mechanisms described in this article, you should also note the presence of
-        the <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/securitymanager" scope="external">Security Manager XQuery library module</xref>, which enables you to perform many user and
+        the <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/securitymanager}" scope="external">Security Manager XQuery library module</xref>, which enables you to perform many user and
         security related tasks programmatically from XQuery.</p>
         <section id="changing-admin-password">
             <title>Changing the Administrator Password</title>
@@ -70,7 +70,7 @@ exist:/db&gt;quit</pre>
             </li>
                 <li>
                 <p>Change the password programmatically, for instance from within eXide, by using
-                    the <ph>sm:passwd()</ph> function of the <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/securitymanager" scope="external">Security Manager XQuery library module</xref>.</p>
+                    the <ph>sm:passwd()</ph> function of the <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/securitymanager}" scope="external">Security Manager XQuery library module</xref>.</p>
             </li>
             </ul>
 
@@ -113,7 +113,7 @@ enter groups: users</pre>
             </li>
                 <li>
                 <p>Create a user programmatically, for instance from within eXide, by using the
-                    <ph>sm:create-account()</ph> function of the <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/securitymanager" scope="external">Security Manager XQuery library module</xref>.</p>
+                    <ph>sm:create-account()</ph> function of the <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/securitymanager}" scope="external">Security Manager XQuery library module</xref>.</p>
             </li>
             </ul>
 
@@ -332,7 +332,7 @@ enter groups: users</pre>
                     </li>
                         <li>
                         <p>Do it programmatically, for instance from within eXide, by using the
-                            one of the functions of the <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/securitymanager" scope="external">Security Manager XQuery library module</xref>.</p>
+                            one of the functions of the <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/securitymanager}" scope="external">Security Manager XQuery library module</xref>.</p>
                     </li>
                     </ul>
             </section>

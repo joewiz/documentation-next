@@ -7,7 +7,7 @@
     <body>
         <p>The xmldb module (<ph>http://exist-db.org/xquery/xmldb</ph> function namespace)
     contains functions for manipulating database contents. The full list of functions and their
-    documentation can be found in the <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/xmldb" scope="external">Function Documentation Library</xref>. This article handles some of the highlights and main
+    documentation can be found in the <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/xmldb}" scope="external">Function Documentation Library</xref>. This article handles some of the highlights and main
     uses for this module.</p>
         <section id="manipulating-database-contents">
             <title>Manipulating Database Contents</title>

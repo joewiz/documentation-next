@@ -63,6 +63,8 @@ declare function local:resolver($path as xs:string) as map(*)? {
  :)
 declare function local:context($section as xs:string?, $route-context as map(*)) as map(*) {
     let $context-path := request:get-context-path() || "/apps/docs"
+    let $raw-user := request:get-attribute("org.exist.login.user")
+    let $user := if (exists($raw-user) and not($raw-user = ("guest", "nobody"))) then $raw-user else ()
 
     (: Tab CSS classes :)
     let $tabs := map:merge(
@@ -92,6 +94,7 @@ declare function local:context($section as xs:string?, $route-context as map(*))
             },
 
             (: App-specific context :)
+            "user": $user,
             "app-base": $context-path,
             "has-api": config:has-api(),
             "tabs": $tabs,
@@ -231,11 +234,11 @@ let $jinksCfg := map {
     "modules": map {
         "http://exist-db.org/site/nav": map {
             "prefix": "nav",
-            "at": $config:app-root || "/modules/nav.xqm"
+            "at": "/db/apps/exist-site-shell/modules/nav.xqm"
         },
         "http://exist-db.org/site/shell-config": map {
             "prefix": "site-config",
-            "at": $config:app-root || "/modules/site-config.xqm"
+            "at": "/db/apps/exist-site-shell/modules/site-config.xqm"
         }
     }
 }

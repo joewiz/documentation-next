@@ -2575,7 +2575,7 @@
                 operates in the <ph>http://exist-db.org/xquery/spatial</ph> namespace
                 (whose default prefix is <ph>spatial</ph>).</p>
             <p>The functions signatures are documented together with the functions themselves in
-                <xref href="{${fundocs.pkg.abbrev}}" scope="external">the XQuery function documentation</xref>.
+                <xref href="{docs/functions}" scope="external">the XQuery function documentation</xref>.
                 Here we will only look at their <ph>eval()</ph> methods.</p>
             <p>The first functions set we will describe is
                 <ph>org.exist.xquery.modules.spatial.FunSpatialSearch</ph>, which performs

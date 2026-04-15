@@ -1,0 +1,371 @@
+/*
+ * Editor styles for XDITA schema elements as rendered by jinn-tap.
+ * jinn-tap creates HTML custom elements named tei-<schema-key>,
+ * so XDITA "section" → <tei-section>, "title" → <tei-title>, etc.
+ *
+ * Also includes jinn-tap toolbar reset: jinn-tap was built expecting Pico CSS
+ * which resets list styles by default. Without it, the <ul class="toolbar">
+ * renders as a bullet list.
+ */
+
+/* ── Toolbar reset & layout ── */
+
+jinn-tap > nav ul.toolbar {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.5rem;
+    margin: 0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+jinn-tap > nav ul.toolbar > li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Toolbar buttons (Bold, Italic, etc.) */
+jinn-tap > nav ul.toolbar > li > a {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #374151;
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+jinn-tap > nav ul.toolbar > li > a:hover,
+jinn-tap > nav ul.toolbar > li > a.active {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #111827;
+}
+
+/* Toolbar dropdowns (Blocks, Inline selects) */
+jinn-tap > nav ul.toolbar details {
+    position: relative;
+}
+
+jinn-tap > nav ul.toolbar details > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    cursor: pointer;
+    background: white;
+    font-size: 0.875rem;
+    line-height: 1;
+    /* Remove native disclosure triangle */
+    list-style: none;
+}
+
+jinn-tap > nav ul.toolbar details > summary::-webkit-details-marker {
+    display: none;
+}
+
+jinn-tap > nav ul.toolbar details > summary::after {
+    content: ' ▾';
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+
+jinn-tap > nav ul.toolbar details[open] > summary {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+}
+
+jinn-tap > nav ul.toolbar details[open] {
+    z-index: 100;
+}
+
+/* Dropdown menu */
+jinn-tap > nav ul.toolbar details > ul {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    min-width: 160px;
+    z-index: 100;
+}
+
+jinn-tap > nav ul.toolbar details > ul > li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+jinn-tap > nav ul.toolbar details > ul > li > a {
+    display: block;
+    padding: 0.375rem 0.875rem;
+    text-decoration: none;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+jinn-tap > nav ul.toolbar details > ul > li > a:hover {
+    background: #f1f5f9;
+    color: #111827;
+}
+
+/* ── Block elements ── */
+tei-section,
+tei-p,
+tei-li,
+tei-title,
+tei-dt,
+tei-dd {
+    display: block;
+}
+
+/* ── Topic title (direct child of .tiptap — top-level heading) ── */
+.tiptap > tei-title {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.125;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+/* ── Section headings ── */
+tei-section > tei-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+tei-section > tei-section > tei-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-top: 1.5rem;
+    margin-bottom: 0.4rem;
+}
+
+tei-section > tei-section > tei-section > tei-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.3rem;
+}
+
+/* ── Section depth indicators (subtle left border) ── */
+tei-section {
+    border-left: 3px solid #e2e8f0;
+    padding-left: 0.75rem;
+    margin-left: 0;
+    margin-bottom: 1rem;
+}
+
+tei-section > tei-section {
+    border-left-color: #cbd5e1;
+}
+
+tei-section > tei-section > tei-section {
+    border-left-color: #94a3b8;
+}
+
+/* ── Paragraphs ── */
+tei-p {
+    margin: 0.5em 0;
+    position: relative;
+}
+
+tei-p.is-empty::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    position: absolute;
+    height: 0;
+    pointer-events: none;
+}
+
+/* ── Code blocks ── */
+tei-pre {
+    display: block;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 0.875rem;
+    background: #1e2127;
+    color: #abb2bf;
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1rem 0;
+    white-space: pre;
+    tab-size: 4;
+}
+
+/* ── Unordered and ordered lists ── */
+tei-ul,
+tei-ol {
+    display: block;
+    margin: 0.75em 0;
+    padding-left: 2em;
+}
+
+tei-ul {
+    list-style-type: disc;
+}
+
+tei-ol {
+    list-style-type: decimal;
+}
+
+tei-li {
+    display: list-item;
+    list-style-position: outside;
+    margin: 0.25em 0;
+}
+
+tei-li > tei-p {
+    margin: 0;
+}
+
+/* ── Definition lists ── */
+tei-dl {
+    display: block;
+    margin: 0.75em 0;
+}
+
+tei-dlentry {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+tei-dt {
+    font-weight: 600;
+}
+
+tei-dd {
+    margin-left: 2em;
+}
+
+/* ── Notes / callouts ── */
+tei-note {
+    display: block;
+    margin: 1rem 0;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border-left: 4px solid #3b82f6;
+    background: #eff6ff;
+    border-radius: 0 6px 6px 0;
+    position: relative;
+}
+
+tei-note::before {
+    content: 'ℹ';
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    font-size: 1.1rem;
+    color: #3b82f6;
+}
+
+tei-note[type='warning'] {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+tei-note[type='warning']::before {
+    content: '⚠';
+    color: #f59e0b;
+}
+
+tei-note[type='caution'] {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+tei-note[type='caution']::before {
+    content: '🛑';
+    color: #ef4444;
+}
+
+tei-note[type='tip'] {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+tei-note[type='tip']::before {
+    content: '💡';
+    color: #10b981;
+}
+
+/* ── Figures and images ── */
+tei-fig {
+    display: block;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-align: center;
+}
+
+/* ── Inline elements ── */
+tei-b { font-weight: bold; }
+tei-i { font-style: italic; }
+tei-u { text-decoration: underline; }
+tei-ph { /* generic phrase — no default styling */ }
+
+tei-xref {
+    color: var(--link-color, #0066cc);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+tei-xref::after {
+    content: '↗';
+    margin-left: 3px;
+    font-size: 0.7rem;
+    vertical-align: super;
+    text-decoration: none;
+}
+
+/* ── Tables ── */
+tei-simpletable {
+    display: table;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+tei-sthead {
+    display: table-header-group;
+    font-weight: 600;
+    background: #f8fafc;
+}
+
+tei-strow {
+    display: table-row;
+}
+
+tei-strow:nth-child(even) {
+    background: #f8fafc;
+}
+
+tei-stentry {
+    display: table-cell;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* ── Selection highlight ── */
+.ProseMirror-selectednode {
+    outline: 2px solid var(--pico-primary, #0066cc);
+}
+
+.selectedCell {
+    background-color: #dbeafe;
+}

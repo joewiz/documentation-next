@@ -110,7 +110,7 @@ OpenJDK 64-Bit Server VM (build 25.442-b07, mixed mode)</pre>
                 <p>More advanced installation methods (like installing on a headless system) are
                     described in the <xref href="advanced-installation#headless" scope="external">Advanced
                     Installation</xref> article. If you wish to compile and run exist from source
-                    please see the article on <xref href="exist-building.xml" scope="external">building
+                    please see the article on <xref href="../exist-building" scope="external">building
                     eXist</xref>
                 </p>
             </li>

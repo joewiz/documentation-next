@@ -107,6 +107,7 @@
         },
         "li": {
             "type": "listItem",
+            "content": "p block*",
             "selectable": true
         },
         "dl": {
@@ -156,7 +157,7 @@
         "fig": {
             "type": "block",
             "selectable": true,
-            "content": "(graphic|figDesc|head)*"
+            "content": "block*"
         },
         "image": {
             "type": "graphic",
@@ -242,9 +243,12 @@
                 }
             }
         },
+        "listAnnotation": {
+            "type": "block",
+            "content": "block*"
+        },
         "simpletable": { "type": "table" },
         "strow": { "type": "row" },
-        "stentry": { "type": "cell" },
-        "sthead": { "type": "row" }
+        "stentry": { "type": "cell" }
     }
 }

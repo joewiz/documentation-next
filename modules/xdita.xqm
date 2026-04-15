@@ -14,6 +14,8 @@ import module namespace config = "http://exist-db.org/apps/docs/config"
     at "config.xqm";
 import module namespace pm-config = "http://www.tei-c.org/tei-simple/pm-config"
     at "pm-config.xql";
+import module namespace site-config = "http://exist-db.org/site/shell-config"
+    at "/db/apps/exist-site-shell/modules/site-config.xqm";
 
 (: ========================= :)
 (:  Article Loading          :)
@@ -32,8 +34,13 @@ declare function xdita:load-article($slug as xs:string) as map(*)? {
     let $collection := $articles-root || "/" || $slug
     return
         if (xmldb:collection-available($collection)) then
-            (: XDITA topics have no namespace — match bare <topic> :)
-            let $topic := collection($collection)/topic
+            (: Prefer .xdita.xml (edited) over .xml (original) :)
+            let $xdita-path := $collection || "/" || $slug || ".xdita.xml"
+            let $xml-path   := $collection || "/" || $slug || ".xml"
+            let $topic :=
+                if (doc-available($xdita-path)) then doc($xdita-path)/topic
+                else if (doc-available($xml-path)) then doc($xml-path)/topic
+                else ()
             return
                 if (exists($topic)) then
                     map {
@@ -55,13 +62,52 @@ declare function xdita:load-article($slug as xs:string) as map(*)? {
 (: ========================= :)
 
 (:~
+ : Resolve cross-references in a single href string.
+ : Handles both:
+ :   {abbrev/path#fragment}  — whole href is a canonical reference
+ :   {abbrev}/path           — legacy format: {abbrev} at start, path appended outside
+ :)
+declare %private function xdita:resolve-href($href as xs:string) as xs:string {
+    if (matches($href, "^\{[^}]+\}$")) then
+        site-config:resolve($href)
+    else if (matches($href, "^\{[^}]+\}")) then
+        let $ref    := replace($href, "^(\{[^}]+\}).*$", "$1")
+        let $suffix := substring($href, string-length($ref) + 1)
+        return site-config:resolve($ref) || $suffix
+    else
+        $href
+};
+
+(:~
+ : Recursively copy an XDITA node tree, rewriting {abbrev[/path][#fragment]}
+ : cross-references in @href attributes via site-config:resolve().
+ :)
+declare %private function xdita:resolve-refs($node as node()) as node() {
+    typeswitch ($node)
+        case element() return
+            element { node-name($node) } {
+                for $attr in $node/@*
+                return
+                    if (local-name($attr) = "href" and matches(string($attr), "^\{[^}]+\}")) then
+                        attribute href { xdita:resolve-href(string($attr)) }
+                    else
+                        $attr,
+                $node/node() ! xdita:resolve-refs(.)
+            }
+        default return $node
+};
+
+(:~
  : Render an XDITA topic to HTML using the compiled ODD transform.
+ : Cross-references in the form {abbrev[/path][#fragment]} are resolved
+ : to absolute URLs via site-config:resolve() before rendering.
  :
  : @param $topic the XDITA topic element
  : @return HTML fragment
  :)
 declare function xdita:render($topic as element(topic)) as node()* {
-    $pm-config:xdita-web-transform(map {
+    let $topic := xdita:resolve-refs($topic)
+    return $pm-config:xdita-web-transform(map {
         "root": $topic,
         "webcomponents": 7
     }, $topic)
@@ -119,6 +165,12 @@ declare function xdita:search($q as xs:string) as array(*) {
         return array {
             for $hit in $hits
             let $doc-uri := document-uri(root($hit))
+            (: Skip plain .xml when a .xdita.xml (edited version) exists :)
+            where not(
+                ends-with($doc-uri, ".xml")
+                and not(ends-with($doc-uri, ".xdita.xml"))
+                and doc-available(replace($doc-uri, "\.xml$", ".xdita.xml"))
+            )
             let $slug := xdita:uri-to-slug($doc-uri)
             let $title := $hit/title/string()
             order by ft:score($hit) descending

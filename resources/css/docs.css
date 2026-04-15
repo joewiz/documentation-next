@@ -534,6 +534,33 @@
     background: #2980b9;
 }
 
+.btn-secondary {
+    padding: 0.5rem 1.25rem;
+    background: #fff;
+    color: #3498db;
+    border: 1px solid #3498db;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background: #ebf5fb;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.article-actions {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
 /* ========================= */
 /*  Disambiguation           */
 /* ========================= */
@@ -749,7 +776,6 @@
 }
 
 .editor-container jinn-tap {
-    display: block;
     min-height: 400px;
 }
 

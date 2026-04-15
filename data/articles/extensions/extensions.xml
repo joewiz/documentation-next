@@ -33,7 +33,7 @@
                 <p>eXist-db will require a restart to load any new modules added. </p>
             </note>
         <p>Once a Module is configured and loaded eXist-db will display the module and its
-            function definitions as part of the <xref href="{${fundocs.pkg.abbrev}}" scope="external">function
+            function definitions as part of the <xref href="{docs/functions}" scope="external">function
             library</xref> page or through <ph>util:decribe-function()</ph>.</p>
     </section>
         <section id="ext-modules">

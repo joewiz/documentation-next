@@ -21,7 +21,7 @@
             and <xref href="https://www.w3.org/TR/xpath-functions/" scope="external">"XPath and XQuery Functions and
             Operators 3.1"</xref>, with the exception of certain <xref href="#unsupported-features" scope="external">unsupported features and functions</xref>. </p>
         <note type="note">
-                <p>For complete documentation on functions in eXist-db, see <xref href="{${fundocs.pkg.abbrev}}" scope="external">XQuery Function Documentation</xref>.</p>
+                <p>For complete documentation on functions in eXist-db, see <xref href="{docs/functions}" scope="external">XQuery Function Documentation</xref>.</p>
             </note>
         <p>eXist-db's XQuery implementation has been tested against the official <xref href="https://dev.w3.org/2006/xquery-test-suite/" scope="external">XML Query
             Test
@@ -67,7 +67,7 @@
                         <xref href="https://www.w3.org/TR/xquery/#id-schema-import-feature" scope="external">schema
                         import</xref> and <xref href="https://www.w3.org/TR/xquery/#id-schema-validation-feature" scope="external">schema
                         validation features</xref> (defined as <xref href="https://www.w3.org/TR/xquery/#id-conform-optional-features" scope="external">
-                        optional</xref> in the XQuery specification). Instead, eXist-db provides a <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/validation" scope="external">validation
+                        optional</xref> in the XQuery specification). Instead, eXist-db provides a <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/validation}" scope="external">validation
                         module</xref> containing extension functions to perform XML validation.</p>
                 </li>
                     <li>
@@ -140,7 +140,7 @@
             <title>Function Library</title>
         
 
-        <p>A complete list of XQuery functions supported by eXist-db can be found in the <xref href="{${fundocs.pkg.abbrev}}" scope="external">XQuery Function
+        <p>A complete list of XQuery functions supported by eXist-db can be found in the <xref href="{docs/functions}" scope="external">XQuery Function
                 Documentation</xref>. </p>
         <p>Each module's documentation is generated from a different sources, depending on
             whether the module is implemented in Java or XQuery. For modules implemented in Java,
@@ -1113,8 +1113,8 @@ declare option output:media-type "application/json";</pre>
             <p>eXist-db implements <xref href="http://exquery.github.io/exquery/exquery-restxq-specification/restxq-1.0-specification.html" scope="external">RESTXQ</xref>,
                 an EXQuery community effort to develop a clean approach for the
                 deployment of RESTful services based on XQuery code annotations. This is in addition
-                to eXist-db's native function libraries for performing HTTP <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/request" scope="external">
-                requests</xref> and <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/response" scope="external">
+                to eXist-db's native function libraries for performing HTTP <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/request}" scope="external">
+                requests</xref> and <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/response}" scope="external">
                 responses</xref>.</p>
             <p>Starting with eXist-db v7 the configuration entry for the RESTXQ feature in <ph>/db/collection.xconf</ph> has been
                 commented out. The recommendation is only to enable the RESTXQ configuration in the collection (hierarchy)
@@ -1135,7 +1135,7 @@ declare option output:media-type "application/json";</pre>
             <p>eXist-db implements the <xref href="http://expath.org/spec/zip" scope="external">ZIP
                     Module</xref>, an EXPath community specification and module for performing
                 compression. This is in addition to eXist-db's native function libraries for
-                performing <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/compression" scope="external">
+                performing <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/compression}" scope="external">
                 compression</xref>.</p>
         </section>
     </section>

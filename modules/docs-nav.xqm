@@ -73,7 +73,13 @@ declare %private function nav:article-title($slug as xs:string) as xs:string? {
     let $col := $config:data-root || "/articles/" || $slug
     return
         if (xmldb:collection-available($col)) then
-            collection($col)/topic/title/string()
+            let $xdita-path := $col || "/" || $slug || ".xdita.xml"
+            let $xml-path   := $col || "/" || $slug || ".xml"
+            let $topic :=
+                if (doc-available($xdita-path)) then doc($xdita-path)/topic
+                else if (doc-available($xml-path)) then doc($xml-path)/topic
+                else ()
+            return $topic/title/string()
         else
             ()
 };

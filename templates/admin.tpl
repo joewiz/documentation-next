@@ -23,57 +23,11 @@
             <div id="regenerate-status"></div>
         </section>
 
-        <section class="admin-section">
-            <h2>Convert Articles: DocBook to XDITA</h2>
-            <p>Convert DocBook articles to XDITA (Lightweight DITA) format.
-               Converted files are stored alongside the originals as
-               <code>{slug}.xdita.xml</code>.</p>
-            <div class="admin-actions">
-                <button type="button" class="btn btn-primary" id="convert-all-btn"
-                        data-url="[[ $app-base ]]/api/articles/convert?slug=all">Convert All</button>
-            </div>
-            <div id="convert-status"></div>
-            <table class="admin-table" id="article-format-table">
-                <thead>
-                    <tr>
-                        <th>Article</th>
-                        <th>Format</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    [% for $article in $all-articles?* %]
-                    <tr>
-                        <td><a href="[[ $app-base ]]/articles/[[ $article?slug ]]/">[[ $article?title ]]</a></td>
-                        <td>[[ $article?format ]]</td>
-                        <td>
-                            [% if $article?format = "docbook" %]
-                            <button type="button" class="btn btn-sm convert-btn"
-                                    data-url="[[ $app-base ]]/api/articles/convert?slug=[[ $article?slug ]]"
-                                    data-slug="[[ $article?slug ]]">Convert</button>
-                            [% else %]
-                            <span class="badge">XDITA</span>
-                            [% endif %]
-                        </td>
-                    </tr>
-                    [% endfor %]
-                </tbody>
-            </table>
-        </section>
-
-        <section class="admin-section">
-            <h2>Edit XDITA Article</h2>
-            <p>Select an XDITA article to edit in the browser. Changes are saved
-               directly to the database.</p>
+        <section class="admin-section" id="xdita-editor-section">
+            <h2>Edit Article</h2>
+            <p>Use the <strong>Edit Article</strong> button on any article page to open
+               the editor. The article will load automatically below.</p>
             <div class="editor-controls">
-                <select id="article-selector">
-                    <option value="">-- Select article --</option>
-                    [% for $article in $all-articles?* %]
-                    [% if $article?format = "xdita" %]
-                    <option value="[[ $article?slug ]]">[[ $article?title ]]</option>
-                    [% endif %]
-                    [% endfor %]
-                </select>
                 <button type="button" class="btn btn-primary" id="save-article-btn" disabled="disabled">Save</button>
                 <span id="editor-status"></span>
             </div>
@@ -82,6 +36,20 @@
                     schema="[[ $app-base ]]/resources/xdita-schema.json">
                 </jinn-tap>
             </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Editorial Tools</h2>
+            <p>The following tools are pending review and will be integrated here
+               once ready. See
+               <a href="https://github.com/joewiz/documentation-next/issues/1">issue #1</a>
+               for details.</p>
+            <ul>
+                <li><strong>Diagnostics</strong> — article health and link checker
+                    (originally <code>diagnostics.html</code>)</li>
+                <li><strong>Editorial View</strong> — article status dashboard
+                    (originally <code>editorial-view.html</code>)</li>
+            </ul>
         </section>
     </div>
 </div>

@@ -39,7 +39,7 @@
                             has to be activated through the <ph>conf.xml</ph> file. See below
                         </p>
                         </note>
-                    <p>There is an XQuery library module, <xref href="{${fundocs.pkg.abbrev}}/view.html?uri=http://exist-db.org/xquery/scheduler" scope="external">Scheduler Module</xref>, which provides functions for scheduling jobs and
+                    <p>There is an XQuery library module, <xref href="{docs/functions/view?uri=http://exist-db.org/xquery/scheduler}" scope="external">Scheduler Module</xref>, which provides functions for scheduling jobs and
                         managing jobs scheduled for execution. The scheduler XQuery library module
                         is activated by uncommenting the following in eXist-db's
                         <ph>conf.xml</ph> configuration file:</p>

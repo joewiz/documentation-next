@@ -788,9 +788,9 @@ return $m</pre>
             below.</p>
         <p>The Lucene module is fully supported by eXist-db's query-rewriting optimizer. This
             means that the query engine can rewrite the XQuery expression to make best use of the
-            available indexes. All the rules and hints given in the <xref href="tuning.xml" scope="external">tuning</xref> guide fully apply to the Lucene index.</p>
+            available indexes. All the rules and hints given in the <xref href="../tuning" scope="external">tuning</xref> guide fully apply to the Lucene index.</p>
         <p>To present search results in a <i>Keywords in Context</i> format, you
-            may want to have a look at eXist-db's <xref href="kwic.xml" scope="external">KWIC</xref>
+            may want to have a look at eXist-db's <xref href="../kwic" scope="external">KWIC</xref>
             module.</p>
         <section id="query-fields">
                 <title>Querying Fields</title>

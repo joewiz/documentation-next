@@ -206,6 +206,10 @@
                     <model predicate="starts-with(@href,'/')" behaviour="link">
                         <param name="uri" value="@href"/>
                     </model>
+                    <!-- mailto: and similar URI schemes → pass through as-is -->
+                    <model predicate="starts-with(@href,'mailto:')" behaviour="link">
+                        <param name="uri" value="@href"/>
+                    </model>
                     <!-- Cross-article slug (bare slug or slug#anchor): prepend ../ so
                          relative URLs resolve correctly from /articles/{slug}/ -->
                     <model behaviour="link">

@@ -11,6 +11,12 @@
             [% endfor %]
         </nav>
 
+        [% if exists($user) %]
+        <div class="article-actions">
+            <a href="[[ $app-base ]]/admin?edit=[[ $slug ]]" class="btn btn-secondary btn-sm">Edit Article</a>
+        </div>
+        [% endif %]
+
         <article class="xdita-article">
             [[ $article-html ]]
         </article>

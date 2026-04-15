@@ -11,8 +11,10 @@
 <link rel="icon" href="[[ $context-path ]]/resources/favicon.ico"/>
 <link rel="stylesheet" href="[[ $context-path ]]/resources/odd/xdita.css"/>
 [% if $tabs?admin = "active" %]
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
 <link rel="stylesheet" href="[[ $context-path ]]/resources/vendor/jinntap/jinn-tap.css"/>
 <link rel="stylesheet" href="[[ $context-path ]]/resources/vendor/jinntap/editor-styles.css"/>
+<link rel="stylesheet" href="[[ $context-path ]]/resources/css/editor-xdita.css"/>
 [% endif %]
 [% endtemplate %]
 

@@ -27,6 +27,12 @@ declare function docs:list-articles() as array(*) {
     return array {
         for $topic in collection($articles-root)/topic
         let $doc-uri := document-uri(root($topic))
+        (: Skip plain .xml when a .xdita.xml (edited version) exists for the same article :)
+        where not(
+            ends-with($doc-uri, ".xml")
+            and not(ends-with($doc-uri, ".xdita.xml"))
+            and doc-available(replace($doc-uri, "\.xml$", ".xdita.xml"))
+        )
         let $slug := docs:uri-to-slug($doc-uri)
         order by ($topic/title/string(), $slug)[1]
         return map {

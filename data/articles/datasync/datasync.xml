@@ -56,13 +56,13 @@ ENV CLASSPATH=$EXIST_HOME/lib/exist.uber.jar:$EXIST_HOME/lib/exist-db-addons-${E
         <section id="conf.xml">
                 <title>configure in conf.xml</title>
             
-            <p>Sync at start-up, <xref href="../scheduler/scheduler.xml" scope="external">see scheduler</xref>
+            <p>Sync at start-up, <xref href="../scheduler" scope="external">see scheduler</xref>
                 </p>
             <pre outputclass="xml">&lt;job class="org.fryske_akademy.exist.jobs.DataSyncTask" type="system" period="10" repeat="0"&gt;
   &lt;parameter name="collection" value="xmldb:exist:///db/apps/teidictjson/data"/&gt;
   &lt;parameter name="datadir" value="/data"/&gt;
 &lt;/job&gt;</pre>
-            <p>Sync at 2am, <xref href="../scheduler/scheduler.xml" scope="external">see scheduler</xref>
+            <p>Sync at 2am, <xref href="../scheduler" scope="external">see scheduler</xref>
                 </p>
             <pre outputclass="xml">&lt;job class="org.fryske_akademy.exist.jobs.DataSyncTaskCron" type="system" cron-trigger="0 0 2 ? * *"&gt;
   &lt;parameter name="collection" value="xmldb:exist:///db/apps/teidictjson/data"/&gt;
