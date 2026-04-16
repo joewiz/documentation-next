@@ -2,7 +2,10 @@
 
 Status of try-it query coverage across all eXist-db modules.
 
-**Legend:** Done = all functions have try-it files and pass validation
+**Legend:**
+- `[x]` = 100% coverage, all queries pass validation
+- `[?]` = started but not 100% — see Validation Status table for details
+- `[ ]` = not started
 
 ## W3C Standard Libraries
 
@@ -21,21 +24,21 @@ Status of try-it query coverage across all eXist-db modules.
 
 ## Core eXist-db Modules — Priority
 
-- [x] **util** (114 functions) — `http://exist-db.org/xquery/util` — scaffolds, needs validation pass
-- [x] **xmldb** (50 functions) — `http://exist-db.org/xquery/xmldb` — scaffolds, needs validation pass
-- [x] **system** (39 functions) — `http://exist-db.org/xquery/system` — scaffolds, needs validation pass
-- [x] **sm** (59 functions) — `http://exist-db.org/xquery/securitymanager` — scaffolds, needs validation pass
-- [x] **request** (31 functions) — `http://exist-db.org/xquery/request` — scaffolds, needs validation pass
-- [x] **response** (10 functions) — `http://exist-db.org/xquery/response` — scaffolds, needs validation pass
+- [?] **util** (114 functions) — `http://exist-db.org/xquery/util` — 107/114 pass (94%); 7 edge cases in eval nesting and index-by-QName
+- [?] **xmldb** (50 functions) — `http://exist-db.org/xquery/xmldb` — 47/50 pass (94%); 3 edge cases in update and copy-collection
+- [x] **system** (39 functions) — `http://exist-db.org/xquery/system` — dangerous functions safely wrapped
+- [x] **sm** (59 functions) — `http://exist-db.org/xquery/securitymanager` — read-only demos; mutating functions show signatures
+- [x] **request** (31 functions) — `http://exist-db.org/xquery/request` — try/catch for missing HTTP context
+- [x] **response** (10 functions) — `http://exist-db.org/xquery/response` — signature descriptions for HTTP-only functions
 - [ ] **file** (native) — `http://exist-db.org/xquery/file` — eXist's native file module (file:sync, file:serialize, etc.); registered in conf.xml as `file:`, no import needed
 - [ ] **vector** — `http://exist-db.org/xquery/vector` — vector similarity search (new in next-v2, DJL/HuggingFace)
-- [ ] **kwic** — KWIC module (see [KWIC article](http://localhost:8080/exist/apps/docs/articles/kwic)); XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
-- [ ] **test** — XQSuite test framework (see [XQSuite article](http://localhost:8080/exist/apps/docs/articles/xqsuite))
+- [?] **kwic** (4 queries) — KWIC module; 2/4 pass (50%); 2 need Lucene match context that doesn't survive util:eval
+- [?] **test** (1 query) — XQSuite test framework; 0/1 pass; needs inspect context; works via REST
 
 ## Indexing & Search Modules
 
-- [x] **ft** (29 functions, 12 queries) — `http://exist-db.org/xquery/lucene`
-- [x] **ngram** (6 functions, 7 queries) — `http://exist-db.org/xquery/ngram`
+- [?] **ft** (29 functions, 12 queries) — `http://exist-db.org/xquery/lucene` — 12/12 hand-crafted queries pass; not all 29 functions covered yet
+- [?] **ngram** (6 functions, 7 queries) — `http://exist-db.org/xquery/ngram` — 7/7 pass; 1 extra query beyond function count
 - [ ] **range** (24 functions) — `http://exist-db.org/xquery/range`
 - [ ] **sort** (6 functions) — `http://exist-db.org/xquery/sort`
 
@@ -96,31 +99,31 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 
 | Status | Count | Functions |
 |--------|-------|-----------|
-| Done (validated) | 14 modules | ~836 |
-| Scaffolds (need validation) | 6 core modules | ~303 |
-| Not started | ~29 modules | ~250+ |
+| `[x]` 100% validated | 10 modules | ~681 |
+| `[?]` Started, not 100% | 6 modules | ~155 |
+| `[ ]` Not started | ~33 modules | ~350+ |
 | **Total** | ~49 modules | ~1186+ |
 
 ## Validation Status (as of 2026-04-16)
 
-| Module | Files | Pass | Rate | Notes |
-|--------|-------|------|------|-------|
-| fn | 345 | 345/345 | 100% | All W3C standard functions |
-| array | 38 | 38/38 | 100% | |
-| map | 20 | 20/20 | 100% | |
-| math | 18 | 18/18 | 100% | |
-| bin | 40 | 40/40 | 100% | EXPath Binary; uses `import module` |
-| file | 43 | 43/43 | 100% | EXPath File; uses `exfile:` prefix |
-| ft | 12 | 12/12 | 100% | Hand-crafted with sample data |
-| ngram | 7 | 7/7 | 100% | Hand-crafted with sample data |
-| kwic | 4 | 2/4 | 50% | 2 need Lucene match context |
-| test | 1 | 0/1 | 0% | Needs inspect context; works via REST |
-| util | 114 | 107/114 | 94% | 7 edge cases |
-| xmldb | 50 | 47/50 | 94% | 3 edge cases |
-| system | 39 | 39/39 | 100% | Dangerous functions safely wrapped |
-| sm | 59 | 59/59 | 100% | Read-only demos; mutating functions show signatures |
-| request | 31 | 31/31 | 100% | try/catch for missing HTTP context |
-| response | 10 | 10/10 | 100% | Signature descriptions for HTTP-only functions |
+| Module | Files | Pass | Rate | Status | Notes |
+|--------|-------|------|------|--------|-------|
+| fn | 345 | 345/345 | 100% | `[x]` | All W3C standard functions |
+| array | 38 | 38/38 | 100% | `[x]` | |
+| map | 20 | 20/20 | 100% | `[x]` | |
+| math | 18 | 18/18 | 100% | `[x]` | |
+| bin | 40 | 40/40 | 100% | `[x]` | EXPath Binary; uses `import module` |
+| file | 43 | 43/43 | 100% | `[x]` | EXPath File; uses `exfile:` prefix |
+| system | 39 | 39/39 | 100% | `[x]` | Dangerous functions safely wrapped |
+| sm | 59 | 59/59 | 100% | `[x]` | Read-only demos; mutating fns show signatures |
+| request | 31 | 31/31 | 100% | `[x]` | try/catch for missing HTTP context |
+| response | 10 | 10/10 | 100% | `[x]` | Signature descriptions for HTTP-only fns |
+| util | 114 | 107/114 | 94% | `[?]` | 7 failures: eval nesting (eval-with-context#5, eval-and-serialize#5, eval-inline#4), index-keys-by-qname#5, util:function#2, util:int-to-octal#1, util:node-by-id#2 |
+| xmldb | 50 | 47/50 | 94% | `[?]` | 3 failures: xmldb:update#2, xmldb:copy-collection#2, xmldb:copy-collection#3 |
+| ft | 12 | 12/12 | 100% | `[?]` | All 12 hand-crafted queries pass, but only 12 of 29 functions covered |
+| ngram | 7 | 7/7 | 100% | `[?]` | All 7 pass; covers all 6 functions (1 extra variant) |
+| kwic | 4 | 2/4 | 50% | `[?]` | 2 failures: summarize#2 and display-text#1 need Lucene match context that doesn't survive util:eval boundary |
+| test | 1 | 0/1 | 0% | `[?]` | Needs inspect:module-functions context; query works via REST/eXide but not util:eval |
 | **Total** | **831** | **818** | **98.4%** | |
 
 ## Known Issues
