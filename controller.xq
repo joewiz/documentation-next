@@ -226,16 +226,21 @@ else if (starts-with($path, "/functions/")) then
     let $parts := tokenize($rest, "/")
     let $prefix := $parts[1]
     let $func-name := $parts[2]
+    let $arity := $parts[3]
     return
         if (exists($func-name) and $func-name != "") then
-            (: Function detail: /functions/{prefix}/{name} :)
+            (: Function detail: /functions/{prefix}/{name}[/{arity}] :)
             local:view("function-detail.tpl", (
                 <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
                     name="$section" value="functions"/>,
                 <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
                     name="$prefix" value="{$prefix}"/>,
                 <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
-                    name="$function-name" value="{$func-name}"/>
+                    name="$function-name" value="{$func-name}"/>,
+                if (exists($arity) and $arity != "") then
+                    <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
+                        name="$arity" value="{$arity}"/>
+                else ()
             ))
         else
             (: Module detail: /functions/{prefix}/ :)

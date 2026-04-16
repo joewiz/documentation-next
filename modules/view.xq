@@ -117,6 +117,7 @@ declare function local:route-context() as map(*) {
     let $section := request:get-attribute("$section")
     let $prefix := request:get-attribute("$prefix")
     let $function-name := request:get-attribute("$function-name")
+    let $arity := request:get-attribute("$arity")
     let $slug := request:get-attribute("$slug")
     let $q := request:get-parameter("q", "")
     let $type := request:get-parameter("type", "all")
@@ -156,7 +157,11 @@ declare function local:route-context() as map(*) {
 
         (: === Functions === :)
         else if ($section = "functions" and exists($prefix) and exists($function-name)) then
-            let $raw-functions := fundocs:get-function($prefix, $function-name)
+            let $all-functions := fundocs:get-function($prefix, $function-name)
+            let $raw-functions :=
+                if (exists($arity)) then
+                    $all-functions[?arity = xs:integer($arity)]
+                else $all-functions
             let $functions :=
                 for $fn in $raw-functions
                 let $article := fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity))
@@ -175,14 +180,23 @@ declare function local:route-context() as map(*) {
                 where exists($article)
                 return map:entry(string($fn?arity), $article?html)
             )
+            let $page-title :=
+                if (exists($arity)) then
+                    $prefix || ":" || $function-name || "#" || $arity
+                else
+                    $prefix || ":" || $function-name
+            let $breadcrumb :=
+                dnav:breadcrumb("functions", $prefix, $function-name)
             return map {
-                "page-title": $prefix || ":" || $function-name,
+                "page-title": $page-title,
                 "prefix": $prefix,
                 "function-name": $function-name,
+                "arity": $arity,
+                "all-arities": array:size(array { $all-functions }) > 1,
                 "functions": array { $functions },
                 "article-html": $article-html-map,
                 "module": fundocs:get-module($prefix)[1],
-                "breadcrumb": dnav:breadcrumb("functions", $prefix, $function-name)
+                "breadcrumb": $breadcrumb
             }
 
         else if ($section = "functions" and exists($prefix)) then

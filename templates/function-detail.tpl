@@ -16,6 +16,7 @@
         [% for $fn in $functions?* %]
         <section class="[[ $fn?function-class ]]" id="arity-[[ $fn?arity ]]">
             <h2>
+                <a class="fn-anchor" href="[[ $app-base ]]/functions/[[ $prefix ]]/[[ $fn?local-name ]]/[[ $fn?arity ]]">#</a>
                 [[ $fn?name ]]#[[ $fn?arity ]]
                 [% if $fn?show-deprecated-badge %]
                 <span class="badge badge-deprecated">Deprecated</span>
