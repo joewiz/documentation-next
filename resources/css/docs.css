@@ -280,6 +280,8 @@
     transition: opacity 0.15s;
 }
 
+h2:hover .fn-anchor,
+h2:focus-within .fn-anchor,
 h3:hover .fn-anchor,
 h3:focus-within .fn-anchor {
     opacity: 1;
@@ -287,6 +289,11 @@ h3:focus-within .fn-anchor {
 
 .fn-anchor:hover {
     color: #3498db;
+}
+
+.fn-arity {
+    color: #999;
+    font-weight: 400;
 }
 
 /* Small "more" badge on functions that have a supplementary article */
@@ -945,6 +952,17 @@ h3:focus-within .fn-anchor {
 .toc a.toc-active {
     color: #3498db;
     font-weight: 500;
+}
+
+/* Module function TOC — may have hundreds of entries */
+.module-toc ul {
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.module-toc a.toc-active {
+    /* Scroll the active item into view within the TOC panel */
+    scroll-margin-block: 2rem;
 }
 
 /* Heading anchor copy-link button */

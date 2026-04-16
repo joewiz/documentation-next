@@ -299,9 +299,79 @@ function setupHeadingAnchors() {
     });
 }
 
+/**
+ * TOC active-section highlighting for module function lists.
+ *
+ * Unlike the article TOC, function list elements already have stable IDs
+ * (e.g. "concat.2") that match the TOC link hrefs, so no text matching
+ * or id-assignment is needed — just observe the function divs directly.
+ */
+function setupModuleTOC() {
+    const toc = document.querySelector(".module-toc");
+    if (!toc) return;
+
+    const tocLinks = Array.from(toc.querySelectorAll("a[href^='#']"));
+    if (tocLinks.length === 0) return;
+
+    // Build pairs: { a (link), el (target element) }
+    const pairs = [];
+    tocLinks.forEach((a) => {
+        const id = a.getAttribute("href").slice(1);
+        const el = document.getElementById(id);
+        if (el) pairs.push({ a, el });
+    });
+    if (pairs.length === 0) return;
+
+    const visible = new Set();
+    const elements = pairs.map((p) => p.el);
+    const linkMap = new Map(pairs.map((p) => [p.el.id, p.a]));
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) visible.add(entry.target.id);
+                else visible.delete(entry.target.id);
+            });
+
+            function activate(link) {
+                if (!link) return;
+                pairs.forEach(({ a }) => a.classList.remove("toc-active"));
+                link.classList.add("toc-active");
+                link.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+
+            let activated = false;
+            elements.forEach((el) => {
+                const a = linkMap.get(el.id);
+                if (!a) return;
+                if (!activated && visible.has(el.id)) {
+                    activate(a);
+                    activated = true;
+                } else {
+                    a.classList.remove("toc-active");
+                }
+            });
+
+            // Fallback: if no element is visible, highlight the last one above the fold
+            if (!activated) {
+                const scrollY = window.scrollY;
+                let last = null;
+                elements.forEach((el) => {
+                    if (el.getBoundingClientRect().top + window.scrollY <= scrollY + 80) last = el;
+                });
+                if (last) activate(linkMap.get(last.id));
+            }
+        },
+        { rootMargin: "0px 0px -55% 0px", threshold: 0 }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+}
+
 function setup() {
     applyHighlighting();
     setupTOC();
+    setupModuleTOC();
     setupHeadingAnchors();
 
     // Keyboard shortcut: "/" to focus search input

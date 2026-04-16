@@ -186,7 +186,18 @@ declare function local:route-context() as map(*) {
                 else
                     $prefix || ":" || $function-name
             let $breadcrumb :=
-                dnav:breadcrumb("functions", $prefix, $function-name)
+                if (exists($arity)) then
+                    (: Arity-specific: ../ fn / function-name (linked) / #arity (terminal) :)
+                    let $base := dnav:breadcrumb("functions", $prefix, ())
+                    return array:append(
+                        array:append($base, map {
+                            "title": $function-name,
+                            "url": $config:app-base || "/functions/" || $prefix || "/" || $function-name
+                        }),
+                        map { "title": "#" || $arity, "url": () }
+                    )
+                else
+                    dnav:breadcrumb("functions", $prefix, $function-name)
             return map {
                 "page-title": $page-title,
                 "prefix": $prefix,
