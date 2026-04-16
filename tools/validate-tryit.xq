@@ -22,7 +22,7 @@ declare function local:list-xq($path as xs:string) as xs:string* {
 };
 
 let $tryit-root := "/db/apps/docs/data/try-it"
-let $prefixes := ("fn", "array", "map", "math", "ft", "ngram")
+let $prefixes := xmldb:get-child-collections($tryit-root)
 
 let $results :=
     for $prefix in $prefixes
