@@ -41,6 +41,9 @@
                     [% if $fn?show-deprecated-badge %]
                     <span class="badge badge-deprecated">Deprecated</span>
                     [% endif %]
+                    [% if $fn?has-article %]
+                    <a class="fn-article-badge" href="[[ $app-base ]]/functions/[[ $prefix ]]/[[ $fn?local-name ]]">more</a>
+                    [% endif %]
                 </h3>
                 <pre class="signature"><code class="language-xquery">[[ $fn?signature ]]</code></pre>
                 <p>[[ $fn?description ]]</p>

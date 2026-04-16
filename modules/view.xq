@@ -19,6 +19,8 @@ import module namespace fundocs = "http://exist-db.org/apps/docs/fundocs"
     at "fundocs.xqm";
 import module namespace docs = "http://exist-db.org/apps/docs/docs"
     at "docs.xqm";
+import module namespace fn-articles = "http://exist-db.org/apps/docs/fn-articles"
+    at "fn-articles.xqm";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
@@ -154,7 +156,13 @@ declare function local:route-context() as map(*) {
 
         (: === Functions === :)
         else if ($section = "functions" and exists($prefix) and exists($function-name)) then
-            let $functions := fundocs:get-function($prefix, $function-name)
+            let $functions :=
+                for $fn in fundocs:get-function($prefix, $function-name)
+                let $article := fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity))
+                return
+                    if (exists($article)) then
+                        map:merge(($fn, map { "article": $article }))
+                    else $fn
             return map {
                 "page-title": $prefix || ":" || $function-name,
                 "prefix": $prefix,
@@ -166,11 +174,25 @@ declare function local:route-context() as map(*) {
 
         else if ($section = "functions" and exists($prefix)) then
             let $modules := fundocs:get-module($prefix)
+            let $module :=
+                let $base := $modules[1]
+                return
+                    if (fn-articles:has-articles-for($prefix)) then
+                        map:merge(($base, map {
+                            "functions": array {
+                                for $fn in $base?functions?*
+                                return
+                                    if (exists(fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity)))) then
+                                        map:merge(($fn, map { "has-article": true() }))
+                                    else $fn
+                            }
+                        }))
+                    else $base
             return map {
                 "page-title": $prefix || " module",
                 "prefix": $prefix,
                 "modules": array { $modules },
-                "module": $modules[1],
+                "module": $module,
                 "breadcrumb": dnav:breadcrumb("functions", $prefix, ())
             }
 

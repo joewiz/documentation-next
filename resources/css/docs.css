@@ -289,6 +289,128 @@ h3:focus-within .fn-anchor {
     color: #3498db;
 }
 
+/* Small "more" badge on functions that have a supplementary article */
+.fn-article-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.1em 0.5em;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #0550ae;
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    text-decoration: none;
+    vertical-align: middle;
+    line-height: 1.5;
+    transition: background 0.15s, color 0.15s;
+}
+.fn-article-badge:hover {
+    background: #0550ae;
+    color: #fff;
+}
+
+/* ========================= */
+/*  Function Articles        */
+/* ========================= */
+
+.fn-article {
+    margin: 1.25rem 0;
+    border: 1px solid #d0e4f7;
+    border-radius: 6px;
+    background: #f8fbff;
+}
+
+.fn-article > summary {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0550ae;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    user-select: none;
+}
+.fn-article > summary::before {
+    content: "▶";
+    font-size: 0.65rem;
+    transition: transform 0.15s;
+}
+.fn-article[open] > summary::before {
+    transform: rotate(90deg);
+}
+.fn-article > summary::-webkit-details-marker {
+    display: none;
+}
+.fn-article > summary:hover {
+    color: #033d8b;
+}
+
+.fn-article-body {
+    padding: 0.75rem 1.25rem 1rem;
+    border-top: 1px solid #d0e4f7;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+.fn-article-body h1,
+.fn-article-body h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 1rem 0 0.4rem;
+    color: #24292e;
+}
+.fn-article-body h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.3rem;
+}
+.fn-article-body p {
+    margin: 0.4rem 0 0.75rem;
+}
+.fn-article-body pre {
+    background: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    font-size: 0.83rem;
+    margin: 0.5rem 0 0.75rem;
+}
+.fn-article-body code {
+    background: #f0f4f8;
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+.fn-article-body pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+.fn-article-body table {
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0.75rem;
+    width: auto;
+}
+.fn-article-body th,
+.fn-article-body td {
+    border: 1px solid #d0d7de;
+    padding: 0.3rem 0.7rem;
+    text-align: left;
+}
+.fn-article-body th {
+    background: #f0f4f8;
+    font-weight: 600;
+}
+.fn-article-raw pre {
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    color: #555;
+}
+
 /* ========================= */
 /*  Signatures               */
 /* ========================= */

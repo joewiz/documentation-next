@@ -43,13 +43,26 @@
             <h3>Returns</h3>
             <p><code>[[ $fn?return?type ]][[ $fn?return?occurrence ]]</code></p>
 
+            [% if exists($fn?article) %]
+            <details class="fn-article">
+                <summary>More information</summary>
+                <div class="fn-article-body">
+                    [[ $fn?article?html ]]
+                </div>
+            </details>
+            [% endif %]
+
             [% if $has-api %]
             <div class="tryit-section">
                 <button class="tryit-btn" data-tryit="[[ $fn?name ]]"
                         data-arity="[[ $fn?arity ]]"
                         data-signature="[[ $fn?signature ]]">Try it</button>
                 <div class="tryit-panel" hidden="hidden">
+                    [% if $fn?article?query != "" %]
+                    <textarea class="tryit-code" rows="8">[[ $fn?article?query ]]</textarea>
+                    [% else %]
                     <textarea class="tryit-code" rows="4">[[ $fn?signature ]]</textarea>
+                    [% endif %]
                     <button class="tryit-run">Run</button>
                     <pre class="tryit-output"></pre>
                 </div>
