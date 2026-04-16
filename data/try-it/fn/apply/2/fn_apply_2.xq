@@ -1,4 +1,4 @@
-let $function := function($x) { $x }
-let $array := ["x", "y", "z"]
+let $function := function($a, $b) { $a + $b }
+let $array := [3, 4]
 return
     apply($function, $array)

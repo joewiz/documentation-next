@@ -1,4 +1,4 @@
-let $input := (1, "two", <three/>)
-let $keys := map { "a": 1, "b": 2 }
+let $input := ("banana", "fig", "apple", "cherry")
+let $keys := function($s) { string-length($s) }
 return
     sort-by($input, $keys)

@@ -1,3 +1,3 @@
-let $value := "foo"
+let $value := "newline"
 return
     char($value)

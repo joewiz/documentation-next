@@ -1,4 +1,4 @@
-let $values := "foo"
-let $collation := "hello"
+let $values := ("banana", "apple", "cherry")
+let $collation := "http://www.w3.org/2013/collation/UCA"
 return
     min($values, $collation)

@@ -1,5 +1,5 @@
-let $input := (1, "two", <three/>)
-let $collation := "hello"
-let $key := function($x) { $x }
+let $input := ("banana", "apple", "cherry")
+let $collation := ()
+let $key := function($s) { string-length($s) }
 return
     lowest($input, $collation, $key)

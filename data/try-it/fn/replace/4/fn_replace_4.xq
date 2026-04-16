@@ -1,6 +1,6 @@
-let $input := "hello"
+let $input := "Hello World"
 let $pattern := "hello"
-let $replacement := "hello"
-let $flags := "hello"
+let $replacement := "Hi"
+let $flags := "i"
 return
     replace($input, $pattern, $replacement, $flags)

@@ -1,5 +1,5 @@
-let $array := ["x", "y", "z"]
-let $zero := (1, "two", <three/>)
-let $function := function($x) { $x }
+let $array := [1, 2, 3, 4, 5]
+let $zero := 0
+let $function := function($item, $acc) { $acc + $item }
 return
     array:fold-right($array, $zero, $function)

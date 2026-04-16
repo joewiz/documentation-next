@@ -1,4 +1,4 @@
-let $array := ["x", "y", "z"]
-let $collation := "hello"
+let $array := ["banana", "apple", "cherry"]
+let $collation := "http://www.w3.org/2013/collation/UCA"
 return
     array:sort($array, $collation)

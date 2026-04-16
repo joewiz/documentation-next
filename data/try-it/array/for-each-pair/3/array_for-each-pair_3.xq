@@ -1,5 +1,5 @@
-let $array := ["x", "y", "z"]
-let $array2 := ["x", "y", "z"]
-let $action := function($x) { $x }
+let $array1 := [1, 2, 3]
+let $array2 := [10, 20, 30]
+let $action := function($a, $b) { $a + $b }
 return
-    array:for-each-pair($array, $array2, $action)
+    array:for-each-pair($array1, $array2, $action)

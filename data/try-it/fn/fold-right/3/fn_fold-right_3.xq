@@ -1,5 +1,5 @@
-let $sequence := (1, "two", <three/>)
-let $zero := (1, "two", <three/>)
-let $function := function($x) { $x }
+let $sequence := ("a", "b", "c")
+let $zero := ""
+let $function := function($item, $acc) { $acc || $item }
 return
     fold-right($sequence, $zero, $function)

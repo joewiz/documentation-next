@@ -1,5 +1,5 @@
-let $input := (1, "two", <three/>)
-let $predicate := function($x) { $x }
-let $action := function($x) { $x }
+let $input := 1
+let $predicate := function($n) { $n lt 100 }
+let $action := function($n) { $n * 2 }
 return
     while-do($input, $predicate, $action)

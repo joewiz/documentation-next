@@ -1,5 +1,5 @@
-let $array := ["x", "y", "z"]
-let $position := 42
-let $member := (1, "two", <three/>)
+let $array := ["a", "b", "c"]
+let $position := 2
+let $member := "REPLACED"
 return
     array:put($array, $position, $member)

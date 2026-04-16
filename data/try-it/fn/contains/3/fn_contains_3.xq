@@ -1,5 +1,5 @@
-let $source-string := "hello"
-let $substring := "hello"
-let $collation-uri := "hello"
+let $source := "Straße"
+let $substring := "strasse"
+let $collation := "http://www.w3.org/2013/collation/UCA?lang=de;strength=secondary"
 return
-    contains($source-string, $substring, $collation-uri)
+    contains($source, $substring, $collation)

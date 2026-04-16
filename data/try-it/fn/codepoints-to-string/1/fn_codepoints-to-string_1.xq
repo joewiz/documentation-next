@@ -1,3 +1,3 @@
-let $values := (1, 2, 3, 4, 5)
+let $values := (72, 101, 108, 108, 111)
 return
     codepoints-to-string($values)

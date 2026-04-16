@@ -1,5 +1,5 @@
-let $value := "hello"
-let $pattern := "hello"
-let $flags := "hello"
+let $value := "one:two::three"
+let $pattern := ":"
+let $flags := ""
 return
     tokenize($value, $pattern, $flags)

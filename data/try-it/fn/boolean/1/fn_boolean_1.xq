@@ -1,3 +1,3 @@
-let $input := (1, "two", <three/>)
+let $input := "non-empty string"
 return
     boolean($input)

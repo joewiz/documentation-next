@@ -1,4 +1,4 @@
-let $input := (1, "two", <three/>)
-let $predicate := function($x) { $x }
+let $input := (2, 4, 6, 8)
+let $predicate := function($n) { $n mod 2 = 0 }
 return
     every($input, $predicate)

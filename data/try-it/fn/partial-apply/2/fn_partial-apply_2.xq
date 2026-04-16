@@ -1,4 +1,4 @@
-let $function := function($x) { $x }
-let $arguments := map { "a": 1, "b": 2 }
+let $function := concat#3
+let $arguments := map { 1: "Hello " }
 return
-    partial-apply($function, $arguments)
+    partial-apply($function, $arguments)("World", "!")

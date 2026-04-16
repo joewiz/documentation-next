@@ -1,4 +1,4 @@
 let $value := "hello"
-let $collation := "hello"
+let $collation := "http://www.w3.org/2013/collation/UCA"
 return
     collation-key($value, $collation)

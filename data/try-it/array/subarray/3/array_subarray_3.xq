@@ -1,5 +1,5 @@
-let $array := ["x", "y", "z"]
-let $start := 42
-let $length := 42
+let $array := ["a", "b", "c", "d", "e"]
+let $start := 2
+let $length := 3
 return
     array:subarray($array, $start, $length)

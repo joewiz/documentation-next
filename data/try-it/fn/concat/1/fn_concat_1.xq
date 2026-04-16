@@ -1,3 +1,2 @@
-let $values := "foo"
-return
-    concat($values)
+(: concat requires at least 2 arguments :)
+concat("Hello", " ", "World")

@@ -1,4 +1,6 @@
-let $uri := "hello"
-let $options := map { "a": 1, "b": 2 }
+(: csv-doc loads CSV from a URI — demo with csv-to-arrays instead :)
+let $csv := "Alice;25
+Bob;30"
+let $options := map { "separator": ";" }
 return
-    csv-doc($uri, $options)
+    csv-to-arrays($csv, $options)
