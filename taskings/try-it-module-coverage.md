@@ -1,6 +1,6 @@
 # Try-It Module Coverage
 
-Status of try-it query coverage across all registered eXist-db modules.
+Status of try-it query coverage across all eXist-db modules.
 
 **Legend:** Done = all functions have try-it files and pass validation
 
@@ -14,9 +14,9 @@ Status of try-it query coverage across all registered eXist-db modules.
 ## EXPath Standard Libraries
 
 - [x] **bin** (40 functions) — `http://expath.org/ns/binary`
-- [x] **file** (58 functions) — `http://expath.org/ns/file` (uses `exfile:` prefix in queries)
+- [x] **file** / exfile (58 functions) — `http://expath.org/ns/file` (uses `exfile:` prefix in queries to avoid conflict)
 - [ ] **http** (3 functions) — `http://expath.org/ns/http-client`
-- [ ] **crypto** (8 functions) — `http://expath.org/ns/crypto`
+- [ ] **crypto** (8 functions) — `http://expath.org/ns/crypto` — loaded from XAR, not conf.xml
 - [ ] **zip** (6 functions) — `http://expath.org/ns/zip`
 
 ## Core eXist-db Modules — Priority
@@ -27,7 +27,8 @@ Status of try-it query coverage across all registered eXist-db modules.
 - [x] **sm** (59 functions) — `http://exist-db.org/xquery/securitymanager` — scaffolds, needs validation pass
 - [x] **request** (31 functions) — `http://exist-db.org/xquery/request` — scaffolds, needs validation pass
 - [x] **response** (10 functions) — `http://exist-db.org/xquery/response` — scaffolds, needs validation pass
-- [ ] **kwic** — KWIC module (see [KWIC article](http://localhost:8080/exist/apps/docs/articles/kwic))
+- [ ] **file** (native) — `http://exist-db.org/xquery/file` — eXist's native file module (file:sync, file:serialize, etc.); in conf.xml but not auto-loaded when EXPath file module is present; needs `import module` with `java:org.exist.xquery.modules.file.FileModule`
+- [ ] **kwic** — KWIC module (see [KWIC article](http://localhost:8080/exist/apps/docs/articles/kwic)); XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
 - [ ] **test** — XQSuite test framework (see [XQSuite article](http://localhost:8080/exist/apps/docs/articles/xqsuite))
 
 ## Indexing & Search Modules
@@ -45,7 +46,7 @@ Status of try-it query coverage across all registered eXist-db modules.
 - [ ] **transform** (4 functions) — `http://exist-db.org/xquery/transform`
 - [ ] **validation** (14 functions) — `http://exist-db.org/xquery/validation`
 - [ ] **inspect** (6 functions) — `http://exist-db.org/xquery/inspection`
-- [ ] **console** (3 functions) — `http://exist-db.org/xquery/console`
+- [ ] **console** (3 functions) — `http://exist-db.org/xquery/console` — loaded from XAR
 - [ ] **cache** (11 functions) — `http://exist-db.org/xquery/cache`
 
 ## Specialty Modules
@@ -61,7 +62,7 @@ Status of try-it query coverage across all registered eXist-db modules.
 - [ ] **xqdm** (2 functions) — `http://exist-db.org/xquery/xqdoc`
 - [ ] **backups** (2 functions) — `http://exist-db.org/xquery/backups`
 - [ ] **process** (1 function) — `http://exist-db.org/xquery/process`
-- [ ] **md** (5 functions) — `http://exist-db.org/xquery/markdown`
+- [ ] **md** (5 functions) — `http://exist-db.org/xquery/markdown` — loaded from XAR
 - [ ] **cqlparser** (1 function) — `http://exist-db.org/xquery/cqlparser`
 - [ ] **simpleql** (1 function) — `http://exist-db.org/xquery/simple-ql`
 
@@ -70,13 +71,23 @@ Status of try-it query coverage across all registered eXist-db modules.
 - [ ] **rest** (3 functions) — `http://exquery.org/ns/restxq`
 - [ ] **exrest** (8 functions) — `http://exquery.org/ns/restxq/exist`
 - [ ] **req** (19 functions) — `http://exquery.org/ns/request`
-- [ ] **lsp** (17 functions) — `http://exist-db.org/xquery/lsp`
-- [ ] **api** (0 functions) — `http://exist-db.org/xquery/api`
+- [ ] **lsp** (17 functions) — `http://exist-db.org/xquery/lsp` — loaded from XAR
+- [ ] **api** (0 functions) — `http://exist-db.org/xquery/api` — loaded from XAR
+
+## conf.xml-only Modules (not loaded in current runtime)
+
+These are in `exist-distribution/src/main/config/conf.xml` but not currently registered:
+
+- [ ] **exi** — `http://exist-db.org/xquery/exi` — EXI (Efficient XML Interchange) support
+- [ ] **exiftool** — `http://exist-db.org/xquery/exiftool` — EXIF metadata extraction
+- [ ] **oracle** — `http://exist-db.org/xquery/oracle` — Oracle DB integration
+- [ ] **spatial** — `http://exist-db.org/xquery/spatial` — spatial/GIS index
+- [ ] **vector** — `http://exist-db.org/xquery/vector` — vector similarity search (new in next-v2)
 
 ## Other
 
 - [ ] **jndi** (8 functions) — `http://exist-db.org/xquery/jndi`
-- [ ] **ws** (5 functions) — `http://exist-db.org/xquery/websocket`
+- [ ] **ws** (5 functions) — `http://exist-db.org/xquery/websocket` — loaded from XAR
 - [ ] **plogin** (3 functions) — `http://exist-db.org/xquery/persistentlogin`
 
 ---
@@ -85,14 +96,18 @@ Status of try-it query coverage across all registered eXist-db modules.
 
 | Status | Count | Functions |
 |--------|-------|-----------|
-| Done | 8 modules | ~533 functions |
-| Priority (next) | 8 modules | ~316 functions |
-| Remaining | ~30 modules | ~250 functions |
-| **Total** | ~46 modules | ~1099 functions |
+| Done (validated) | 8 modules | ~583 |
+| Scaffolds (need validation) | 6 modules | ~303 |
+| Not started | ~35 modules | ~300+ |
+| **Total** | ~49 modules | ~1186+ |
 
 ## Notes
 
-- The `kwic` module is not a registered Java module — it's an XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
-- The `test` module is the XQSuite annotation-based test framework
-- Some modules (mail, sql, jndi) require external services and may need mock/try-catch patterns
-- Modules like `request`, `response`, `session` are HTTP-context-dependent and need careful handling
+- The native `file` module (`http://exist-db.org/xquery/file`) provides `file:sync`, `file:serialize`, `file:serialize-binary` — different from the EXPath `file` module. It's in conf.xml but shadowed by the EXPath module at runtime. Needs explicit Java class import.
+- `kwic` is not a registered Java module — it's an XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
+- `test` is the XQSuite annotation-based test framework
+- Modules marked "loaded from XAR" are installed via packages, not conf.xml
+- Some modules (mail, sql, jndi, oracle) require external services
+- `request`, `response`, `session` are HTTP-context-dependent
+- `exi`, `exiftool`, `oracle`, `spatial` may not have their required dependencies available in all deployments
+- `vector` is new in next-v2 for vector similarity search (DJL/HuggingFace)
