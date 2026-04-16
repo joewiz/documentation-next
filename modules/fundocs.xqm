@@ -427,16 +427,23 @@ declare function fundocs:search($q as xs:string) as array(*) {
     if ($q = "") then
         array {}
     else
+        (: Preprocess the query to handle XQuery function name syntax (prefix:name).
+           KeywordAnalyzer fields (name, signature, uri) index the full string as one
+           token, so we escape the colon: util:eval → util\:eval.
+           StandardAnalyzer fields (description) split on punctuation, so we convert
+           to a phrase search: util:eval → "util eval". :)
+        let $kw-q   := replace($q, '(\w+):(\w+)', '$1\\:$2')
+        let $text-q := replace($q, '(\w+):(\w+)', '"$1 $2"')
         let $hits := (
-            (: Search function names :)
-            $fundocs:data//xqdoc:function[ft:query(xqdoc:name, $q)],
-            (: Search signatures :)
-            $fundocs:data//xqdoc:function[ft:query(xqdoc:signature, $q)],
-            (: Search descriptions :)
+            (: Search function names (KeywordAnalyzer — colon is part of the token) :)
+            $fundocs:data//xqdoc:function[ft:query(xqdoc:name, $kw-q)],
+            (: Search signatures (KeywordAnalyzer) :)
+            $fundocs:data//xqdoc:function[ft:query(xqdoc:signature, $kw-q)],
+            (: Search descriptions (StandardAnalyzer — use phrase search) :)
             $fundocs:data//xqdoc:function
-                [ft:query(xqdoc:comment/xqdoc:description, $q)],
-            (: Search module URIs :)
-            $fundocs:data[ft:query(xqdoc:module/xqdoc:uri, $q)]//xqdoc:function
+                [ft:query(xqdoc:comment/xqdoc:description, $text-q)],
+            (: Search module URIs (KeywordAnalyzer) :)
+            $fundocs:data[ft:query(xqdoc:module/xqdoc:uri, $kw-q)]//xqdoc:function
         )
         let $unique := distinct-values($hits ! generate-id(.))
         return array {

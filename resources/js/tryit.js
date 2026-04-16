@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         buttons.forEach((btn) => {
             btn.addEventListener("click", handleTryIt);
+            btn.dataset.wired = "1";
         });
     });
 
@@ -56,6 +57,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const codeArea = panel.querySelector(".tryit-code");
             if (codeArea && !codeArea.value.trim()) {
                 codeArea.value = generateExample(btn);
+            }
+            // Wire up Run button if not already done
+            const runBtn = panel.querySelector(".tryit-run");
+            if (runBtn && !runBtn.dataset.wired) {
+                runBtn.dataset.wired = "1";
+                runBtn.addEventListener("click", () => runQuery(panel));
             }
         } else {
             panel.hidden = true;

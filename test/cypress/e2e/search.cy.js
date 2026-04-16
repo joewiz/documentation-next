@@ -8,7 +8,7 @@ describe("Unified search", () => {
   it("search returns results for a common term", () => {
     cy.visit("/search?q=store");
     cy.get(".search-result").should("have.length.greaterThan", 0);
-    cy.get(".search-summary").should("contain.text", "Results for");
+    cy.get(".search-summary").should("contain.text", "results for");
   });
 
   it("search results include type badges", () => {
@@ -23,14 +23,15 @@ describe("Unified search", () => {
 
   it("search form submits and shows results", () => {
     cy.visit("/search");
-    cy.get('input[name="q"]').type("xmldb");
+    cy.get(".docs-search input[name='q']").type("xmldb");
     cy.get(".docs-search button[type='submit']").click();
     cy.get(".search-summary").should("exist");
   });
 
-  it("type filter is present", () => {
-    cy.visit("/search");
-    cy.get('select[name="type"]').should("exist");
+  it("type facets are present on results page", () => {
+    cy.visit("/search?q=store");
+    cy.get(".facet-group").should("have.length.greaterThan", 0);
+    cy.get(".facet-link").should("have.length.greaterThan", 0);
   });
 
   it("function results link to function detail", () => {

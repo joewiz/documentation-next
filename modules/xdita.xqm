@@ -159,9 +159,14 @@ declare function xdita:search($q as xs:string) as array(*) {
     if ($q = "") then
         array {}
     else
+        (: Convert prefix:name patterns to phrase searches so that e.g. util:eval
+           finds articles mentioning both "util" and "eval" adjacent to each other.
+           The StandardAnalyzer splits on punctuation, so util:eval is indexed as
+           two tokens; a phrase query "util eval" matches them when adjacent. :)
+        let $escaped-q := replace($q, '(\w+):(\w+)', '"$1 $2"')
         let $articles-root := $config:data-root || "/articles"
         let $hits := collection($articles-root)//topic
-            [ft:query(., $q, map { "fields": "site-content" })]
+            [ft:query(., $escaped-q, map { "fields": "site-content" })]
         return array {
             for $hit in $hits
             let $doc-uri := document-uri(root($hit))

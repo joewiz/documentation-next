@@ -36,7 +36,7 @@
             [% for $fn in $module?functions?* %]
             <div class="[[ $fn?function-class ]]" id="[[ $fn?local-name ]].[[ $fn?arity ]]">
                 <h3>
-                    <a href="#[[ $fn?local-name ]].[[ $fn?arity ]]">#</a>
+                    <a class="fn-anchor" href="#[[ $fn?local-name ]].[[ $fn?arity ]]">#</a>
                     <a href="[[ $app-base ]]/functions/[[ $prefix ]]/[[ $fn?local-name ]]">[[ $fn?name ]]</a>#[[ $fn?arity ]]
                     [% if $fn?show-deprecated-badge %]
                     <span class="badge badge-deprecated">Deprecated</span>

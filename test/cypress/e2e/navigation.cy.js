@@ -28,8 +28,8 @@ describe("Navigation and layout", () => {
     cy.request("/resources/js/docs.js").its("status").should("eq", 200);
   });
 
-  it("highlight.js vendor loads", () => {
-    cy.request("/resources/js/vendor/highlight.min.js")
+  it("highlight bundle loads", () => {
+    cy.request("/resources/js/highlight-bundle.js")
       .its("status")
       .should("eq", 200);
   });

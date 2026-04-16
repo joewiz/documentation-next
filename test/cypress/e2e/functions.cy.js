@@ -13,7 +13,7 @@ describe("Function reference", () => {
 
   it("function detail page loads", () => {
     cy.visit("/functions/fn/concat");
-    cy.get(".function-variant").should("have.length.greaterThan", 0);
+    cy.get(".function").should("have.length.greaterThan", 0);
   });
 
   it("function signatures have code highlighting", () => {

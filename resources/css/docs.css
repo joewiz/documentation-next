@@ -271,12 +271,32 @@
     color: #3498db;
 }
 
+/* Anchor link on function headings — hidden until hover */
+.fn-anchor {
+    color: #ccc;
+    margin-right: 0.25rem;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+h3:hover .fn-anchor,
+h3:focus-within .fn-anchor {
+    opacity: 1;
+}
+
+.fn-anchor:hover {
+    color: #3498db;
+}
+
 /* ========================= */
 /*  Signatures               */
 /* ========================= */
 
 .signature {
-    background: #282c34;
+    background: #f6f8fa;
+    color: #24292e;
+    border: 1px solid #e1e4e8;
     border-radius: 4px;
     padding: 0.75rem 1rem;
     overflow-x: auto;
@@ -287,6 +307,7 @@
     font-size: 0.875rem;
     white-space: pre-wrap;
     word-break: break-word;
+    color: inherit;
 }
 
 /* ========================= */
@@ -310,8 +331,7 @@
     line-height: 1.5;
 }
 
-.code-block code,
-.signature code {
+.code-block code {
     color: #24292e;
 }
 
@@ -496,8 +516,9 @@
 
 .tryit-output {
     margin-top: 0.5rem;
-    background: #282c34;
-    color: #abb2bf;
+    background: #f6f8fa;
+    color: #24292e;
+    border: 1px solid #e1e4e8;
     border-radius: 4px;
     padding: 0.75rem;
     font-size: 0.85rem;
@@ -512,6 +533,89 @@
 .search-summary {
     margin-bottom: 1rem;
     color: #666;
+}
+
+/* ========================= */
+/*  Search layout + facets   */
+/* ========================= */
+
+.search-layout {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+    margin-top: 1.25rem;
+}
+
+.search-facets {
+    position: sticky;
+    top: 1rem;
+}
+
+.facet-group {
+    margin-bottom: 1.5rem;
+}
+
+.facet-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #888;
+    margin: 0 0 0.5rem;
+}
+
+.facet-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.facet-list li {
+    margin-bottom: 0.2rem;
+}
+
+.facet-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #3498db;
+    text-decoration: none;
+    gap: 0.5rem;
+}
+
+.facet-link:hover {
+    background: #f0f7ff;
+    color: #1a6fa8;
+}
+
+.facet-link.facet-active {
+    background: #e8f0fe;
+    color: #1a365d;
+    font-weight: 600;
+    cursor: default;
+}
+
+.facet-count {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: normal;
+}
+
+.facet-active .facet-count {
+    color: #666;
+}
+
+@media (max-width: 640px) {
+    .search-layout {
+        grid-template-columns: 1fr;
+    }
+    .search-facets {
+        position: static;
+    }
 }
 
 .search-results {

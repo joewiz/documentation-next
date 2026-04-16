@@ -7,7 +7,7 @@ describe("Article browsing", () => {
 
   it("article detail renders content", () => {
     cy.visit("/articles/docker");
-    cy.get(".docbook-article").should("exist");
+    cy.get(".xdita-article").should("exist");
     cy.get("h1").should("contain.text", "Docker");
   });
 
@@ -29,8 +29,8 @@ describe("Article browsing", () => {
     cy.get(".breadcrumb").should("contain.text", "Articles");
   });
 
-  it("code blocks have syntax highlighting class", () => {
+  it("code blocks are present in article", () => {
     cy.visit("/articles/docker");
-    cy.get("code[class*='language-']").should("have.length.greaterThan", 0);
+    cy.get(".xdita-article code").should("have.length.greaterThan", 0);
   });
 });

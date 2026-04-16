@@ -118,6 +118,7 @@ declare function local:route-context() as map(*) {
     let $slug := request:get-attribute("$slug")
     let $q := request:get-parameter("q", "")
     let $type := request:get-parameter("type", "all")
+    let $ns-prefix := request:get-parameter("prefix", "")
     let $category := request:get-parameter("category", "all")
 
     let $uri := request:get-parameter("uri", ())
@@ -192,8 +193,22 @@ declare function local:route-context() as map(*) {
 
         (: === Search === :)
         else if ($section = "search") then
-            let $fn-results := fundocs:search($q)
+            let $fn-results-all  := fundocs:search($q)
             let $article-results := docs:search($q)
+            (: Prefix facets: count functions per namespace prefix (unfiltered) :)
+            let $prefix-facets :=
+                map:merge(
+                    for $fn in $fn-results-all?*
+                    group by $p := $fn?prefix
+                    order by count($fn) descending
+                    return map:entry($p, count($fn))
+                )
+            (: Apply prefix filter to function results :)
+            let $fn-results :=
+                if ($ns-prefix != "") then
+                    array { $fn-results-all?*[?prefix = $ns-prefix] }
+                else
+                    $fn-results-all
             let $all-results := array {
                 if ($type = "all" or $type = "function") then $fn-results?* else (),
                 if ($type = "all" or $type = "article") then $article-results?* else ()
@@ -204,8 +219,10 @@ declare function local:route-context() as map(*) {
                     else "Search",
                 "q": $q,
                 "type-filter": $type,
+                "prefix-filter": $ns-prefix,
+                "prefix-facets": $prefix-facets,
                 "search-results": $all-results,
-                "function-count": array:size($fn-results),
+                "function-count": array:size($fn-results-all),
                 "article-count": array:size($article-results),
                 "breadcrumb": dnav:breadcrumb("search", (), ())
             }
