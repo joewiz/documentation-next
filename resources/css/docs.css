@@ -296,6 +296,17 @@ h3:focus-within .fn-anchor {
     font-weight: 400;
 }
 
+/* Function name links in headings: black, light blue on hover */
+.function h2 > a,
+.function h3 > a:not(.fn-anchor):not(.fn-article-badge) {
+    color: #24292e;
+    text-decoration: none;
+}
+.function h2 > a:hover,
+.function h3 > a:not(.fn-anchor):not(.fn-article-badge):hover {
+    color: #3498db;
+}
+
 /* Small "more" badge on functions that have a supplementary article */
 .fn-article-badge {
     display: inline-block;
@@ -616,21 +627,69 @@ h3:focus-within .fn-anchor {
 }
 
 .tryit-panel {
-    margin-top: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    margin: 0.75rem 0 1.5rem;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
     padding: 0.75rem;
-    background: #fafafa;
+    background: #f6f8fa;
+}
+
+.tryit-code-wrapper {
+    position: relative;
 }
 
 .tryit-code {
+    display: block;
     width: 100%;
-    font-family: monospace;
-    font-size: 0.875rem;
-    border: 1px solid #ddd;
+    box-sizing: border-box;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    border: 1px solid #d0d7de;
     border-radius: 4px;
-    padding: 0.5rem;
+    padding: 0.6rem 2.5rem 0.6rem 0.75rem;
     resize: vertical;
+    background: #fff;
+    color: #24292e;
+    tab-size: 4;
+}
+
+.tryit-code:focus {
+    outline: none;
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
+}
+
+.tryit-copy {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    background: #fff;
+    color: #57606a;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+}
+.tryit-code-wrapper:hover .tryit-copy,
+.tryit-copy:focus {
+    opacity: 1;
+}
+.tryit-copy:hover {
+    background: #f3f4f6;
+    border-color: #9a9fa6;
+}
+.tryit-copy.copied {
+    color: #1a7f37;
+    border-color: #1a7f37;
+    opacity: 1;
 }
 
 .tryit-run {
@@ -641,19 +700,30 @@ h3:focus-within .fn-anchor {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 0.85rem;
+}
+.tryit-run:hover {
+    background: #2980b9;
 }
 
 .tryit-output {
     margin-top: 0.5rem;
-    background: #f6f8fa;
+    background: #fff;
     color: #24292e;
-    border: 1px solid #e1e4e8;
+    border: 1px solid #d0d7de;
     border-radius: 4px;
     padding: 0.75rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     font-size: 0.85rem;
+    line-height: 1.5;
     max-height: 300px;
     overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
+
+/* Hidden query source textarea (used on module-detail pages) */
+.tryit-query-source { display: none; }
 
 /* ========================= */
 /*  Search results           */
