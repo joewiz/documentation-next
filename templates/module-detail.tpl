@@ -72,6 +72,7 @@
                     <button class="tryit-btn" data-tryit="[[ $fn?name ]]"
                             data-arity="[[ $fn?arity ]]"
                             data-signature="[[ $fn?signature ]]">Try it</button>
+                    <textarea class="tryit-query-source" hidden="hidden">[[ $fn?tryit-query ]]</textarea>
                     [% endif %]
                 </div>
                 [% endfor %]

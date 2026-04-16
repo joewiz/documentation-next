@@ -70,10 +70,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function createPanel(btn) {
+        // Check for pre-populated query: hidden textarea sibling or data attribute
+        const querySource = btn.parentElement.querySelector(".tryit-query-source");
+        const query = (querySource ? querySource.value : btn.dataset.query || "").trim();
+        const rows = query ? Math.min(Math.max(query.split("\n").length + 1, 4), 12) : 4;
         const panel = document.createElement("div");
         panel.className = "tryit-panel";
         panel.innerHTML = `
-            <textarea class="tryit-code" rows="4">${generateExample(btn)}</textarea>
+            <textarea class="tryit-code" rows="${rows}">${query || generateExample(btn)}</textarea>
             <button class="tryit-run">Run</button>
             <pre class="tryit-output" hidden></pre>
         `;

@@ -1,0 +1,25 @@
+<try-it-registry>
+    <!--
+        Maps each try-it directory name to a module namespace URI.
+        This allows the app to align a module's runtime prefix with its
+        try-it directory even when prefixes differ across eXist versions
+        or when multiple modules share a common prefix.
+
+        @dir      — directory name under data/try-it/
+        @uri      — the module's namespace URI
+        @prefix   — the canonical prefix used in queries and signatures
+    -->
+    <module dir="fn"      uri="http://www.w3.org/2005/xpath-functions"              prefix="fn"/>
+    <module dir="math"    uri="http://www.w3.org/2005/xpath-functions/math"         prefix="math"/>
+    <module dir="map"     uri="http://www.w3.org/2005/xpath-functions/map"          prefix="map"/>
+    <module dir="array"   uri="http://www.w3.org/2005/xpath-functions/array"        prefix="array"/>
+    <module dir="util"    uri="http://exist-db.org/xquery/util"                     prefix="util"/>
+    <module dir="xmldb"   uri="http://exist-db.org/xquery/xmldb"                    prefix="xmldb"/>
+    <module dir="file"    uri="http://exist-db.org/xquery/file"                     prefix="file"/>
+    <module dir="process" uri="http://exist-db.org/xquery/process"                  prefix="process"/>
+    <module dir="sm"      uri="http://exist-db.org/xquery/securitymanager"          prefix="sm"/>
+    <module dir="ft"      uri="http://exist-db.org/xquery/lucene"                   prefix="ft"/>
+    <module dir="request" uri="http://exist-db.org/xquery/request"                  prefix="request"/>
+    <module dir="system"  uri="http://exist-db.org/xquery/system"                   prefix="system"/>
+    <module dir="xproc"   uri="http://exist-db.org/xproc"                           prefix="xproc"/>
+</try-it-registry>

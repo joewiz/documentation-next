@@ -21,6 +21,8 @@ import module namespace docs = "http://exist-db.org/apps/docs/docs"
     at "docs.xqm";
 import module namespace fn-articles = "http://exist-db.org/apps/docs/fn-articles"
     at "fn-articles.xqm";
+import module namespace tryit = "http://exist-db.org/apps/docs/try-it"
+    at "try-it.xqm";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
@@ -164,14 +166,17 @@ declare function local:route-context() as map(*) {
                 else $all-functions
             let $functions :=
                 for $fn in $raw-functions
-                let $article := fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity))
-                return
-                    if (exists($article)) then
-                        map:merge(($fn, map {
-                            "has-article": true(),
-                            "article-query": ($article?query, "")[1]
-                        }))
-                    else $fn
+                let $fn-arity := xs:integer($fn?arity)
+                let $article := fn-articles:find($prefix, $fn?local-name, $fn-arity)
+                (: Try-it query: .xq file first, then article YAML, then empty :)
+                let $tryit-query := (
+                    tryit:find($prefix, $fn?local-name, $fn-arity),
+                    $article?query
+                )[1]
+                return map:merge(($fn,
+                    if (exists($article)) then map { "has-article": true() } else (),
+                    if ($tryit-query) then map { "article-query": $tryit-query } else ()
+                ))
             (: Build article HTML map keyed by arity — kept outside the for-loop
                so Jinks can output elements without escaping :)
             let $article-html-map := map:merge(
@@ -212,19 +217,22 @@ declare function local:route-context() as map(*) {
 
         else if ($section = "functions" and exists($prefix)) then
             let $modules := fundocs:get-module($prefix)
+            let $has-articles := fn-articles:has-articles-for($prefix)
+            let $has-tryit := tryit:has-queries-for($prefix)
             let $module :=
                 let $base := $modules[1]
                 return
-                    if (fn-articles:has-articles-for($prefix)) then
-                        map:merge(($base, map {
-                            "functions": array {
-                                for $fn in $base?functions?*
-                                return
-                                    if (exists(fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity)))) then
-                                        map:merge(($fn, map { "has-article": true() }))
-                                    else $fn
-                            }
-                        }))
+                    if ($has-articles or $has-tryit) then
+                        map:put($base, "functions", array {
+                            for $fn in $base?functions?*
+                            let $fn-arity := xs:integer($fn?arity)
+                            let $article-exists := $has-articles and exists(fn-articles:find($prefix, $fn?local-name, $fn-arity))
+                            let $tryit-query := tryit:find($prefix, $fn?local-name, $fn-arity)
+                            return map:merge(($fn, map {
+                                "has-article": $article-exists,
+                                "tryit-query": ($tryit-query, "")[1]
+                            }))
+                        })
                     else $base
             return map {
                 "page-title": $prefix || " module",

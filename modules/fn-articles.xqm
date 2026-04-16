@@ -60,7 +60,7 @@ declare function fn-articles:find(
         else ()
     return
         if (exists($path)) then
-            let $text := util:binary-to-string(util:binary-doc($path))
+            let $text := unparsed-text($path)
             let $parsed := fn-articles:parse-front-matter($text)
             let $html := fn-articles:render($parsed?body)
             return map:merge(($parsed, map { "html": $html }))
