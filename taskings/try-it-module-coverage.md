@@ -27,7 +27,8 @@ Status of try-it query coverage across all eXist-db modules.
 - [x] **sm** (59 functions) — `http://exist-db.org/xquery/securitymanager` — scaffolds, needs validation pass
 - [x] **request** (31 functions) — `http://exist-db.org/xquery/request` — scaffolds, needs validation pass
 - [x] **response** (10 functions) — `http://exist-db.org/xquery/response` — scaffolds, needs validation pass
-- [ ] **file** (native) — `http://exist-db.org/xquery/file` — eXist's native file module (file:sync, file:serialize, etc.); in conf.xml but not auto-loaded when EXPath file module is present; needs `import module` with `java:org.exist.xquery.modules.file.FileModule`
+- [ ] **file** (native) — `http://exist-db.org/xquery/file` — eXist's native file module (file:sync, file:serialize, etc.); registered in conf.xml as `file:`, no import needed
+- [ ] **vector** — `http://exist-db.org/xquery/vector` — vector similarity search (new in next-v2, DJL/HuggingFace)
 - [ ] **kwic** — KWIC module (see [KWIC article](http://localhost:8080/exist/apps/docs/articles/kwic)); XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
 - [ ] **test** — XQSuite test framework (see [XQSuite article](http://localhost:8080/exist/apps/docs/articles/xqsuite))
 
@@ -82,7 +83,6 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 - [ ] **exiftool** — `http://exist-db.org/xquery/exiftool` — EXIF metadata extraction
 - [ ] **oracle** — `http://exist-db.org/xquery/oracle` — Oracle DB integration
 - [ ] **spatial** — `http://exist-db.org/xquery/spatial` — spatial/GIS index
-- [ ] **vector** — `http://exist-db.org/xquery/vector` — vector similarity search (new in next-v2)
 
 ## Other
 
@@ -103,7 +103,7 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 
 ## Notes
 
-- The native `file` module (`http://exist-db.org/xquery/file`) provides `file:sync`, `file:serialize`, `file:serialize-binary` — different from the EXPath `file` module. It's in conf.xml but shadowed by the EXPath module at runtime. Needs explicit Java class import.
+- The native `file` module (`http://exist-db.org/xquery/file`) provides `file:sync`, `file:serialize`, `file:serialize-binary` — different from the EXPath `file` module. Registered in conf.xml as `file:`, no import needed.
 - `kwic` is not a registered Java module — it's an XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
 - `test` is the XQSuite annotation-based test framework
 - Modules marked "loaded from XAR" are installed via packages, not conf.xml
