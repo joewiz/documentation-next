@@ -156,18 +156,31 @@ declare function local:route-context() as map(*) {
 
         (: === Functions === :)
         else if ($section = "functions" and exists($prefix) and exists($function-name)) then
+            let $raw-functions := fundocs:get-function($prefix, $function-name)
             let $functions :=
-                for $fn in fundocs:get-function($prefix, $function-name)
+                for $fn in $raw-functions
                 let $article := fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity))
                 return
                     if (exists($article)) then
-                        map:merge(($fn, map { "article": $article }))
+                        map:merge(($fn, map {
+                            "has-article": true(),
+                            "article-query": ($article?query, "")[1]
+                        }))
                     else $fn
+            (: Build article HTML map keyed by arity — kept outside the for-loop
+               so Jinks can output elements without escaping :)
+            let $article-html-map := map:merge(
+                for $fn in $raw-functions
+                let $article := fn-articles:find($prefix, $fn?local-name, xs:integer($fn?arity))
+                where exists($article)
+                return map:entry(string($fn?arity), $article?html)
+            )
             return map {
                 "page-title": $prefix || ":" || $function-name,
                 "prefix": $prefix,
                 "function-name": $function-name,
                 "functions": array { $functions },
+                "article-html": $article-html-map,
                 "module": fundocs:get-module($prefix)[1],
                 "breadcrumb": dnav:breadcrumb("functions", $prefix, $function-name)
             }
