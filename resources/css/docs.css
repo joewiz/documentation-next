@@ -124,6 +124,8 @@
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+    width: auto;
+    flex-shrink: 0;
 }
 
 .docs-search button {
@@ -291,50 +293,93 @@
 /*  Code blocks (articles)   */
 /* ========================= */
 
+.code-block-wrapper {
+    position: relative;
+    margin: 0 0 1rem;
+}
+
 .code-block {
-    background: #282c34;
+    background: #f6f8fa;
+    border: 1px solid #e1e4e8;
     border-radius: 4px;
     padding: 0.75rem 1rem;
     overflow-x: auto;
-    margin: 0 0 1rem;
-    color: #abb2bf;
+    margin: 0;
+    color: #24292e;
     font-size: 0.875rem;
     line-height: 1.5;
 }
 
 .code-block code,
 .signature code {
-    color: #abb2bf;
+    color: #24292e;
 }
 
-/* Lezer/CM6 classHighlighter token styles — One Dark theme
- * Matches the colors used by eXide and Notebook */
-.tok-keyword { color: #c678dd; }
-.tok-operator { color: #56b6c2; }
-.tok-number { color: #d19a66; }
-.tok-string { color: #98c379; }
-.tok-string2 { color: #98c379; }
-.tok-comment { color: #5c6370; font-style: italic; }
-.tok-variableName { color: #e06c75; }
-.tok-variableName2 { color: #e06c75; }
-.tok-definition { color: #e5c07b; }
-.tok-punctuation { color: #abb2bf; }
-.tok-propertyName { color: #e06c75; }
-.tok-typeName { color: #e5c07b; }
-.tok-className { color: #e5c07b; }
-.tok-labelName { color: #e06c75; }
-.tok-namespace { color: #e06c75; }
-.tok-macroName { color: #61afef; }
-.tok-literal { color: #d19a66; }
-.tok-bool { color: #d19a66; }
-.tok-atom { color: #d19a66; }
-.tok-url { color: #56b6c2; text-decoration: underline; }
-.tok-link { color: #61afef; }
-.tok-inserted { color: #98c379; }
-.tok-deleted { color: #e06c75; }
-.tok-changed { color: #e5c07b; }
-.tok-invalid { color: #ffffff; background: #e06c75; }
-.tok-meta { color: #abb2bf; }
+/* Copy-to-clipboard button */
+.code-copy-btn {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    background: #fff;
+    color: #57606a;
+    font-size: 0.75rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+    line-height: 1.4;
+}
+
+.code-block-wrapper:hover .code-copy-btn,
+.code-copy-btn:focus {
+    opacity: 1;
+}
+
+.code-copy-btn:hover {
+    background: #f3f4f6;
+    border-color: #9a9fa6;
+}
+
+.code-copy-btn.copied {
+    color: #1a7f37;
+    border-color: #1a7f37;
+    opacity: 1;
+}
+
+/* Lezer/CM6 classHighlighter token styles — GitHub Light theme */
+.tok-keyword    { color: #cf222e; font-weight: 600; }
+.tok-operator   { color: #0550ae; }
+.tok-number     { color: #0550ae; }
+.tok-string     { color: #0a3069; }
+.tok-string2    { color: #0a3069; }
+.tok-comment    { color: #6e7781; font-style: italic; }
+.tok-variableName  { color: #953800; }
+.tok-variableName2 { color: #953800; }
+.tok-definition    { color: #8250df; }
+.tok-punctuation   { color: #24292e; }
+.tok-propertyName  { color: #0550ae; }
+.tok-typeName      { color: #8250df; }
+.tok-className     { color: #8250df; }
+.tok-labelName     { color: #953800; }
+.tok-namespace     { color: #953800; }
+.tok-macroName     { color: #0550ae; }
+.tok-literal    { color: #0550ae; }
+.tok-bool       { color: #0550ae; }
+.tok-atom       { color: #0550ae; }
+.tok-url        { color: #0a3069; text-decoration: underline; }
+.tok-link       { color: #0a3069; }
+.tok-inserted   { color: #116329; }
+.tok-deleted    { color: #82071e; }
+.tok-changed    { color: #7d4e00; }
+.tok-invalid    { color: #fff; background: #cf222e; }
+.tok-meta       { color: #6e7781; }
+.tok-tagName    { color: #116329; }
+.tok-attributeName  { color: #0550ae; }
+.tok-attributeValue { color: #0a3069; }
+.tok-angleBracket   { color: #24292e; }
+.tok-bracket    { color: #24292e; }
 .tok-tagName { color: #e06c75; }
 .tok-attributeName { color: #d19a66; }
 .tok-attributeValue { color: #98c379; }
@@ -628,7 +673,7 @@
 
 .docs-article-layout {
     display: grid;
-    grid-template-columns: 1fr 240px;
+    grid-template-columns: minmax(0, 1fr) 240px;
     gap: 2rem;
 }
 
@@ -671,12 +716,78 @@
     color: #3498db;
 }
 
+.toc a.toc-active {
+    color: #3498db;
+    font-weight: 500;
+}
+
+/* Heading anchor copy-link button */
+h1[id], h2[id], h3[id], h4[id] {
+    position: relative;
+}
+
+.heading-anchor-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.4em;
+    padding: 0.1em 0.25em;
+    border: none;
+    background: none;
+    color: #bbb;
+    cursor: pointer;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    vertical-align: middle;
+}
+
+h1:hover .heading-anchor-btn,
+h2:hover .heading-anchor-btn,
+h3:hover .heading-anchor-btn,
+h4:hover .heading-anchor-btn {
+    opacity: 1;
+}
+
+.heading-anchor-btn:hover {
+    color: #3498db;
+}
+
+.heading-anchor-btn.copied {
+    color: #27ae60;
+    opacity: 1;
+}
+
 .xdita-article {
     line-height: 1.7;
 }
 
 .xdita-article section {
     margin-bottom: 1.5rem;
+}
+
+/* Inline code: <ph> in XDITA renders as <span class="tei-ph"> */
+.tei-ph {
+    font-family: "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.875em;
+    background: #f3f4f6;
+    border: 1px solid #e1e4e8;
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+    color: #24292e;
+}
+
+/* Bold and italic from XDITA */
+.tei-b { font-weight: 600; }
+.tei-i { font-style: italic; }
+
+/* Definition lists */
+.xdita-article dt {
+    font-weight: 600;
+    margin-top: 0.75rem;
+}
+
+.xdita-article dd {
+    margin-left: 1.5rem;
 }
 
 .article-footer {

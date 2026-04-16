@@ -95,7 +95,8 @@ let $_ :=
     for $topic in collection($articles-root)/topic
     let $doc-uri := document-uri(root($topic))
     let $slug := replace($doc-uri, "^.*/articles/([^/]+)/.*$", "$1")
-    let $site-url := "articles/" || $slug
+    let $ctx := try { request:get-context-path() } catch * { "/exist" }
+    let $site-url := $ctx || "/apps/docs/articles/" || $slug
     return (
         for $pi in $topic/processing-instruction('site-url')
         return update delete $pi,

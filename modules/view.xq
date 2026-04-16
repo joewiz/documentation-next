@@ -77,7 +77,7 @@ declare function local:context($section as xs:string?, $route-context as map(*))
             (: Profile context variables :)
             "context-path": $context-path,
             "styles": array {
-                "resources/css/exist-site.css",
+                request:get-context-path() || "/apps/exist-site-shell/resources/css/site.css",
                 "resources/css/docs.css"
             },
             "site": map {
@@ -99,7 +99,10 @@ declare function local:context($section as xs:string?, $route-context as map(*))
             "has-api": config:has-api(),
             "tabs": $tabs,
             "q": request:get-parameter("q", ""),
-            "category": request:get-parameter("category", "all")
+            "category": request:get-parameter("category", "all"),
+
+            (: Default to empty so page-content.tpl exists($slug) check is always valid :)
+            "slug": ()
         },
         $route-context
     ))

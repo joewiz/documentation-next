@@ -8,6 +8,9 @@
 [% template title %][[ $page-title ]] -- Documentation[% endtemplate %]
 
 [% template head %]
+[% if exists($slug) %]
+<base href="[[ $context-path ]]/articles/[[ $slug ]]/"/>
+[% endif %]
 <link rel="icon" href="[[ $context-path ]]/resources/favicon.ico"/>
 <link rel="stylesheet" href="[[ $context-path ]]/resources/odd/xdita.css"/>
 [% if $tabs?admin = "active" %]

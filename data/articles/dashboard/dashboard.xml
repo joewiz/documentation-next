@@ -20,7 +20,7 @@
             library and resource packages. They usually do not provide a web GUI and are therefore
             not visible on the Dashboard home screen. However, they will appear in the list of
             installed packages within the package manager. You can read more about the different
-            types of packages in the <xref href="repo" scope="external">package repository
+            types of packages in the <xref href="articles/repo" scope="external">package repository
             documentation</xref>.</p>
     </section>
         <section id="login">

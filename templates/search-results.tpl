@@ -18,9 +18,21 @@
                    placeholder="Search functions and documentation..."
                    aria-label="Search query" autocomplete="off"/>
             <select name="type" aria-label="Filter by type">
+                [% if $type-filter = 'all' %]
+                <option value="all" selected="selected">All</option>
+                [% else %]
                 <option value="all">All</option>
+                [% endif %]
+                [% if $type-filter = 'function' %]
+                <option value="function" selected="selected">Functions</option>
+                [% else %]
                 <option value="function">Functions</option>
+                [% endif %]
+                [% if $type-filter = 'article' %]
+                <option value="article" selected="selected">Articles</option>
+                [% else %]
                 <option value="article">Articles</option>
+                [% endif %]
             </select>
             <button type="submit">Search</button>
         </form>

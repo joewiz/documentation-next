@@ -113,15 +113,6 @@ else if (starts-with($path, "/articles/") and
             </forward>
         </dispatch>
 
-(: Article detail: /articles/{slug}/
- : Redirect /articles/{slug} → /articles/{slug}/ so relative asset paths resolve correctly :)
-else if (starts-with($exist:path, "/articles/") and
-         not(contains(substring-after($exist:path, "/articles/"), "/")) and
-         not(ends-with($exist:path, "/"))) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{request:get-uri()}/"/>
-    </dispatch>
-
 else if (starts-with($path, "/articles/")) then
     let $slug := replace(substring-after($path, "/articles/"), "/.*$", "")
     return
@@ -132,16 +123,6 @@ else if (starts-with($path, "/articles/")) then
                 name="$slug" value="{$slug}"/>
         ))
 
-(: Redirect /data/articles/{slug}/{slug}.xml → /articles/{slug}
- : This handles URLs from sitewide search which derive paths from the database :)
-else if (starts-with($exist:path, "/data/articles/") and
-         matches($exist:path, "\.xml$")) then
-    let $slug := replace($exist:path, "^/data/articles/([^/]+)/.*$", "$1")
-    return
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <redirect url="{request:get-context-path()}{$exist:prefix}{$exist:controller}/articles/{$slug}"/>
-        </dispatch>
-
 (: Article data assets — images, listings, etc. :)
 else if (starts-with($exist:path, "/data/articles/") and
          matches($exist:path, "\.(png|jpg|jpeg|gif|svg|txt)$")) then
@@ -151,13 +132,25 @@ else if (starts-with($exist:path, "/data/articles/") and
         </forward>
     </dispatch>
 
-(: Redirect /data/functions/*.xml → /functions/{prefix}/
- : Looks up the module prefix from the XQDoc document :)
+(: Redirect /data/articles/{slug}/... → /articles/{slug}
+ : Handles URLs derived from database paths by sitewide search (with or without .xml extension) :)
+else if (starts-with($exist:path, "/data/articles/") and
+         contains(substring-after($exist:path, "/data/articles/"), "/")) then
+    let $slug := replace($exist:path, "^/data/articles/([^/]+)/.*$", "$1")
+    return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="{request:get-context-path()}{$exist:prefix}{$exist:controller}/articles/{$slug}"/>
+        </dispatch>
+
+(: Redirect /data/functions/*.xml or extensionless → /functions/{prefix}/
+ : Handles URLs derived from database paths by sitewide search :)
 else if (starts-with($exist:path, "/data/functions/") and
-         matches($exist:path, "\.xml$")) then
-    let $doc-path := $exist:controller || $exist:path
+         (matches($exist:path, "\.xml$") or not(contains(substring-after($exist:path, "/data/functions/"), ".")))) then
+    let $filename := substring-after($exist:path, "/data/functions/")
+    let $filename-xml := if (matches($filename, "\.xml$")) then $filename else $filename || ".xml"
+    let $db-path := "/db/apps/docs/data/functions/" || $filename-xml
     let $prefix :=
-        try { doc($doc-path)//*:name[parent::*:module]/string() }
+        try { doc($db-path)//*:name[parent::*:module]/string() }
         catch * { () }
     return
         if ($prefix and $prefix != "") then

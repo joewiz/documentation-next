@@ -29,6 +29,9 @@
 
             <!-- Site-wide search fields for exist-api / site-shell integration -->
             <text qname="xqdoc:xqdoc">
+                <!-- Facets must be inside <text> to be tracked by Lucene -->
+                <facet dimension="site-app"     expression="'docs'"/>
+                <facet dimension="site-section" expression="'functions'"/>
                 <field name="site-content"
                        expression="string-join((
                            xqdoc:module/xqdoc:name,
