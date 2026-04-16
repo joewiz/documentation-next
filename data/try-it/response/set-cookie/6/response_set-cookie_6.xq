@@ -1,8 +1,1 @@
-let $name := "hello"
-let $value := "hello"
-let $max-age := "example"
-let $secure-flag := true()
-let $domain := "hello"
-let $path := "hello"
-return
-    response:set-cookie($name, $value, $max-age, $secure-flag, $domain, $path)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>

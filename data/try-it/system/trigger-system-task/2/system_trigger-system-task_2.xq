@@ -1,4 +1,1 @@
-let $java-classname := "hello"
-let $task-parameters := <item>value</item>
-return
-    system:trigger-system-task($java-classname, $task-parameters)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>

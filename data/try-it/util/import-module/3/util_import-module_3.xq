@@ -1,5 +1,1 @@
-let $module-uri := "/db/apps/docs"
-let $prefix := "hello"
-let $location := "/db/apps/docs"
-return
-    util:import-module($module-uri, $prefix, $location)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>

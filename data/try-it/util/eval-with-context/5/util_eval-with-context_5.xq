@@ -1,7 +1,1 @@
-let $expression := "hello"
-let $context := <item>value</item>
-let $cache-flag := true()
-let $eval-context-item := "hello"
-let $pass := true()
-return
-    util:eval-with-context($expression, $context, $cache-flag, $eval-context-item, $pass)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>

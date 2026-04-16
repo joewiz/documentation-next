@@ -1,4 +1,1 @@
-let $collection-uri := "hello"
-let $doc-uri-or-mode := "hello"
-return
-    xmldb:reindex($collection-uri, $doc-uri-or-mode)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>

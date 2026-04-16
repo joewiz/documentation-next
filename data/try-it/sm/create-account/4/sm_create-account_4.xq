@@ -1,6 +1,1 @@
-let $username := "hello"
-let $password := "hello"
-let $primary-group := "hello"
-let $groups := "hello"
-return
-    sm:create-account($username, $password, $primary-group, $groups)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>

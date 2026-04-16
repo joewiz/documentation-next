@@ -1,5 +1,1 @@
-let $name := "hello"
-let $default-value := "hello"
-let $failonerror := true()
-return
-    request:get-parameter($name, $default-value, $failonerror)
+<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
