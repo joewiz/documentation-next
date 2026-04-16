@@ -5,7 +5,7 @@ describe("Navigation and layout", () => {
   });
 
   it("keyboard shortcut / focuses search", () => {
-    cy.visit("/functions/");
+    cy.visit("/functions");
     cy.get("body").type("/");
     cy.focused().should("have.attr", "type", "search");
   });
@@ -16,7 +16,7 @@ describe("Navigation and layout", () => {
   });
 
   it("admin page loads", () => {
-    cy.visit("/admin/");
+    cy.visit("/admin");
     cy.contains("Regenerate");
   });
 

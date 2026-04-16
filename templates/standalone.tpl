@@ -17,8 +17,8 @@
             </a>
 
             <ul class="site-menu">
-                <li><a href="[[ $app-base ]]/articles/">Articles</a></li>
-                <li><a href="[[ $app-base ]]/functions/">Functions</a></li>
+                <li><a href="[[ $app-base ]]/articles">Articles</a></li>
+                <li><a href="[[ $app-base ]]/functions">Functions</a></li>
                 <li><a href="[[ $app-base ]]/search">Search</a></li>
             </ul>
 

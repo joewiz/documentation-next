@@ -36,7 +36,7 @@
                 [% for $mod in $cat?modules?* %]
                 <div class="module-card">
                     <h3>
-                        <a href="[[ $app-base ]]/functions/[[ $mod?prefix ]]/">
+                        <a href="[[ $app-base ]]/functions/[[ $mod?prefix ]]">
                             [[ $mod?prefix ]]
                         </a>
                     </h3>

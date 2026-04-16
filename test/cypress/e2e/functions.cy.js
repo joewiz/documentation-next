@@ -1,12 +1,12 @@
 describe("Function reference", () => {
   it("module browser loads with categories", () => {
-    cy.visit("/functions/");
+    cy.visit("/functions");
     cy.get(".module-category").should("have.length.greaterThan", 0);
     cy.get(".module-card").should("have.length.greaterThan", 0);
   });
 
   it("module detail shows functions", () => {
-    cy.visit("/functions/fn/");
+    cy.visit("/functions/fn");
     cy.get(".function").should("have.length.greaterThan", 0);
     cy.get(".signature").should("have.length.greaterThan", 0);
   });
@@ -42,11 +42,11 @@ describe("Function reference", () => {
   it("breadcrumb navigates back to module list", () => {
     cy.visit("/functions/fn/concat");
     cy.get(".breadcrumb a").contains("Functions").click();
-    cy.url().should("include", "/functions/");
+    cy.url().should("match", /\/functions$/);
   });
 
   it("module card links to module detail", () => {
-    cy.visit("/functions/");
+    cy.visit("/functions");
     cy.get(".module-card a").first().click();
     cy.get(".module-header, .function").should("exist");
   });

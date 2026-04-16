@@ -1,6 +1,6 @@
 describe("Article browsing", () => {
   it("article index loads with categories", () => {
-    cy.visit("/articles/");
+    cy.visit("/articles");
     cy.get(".article-category").should("have.length.greaterThan", 0);
     cy.get(".article-item").should("have.length.greaterThan", 0);
   });

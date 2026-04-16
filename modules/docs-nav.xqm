@@ -30,7 +30,7 @@ declare function nav:breadcrumb(
         if ($section = "articles") then (
             map {
                 "title": "Articles",
-                "url": $config:app-base || "/articles/"
+                "url": $config:app-base || "/articles"
             },
             if ($detail) then
                 let $title := nav:article-title($detail)
@@ -43,12 +43,12 @@ declare function nav:breadcrumb(
         else if ($section = "functions") then (
             map {
                 "title": "Functions",
-                "url": $config:app-base || "/functions/"
+                "url": $config:app-base || "/functions"
             },
             if ($detail) then
                 map {
                     "title": $detail,
-                    "url": $config:app-base || "/functions/" || $detail || "/"
+                    "url": $config:app-base || "/functions/" || $detail
                 }
             else (),
             if ($sub) then

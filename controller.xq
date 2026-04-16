@@ -57,7 +57,21 @@ let $path := replace($exist:path, "/$", "")
 
 return
 
+(: --- Redirect trailing slashes to canonical non-slash URL ---
+ : Exempt the root path (landing page) and static resources. :)
+if ($exist:path != "/" and ends-with($exist:path, "/")
+    and not(starts-with($exist:path, "/resources/"))) then
+    let $clean := replace($exist:path, "/+$", "")
+    let $qs := request:get-query-string()
+    let $target := request:get-context-path() || $exist:prefix || $exist:controller || $clean
+        || (if ($qs) then "?" || $qs else "")
+    return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="{$target}"/>
+        </dispatch>
+
 (: --- Login (GET) --- :)
+else
 if ($exist:resource eq "login" and $method eq "get") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/login.html"/>
@@ -82,7 +96,7 @@ else if ($exist:resource eq "logout") then (
         request:get-context-path()),
     session:invalidate(),
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{request:get-context-path()}/apps/docs/"/>
+        <redirect url="{request:get-context-path()}/apps/docs"/>
     </dispatch>
 )
 
@@ -155,11 +169,11 @@ else if (starts-with($exist:path, "/data/functions/") and
     return
         if ($prefix and $prefix != "") then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <redirect url="{request:get-context-path()}{$exist:prefix}{$exist:controller}/functions/{$prefix}/"/>
+                <redirect url="{request:get-context-path()}{$exist:prefix}{$exist:controller}/functions/{$prefix}"/>
             </dispatch>
         else
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <redirect url="{request:get-context-path()}{$exist:prefix}{$exist:controller}/functions/"/>
+                <redirect url="{request:get-context-path()}{$exist:prefix}{$exist:controller}/functions"/>
             </dispatch>
 
 (: Static resources :)

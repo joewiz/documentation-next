@@ -25,10 +25,10 @@
 <div class="docs-app">
     <nav class="docs-tabs" aria-label="Documentation navigation">
         <ul>
-            <li><a href="[[ $context-path ]]/articles/" class="[[ $tabs?articles ]]">Articles</a></li>
-            <li><a href="[[ $context-path ]]/functions/" class="[[ $tabs?functions ]]">Functions</a></li>
+            <li><a href="[[ $context-path ]]/articles" class="[[ $tabs?articles ]]">Articles</a></li>
+            <li><a href="[[ $context-path ]]/functions" class="[[ $tabs?functions ]]">Functions</a></li>
             <li><a href="[[ $context-path ]]/search" class="[[ $tabs?search ]]">Search</a></li>
-            <li><a href="[[ $context-path ]]/admin/" class="[[ $tabs?admin ]]">Admin</a></li>
+            <li><a href="[[ $context-path ]]/admin" class="[[ $tabs?admin ]]">Admin</a></li>
         </ul>
     </nav>
     <section class="docs-content">
