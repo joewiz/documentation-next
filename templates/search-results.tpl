@@ -56,16 +56,33 @@
                     </ul>
                 </div>
 
+                [% if ($type-filter = 'function' or $type-filter = 'all') and map:size($category-facets) > 0 %]
+                <div class="facet-group">
+                    <h3 class="facet-heading">Module Category</h3>
+                    <ul class="facet-list">
+                        [% for $cat in (for $k in map:keys($category-facets) order by $category-facets($k) descending return $k) %]
+                        <li>
+                            [% if $category-filter = $cat %]
+                            <span class="facet-link facet-active">[[ $cat ]] <span class="facet-count">([[ $category-facets($cat) ]])</span></span>
+                            [% else %]
+                            <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=function&amp;fn-category=[[ encode-for-uri($cat) ]]">[[ $cat ]] <span class="facet-count">([[ $category-facets($cat) ]])</span></a>
+                            [% endif %]
+                        </li>
+                        [% endfor %]
+                    </ul>
+                </div>
+                [% endif %]
+
                 [% if ($type-filter = 'function' or $type-filter = 'all') and map:size($prefix-facets) > 0 %]
                 <div class="facet-group">
-                    <h3 class="facet-heading">Namespace</h3>
+                    <h3 class="facet-heading">Module Namespace Prefix</h3>
                     <ul class="facet-list">
                         [% for $p in (for $k in map:keys($prefix-facets) order by $prefix-facets($k) descending return $k) %]
                         <li>
                             [% if $prefix-filter = $p %]
-                            <span class="facet-link facet-active">[[ $p ]]: <span class="facet-count">([[ $prefix-facets($p) ]])</span></span>
+                            <span class="facet-link facet-active">[[ $p ]] <span class="facet-count">([[ $prefix-facets($p) ]])</span></span>
                             [% else %]
-                            <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=function&amp;prefix=[[ encode-for-uri($p) ]]">[[ $p ]]: <span class="facet-count">([[ $prefix-facets($p) ]])</span></a>
+                            <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=function&amp;prefix=[[ encode-for-uri($p) ]]">[[ $p ]] <span class="facet-count">([[ $prefix-facets($p) ]])</span></a>
                             [% endif %]
                         </li>
                         [% endfor %]

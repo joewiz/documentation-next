@@ -443,7 +443,9 @@ declare function fundocs:search($q as xs:string) as array(*) {
             $fundocs:data//xqdoc:function
                 [ft:query(xqdoc:comment/xqdoc:description, $text-q)],
             (: Search module URIs (KeywordAnalyzer) :)
-            $fundocs:data[ft:query(xqdoc:module/xqdoc:uri, $kw-q)]//xqdoc:function
+            $fundocs:data[ft:query(xqdoc:module/xqdoc:uri, $kw-q)]//xqdoc:function,
+            (: Search module prefix names (KeywordAnalyzer — exact match on short names) :)
+            $fundocs:data[xqdoc:module/xqdoc:name = $q]//xqdoc:function
         )
         let $unique := distinct-values($hits ! generate-id(.))
         return array {
@@ -451,6 +453,8 @@ declare function fundocs:search($q as xs:string) as array(*) {
             let $function := $hits[generate-id(.) = $id][1]
             let $module := $function/ancestor::xqdoc:xqdoc
             let $prefix := $module/xqdoc:module/xqdoc:name/string()
+            let $uri := $module/xqdoc:module/xqdoc:uri/string()
+            let $location := $module/xqdoc:control/xqdoc:location/string()
             let $name := $function/xqdoc:name/string()
             let $local-name :=
                 if (contains($name, ':')) then substring-after($name, ':')
@@ -465,7 +469,8 @@ declare function fundocs:search($q as xs:string) as array(*) {
                 "description": substring(
                     $function/xqdoc:comment/xqdoc:description/string(), 1, 200
                 ),
-                "module-uri": $module/xqdoc:module/xqdoc:uri/string(),
+                "module-uri": $uri,
+                "category": fundocs:categorize($uri, $location),
                 "type": "function"
             }
         }

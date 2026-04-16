@@ -263,7 +263,7 @@ declare function local:route-context() as map(*) {
         else if ($section = "search") then
             let $fn-results-all  := fundocs:search($q)
             let $article-results := docs:search($q)
-            (: Prefix facets: count functions per namespace prefix (unfiltered) :)
+            (: Module Namespace Prefix facets: count functions per prefix :)
             let $prefix-facets :=
                 map:merge(
                     for $fn in $fn-results-all?*
@@ -271,12 +271,25 @@ declare function local:route-context() as map(*) {
                     order by count($fn) descending
                     return map:entry($p, count($fn))
                 )
-            (: Apply prefix filter to function results :)
+            (: Module Category facets: count functions per category :)
+            let $category-facets :=
+                map:merge(
+                    for $fn in $fn-results-all?*
+                    group by $cat := $fn?category
+                    order by count($fn) descending
+                    return map:entry($cat, count($fn))
+                )
+            (: Apply prefix and category filters to function results :)
+            let $category-filter := request:get-parameter("fn-category", "")
             let $fn-results :=
-                if ($ns-prefix != "") then
-                    array { $fn-results-all?*[?prefix = $ns-prefix] }
-                else
-                    $fn-results-all
+                let $filtered := $fn-results-all?*
+                let $filtered :=
+                    if ($ns-prefix != "") then $filtered[?prefix = $ns-prefix]
+                    else $filtered
+                let $filtered :=
+                    if ($category-filter != "") then $filtered[?category = $category-filter]
+                    else $filtered
+                return array { $filtered }
             let $all-results := array {
                 if ($type = "all" or $type = "function") then $fn-results?* else (),
                 if ($type = "all" or $type = "article") then $article-results?* else ()
@@ -288,7 +301,9 @@ declare function local:route-context() as map(*) {
                 "q": $q,
                 "type-filter": $type,
                 "prefix-filter": $ns-prefix,
+                "category-filter": $category-filter,
                 "prefix-facets": $prefix-facets,
+                "category-facets": $category-facets,
                 "search-results": $all-results,
                 "function-count": array:size($fn-results-all),
                 "article-count": array:size($article-results),
