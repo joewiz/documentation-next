@@ -1,0 +1,1 @@
+request:get-servlet-path()

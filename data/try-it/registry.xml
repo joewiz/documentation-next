@@ -21,7 +21,8 @@
     <module dir="sm"      uri="http://exist-db.org/xquery/securitymanager"          prefix="sm"/>
     <module dir="ft"      uri="http://exist-db.org/xquery/lucene"                   prefix="ft"/>
     <module dir="ngram"   uri="http://exist-db.org/xquery/ngram"                    prefix="ngram"/>
-    <module dir="request" uri="http://exist-db.org/xquery/request"                  prefix="request"/>
+    <module dir="request"  uri="http://exist-db.org/xquery/request"                  prefix="request"/>
+    <module dir="response" uri="http://exist-db.org/xquery/response"               prefix="response"/>
     <module dir="system"  uri="http://exist-db.org/xquery/system"                   prefix="system"/>
     <module dir="xproc"   uri="http://exist-db.org/xproc"                           prefix="xproc"/>
 </try-it-registry>

@@ -1,0 +1,1 @@
+system:get-memory-total()
