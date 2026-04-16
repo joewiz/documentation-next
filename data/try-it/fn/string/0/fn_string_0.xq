@@ -1,1 +1,1 @@
-string()
+<price>42.50</price>/string()

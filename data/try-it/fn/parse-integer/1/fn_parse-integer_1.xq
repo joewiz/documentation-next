@@ -1,3 +1,3 @@
-let $value := "hello"
+let $value := "42"
 return
     parse-integer($value)

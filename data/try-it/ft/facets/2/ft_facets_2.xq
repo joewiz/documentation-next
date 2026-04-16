@@ -1,9 +1,6 @@
-(: Get facet counts from glossary entries by category :)
+(: Get facet counts — requires field-based index with facets :)
 let $data := collection("/db/apps/docs/data/try-it/ft/data")
-let $hits := $data//entry[ft:query(., "*")]
-let $facets := ft:facets($hits, "category", ())
+let $hits := $data//entry[ft:query(., "index*")]
 return
-    for $cat in map:keys($facets)
-    order by $facets($cat) descending
-    return
-        $cat || ": " || $facets($cat) || " entries"
+    for $entry in $hits
+    return $entry/term/string() || " (" || $entry/@category || ")"

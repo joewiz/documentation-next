@@ -1,4 +1,5 @@
-let $grammar := "hello"
-let $options := map { "a": 1, "b": 2 }
+(: invisible-xml with options :)
+let $grammar := "greeting: 'hello' ."
+let $options := map {}
 return
-    invisible-xml($grammar, $options)
+    invisible-xml($grammar, $options)("hello")

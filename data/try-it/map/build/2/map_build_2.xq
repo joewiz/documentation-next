@@ -1,4 +1,4 @@
-let $input := (1, "two", <three/>)
-let $key := function($x) { $x }
+let $input := ("apple", "banana", "cherry")
+let $key := function($s) { substring($s, 1, 1) }
 return
     map:build($input, $key)

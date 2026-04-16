@@ -1,5 +1,5 @@
-let $value := "hello"
-let $algorithm := "hello"
-let $options := map { "a": 1, "b": 2 }
+let $value := "Hello, World!"
+let $algorithm := "SHA-256"
+let $options := map { "encoding": "hex" }
 return
     hash($value, $algorithm, $options)

@@ -1,5 +1,11 @@
-let $data := map { "a": ("b","c"), "b": ("d",), "c": ("d",), "d": () }
-let $input := "a"
-let $step := function($item) { $data($item) }
+(: transitive-closure finds all reachable nodes :)
+let $graph :=
+    map {
+        "a": ("b", "c"),
+        "b": ("d"),
+        "c": ("d"),
+        "d": ()
+    }
+let $step := function($node) { $graph($node) }
 return
-    transitive-closure($input, $step)
+    transitive-closure("a", $step)

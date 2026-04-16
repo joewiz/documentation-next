@@ -1,3 +1,4 @@
-let $values := '("hello", "world")'
+(: idref() requires context with IDREF attributes :)
+let $doc := <root><item xml:id="a1">First</item></root>
 return
-    idref($values)
+    count($doc//item)

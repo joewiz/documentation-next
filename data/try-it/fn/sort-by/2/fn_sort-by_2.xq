@@ -1,4 +1,8 @@
-let $input := ("banana", "fig", "apple", "cherry")
-let $keys := function($s) { string-length($s) }
+(: sort-by sorts by extracted keys :)
+let $people := (
+    map { "name": "Charlie", "age": 30 },
+    map { "name": "Alice", "age": 25 },
+    map { "name": "Bob", "age": 35 }
+)
 return
-    sort-by($input, $keys)
+    sort-by($people, map { "key": function($m) { $m?age } })

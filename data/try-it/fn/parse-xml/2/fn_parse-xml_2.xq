@@ -1,4 +1,4 @@
-let $value := "hello"
-let $options := map { "a": 1, "b": 2 }
+let $value := "<greeting>Hello XQuery!</greeting>"
+let $options := map {}
 return
-    parse-xml($value, $options)
+    parse-xml($value, $options)/greeting/string()

@@ -1,1 +1,1 @@
-namespace-uri()
+<ns:element xmlns:ns="http://example.com"/>/namespace-uri()

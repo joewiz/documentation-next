@@ -1,1 +1,1 @@
-has-children()
+<parent><child/></parent>/has-children()

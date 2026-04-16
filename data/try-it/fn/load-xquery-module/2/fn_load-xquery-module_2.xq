@@ -1,4 +1,4 @@
-let $module-uri := "hello"
-let $options := map { "a": 1, "b": 2 }
+(: load-xquery-module with options :)
+let $mod := load-xquery-module("http://www.w3.org/2005/xpath-functions/math", map {})
 return
-    load-xquery-module($module-uri, $options)
+    map:keys($mod?functions)

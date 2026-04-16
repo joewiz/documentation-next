@@ -1,1 +1,1 @@
-siblings()
+<doc><a/><b/><c/></doc>/b/siblings()/name()

@@ -1,4 +1,6 @@
-let $csv := "hello"
-let $options := map { "a": 1, "b": 2 }
+let $csv := "name,age,city
+Alice,25,NYC
+Bob,30,LA"
+let $options := map { "header": true() }
 return
     parse-csv($csv, $options)

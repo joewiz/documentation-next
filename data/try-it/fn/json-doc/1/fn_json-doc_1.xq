@@ -1,3 +1,3 @@
-let $source := "hello"
+let $source := "/db/apps/docs/config.json"
 return
-    json-doc($source)
+    json-doc($source)?abbrev

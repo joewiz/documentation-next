@@ -1,4 +1,4 @@
-let $source := "hello"
-let $options := map { "a": 1, "b": 2 }
+let $source := "/db/apps/docs/config.json"
+let $options := map { "liberal": true() }
 return
-    json-doc($source, $options)
+    json-doc($source, $options)?abbrev

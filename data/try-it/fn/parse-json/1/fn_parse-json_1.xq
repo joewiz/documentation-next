@@ -1,3 +1,3 @@
-let $value := "hello"
+let $value := '{"database":"eXist-db","version":7,"active":true}'
 return
-    parse-json($value)
+    parse-json($value)?database

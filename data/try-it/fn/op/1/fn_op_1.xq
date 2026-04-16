@@ -1,3 +1,4 @@
-let $operator := "hello"
+(: fn:op returns the function for an operator :)
+let $add := op("+")
 return
-    op($operator)
+    $add(3, 4)

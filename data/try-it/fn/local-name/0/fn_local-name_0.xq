@@ -1,1 +1,1 @@
-local-name()
+<ns:element xmlns:ns="http://example.com"/>/local-name()

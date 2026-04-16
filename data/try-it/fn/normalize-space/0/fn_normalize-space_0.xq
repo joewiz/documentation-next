@@ -1,1 +1,1 @@
-normalize-space()
+<p>  extra   whitespace   here  </p>/normalize-space()

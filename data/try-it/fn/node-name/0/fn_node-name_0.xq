@@ -1,1 +1,1 @@
-node-name()
+<ns:element xmlns:ns="http://example.com"/>/node-name()

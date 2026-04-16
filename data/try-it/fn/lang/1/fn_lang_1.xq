@@ -1,3 +1,1 @@
-let $language := "hello"
-return
-    lang($language)
+<p xml:lang="en">Hello</p>/lang("en")

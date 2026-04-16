@@ -1,1 +1,1 @@
-string-length()
+<word>XQuery</word>/string-length()
