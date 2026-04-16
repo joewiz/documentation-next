@@ -96,18 +96,74 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 
 | Status | Count | Functions |
 |--------|-------|-----------|
-| Done (validated) | 8 modules | ~583 |
-| Scaffolds (need validation) | 6 modules | ~303 |
-| Not started | ~35 modules | ~300+ |
+| Done (validated) | 14 modules | ~836 |
+| Scaffolds (need validation) | 6 core modules | ~303 |
+| Not started | ~29 modules | ~250+ |
 | **Total** | ~49 modules | ~1186+ |
+
+## Validation Status (as of 2026-04-16)
+
+| Module | Files | Pass | Rate | Notes |
+|--------|-------|------|------|-------|
+| fn | 345 | 345/345 | 100% | All W3C standard functions |
+| array | 38 | 38/38 | 100% | |
+| map | 20 | 20/20 | 100% | |
+| math | 18 | 18/18 | 100% | |
+| bin | 40 | 40/40 | 100% | EXPath Binary; uses `import module` |
+| file | 43 | 43/43 | 100% | EXPath File; uses `exfile:` prefix |
+| ft | 12 | 12/12 | 100% | Hand-crafted with sample data |
+| ngram | 7 | 7/7 | 100% | Hand-crafted with sample data |
+| kwic | 4 | 2/4 | 50% | 2 need Lucene match context |
+| test | 1 | 0/1 | 0% | Needs inspect context; works via REST |
+| util | 114 | 107/114 | 94% | 7 edge cases |
+| xmldb | 50 | 47/50 | 94% | 3 edge cases |
+| system | 39 | 39/39 | 100% | Dangerous functions safely wrapped |
+| sm | 59 | 59/59 | 100% | Read-only demos; mutating functions show signatures |
+| request | 31 | 31/31 | 100% | try/catch for missing HTTP context |
+| response | 10 | 10/10 | 100% | Signature descriptions for HTTP-only functions |
+| **Total** | **831** | **818** | **98.4%** | |
+
+## Known Issues
+
+### Validation environment limitations
+
+The validator uses `util:eval()` to execute each .xq file. Some functions cannot succeed in this context:
+
+- **Lucene match context**: `kwic:summarize` and `kwic:display-text` require an active `ft:query()` match context that doesn't survive `util:eval()` boundaries. These work correctly when run in a single query (e.g., via eXide or the try-it widget).
+- **Inspect context**: `test:suite` needs `inspect:module-functions()` on a stored module, which requires the module to be compiled in the current request context.
+- **Persistent node IDs**: `util:node-by-id` requires a node from a persistent (stored) document, not an in-memory node.
+- **Eval context nesting**: Some `util:eval-*` variants fail when nested inside another `util:eval()` call (the validator's own execution mechanism).
+- **Index-by-QName**: `util:index-keys-by-qname` requires a specific index configuration that may not match the test data.
+
+### Dangerous functions (safely wrapped)
+
+These functions have side effects and are wrapped to prevent accidental execution:
+
+- `system:shutdown`, `system:import`, `system:export`, `system:restore` — show descriptions only
+- `system:kill-running-xquery`, `system:trigger-system-task` — show running query info instead
+- `sm:create-account`, `sm:remove-account`, `sm:passwd`, `sm:chown`, `sm:chmod`, etc. — show signature descriptions
+
+### HTTP-context-dependent functions
+
+The `request:` and `response:` modules require an active HTTP request/response context. The try-it examples use try/catch to gracefully handle the missing context when run via `util:eval()`. These functions work correctly when invoked from controller.xq, RESTXQ, or other HTTP-triggered XQuery.
+
+### Server stability during bulk validation
+
+Running hundreds of `util:eval()` calls in rapid succession can exhaust memory and crash the server. The throttled validator (`tools/validate-tryit-throttled.sh`) checks broker availability and free memory between batches to mitigate this. Consider using `util:compile()` or LSP endpoints for static-only validation.
+
+### Workflow note
+
+Always do try-it work on disk first, then deploy via XAR. Never rely on DB-only state — server crashes can corrupt the database, and XAR redeployment restores from filesystem.
 
 ## Notes
 
-- The native `file` module (`http://exist-db.org/xquery/file`) provides `file:sync`, `file:serialize`, `file:serialize-binary` — different from the EXPath `file` module. Registered in conf.xml as `file:`, no import needed.
+- The native `file` module (`http://exist-db.org/xquery/file`) provides `file:sync`, `file:serialize`, `file:serialize-binary` — different from the EXPath `file` module. Registered in conf.xml as `file:`, no import needed. However, when the EXPath file module is installed, it shadows the native module's `file:` prefix at runtime.
 - `kwic` is not a registered Java module — it's an XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
-- `test` is the XQSuite annotation-based test framework
+- `test` is the XQSuite annotation-based test framework at `resource:org/exist/xquery/lib/xqsuite/xqsuite.xql`
 - Modules marked "loaded from XAR" are installed via packages, not conf.xml
 - Some modules (mail, sql, jndi, oracle) require external services
 - `request`, `response`, `session` are HTTP-context-dependent
 - `exi`, `exiftool`, `oracle`, `spatial` may not have their required dependencies available in all deployments
-- `vector` is new in next-v2 for vector similarity search (DJL/HuggingFace)
+- `vector` is new in next-v2 for vector similarity search (DJL/HuggingFace, PR #6146)
+- Good sources for improving examples: eXist XQSuite tests (`~/workspace/exist`), qt4tests (`~/workspace/qt4tests`), W3C spec (`https://qt4cg.org/specifications/xpath-functions-40/Overview.html`)
+- The exist-xqts-runner (`~/workspace/exist-xqts-runner`) provides a model for running large test suites without clobbering the server
