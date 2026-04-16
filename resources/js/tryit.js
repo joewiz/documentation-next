@@ -101,48 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         runBtn.disabled = true;
         runBtn.textContent = "Running...";
-        output.hidden = false;
         output.textContent = "Executing...";
 
         try {
-            // Execute query
-            const execResp = await fetch(`${API_BASE}/api/query`, {
+            const resp = await fetch(`${API_BASE}/api/eval`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "same-origin",
-                body: JSON.stringify({ query }),
+                body: JSON.stringify({
+                    query,
+                    count: 50,
+                    method: "adaptive",
+                    indent: "yes",
+                    "omit-xml-declaration": "yes",
+                }),
             });
 
-            if (!execResp.ok) {
-                const err = await execResp.json().catch(() => ({}));
-                throw new Error(
-                    err.error?.description || `HTTP ${execResp.status}`
-                );
-            }
-
-            const execData = await execResp.json();
-            const cursor = execData.cursor;
-
-            // Fetch results
-            const resultsResp = await fetch(
-                `${API_BASE}/api/query/${cursor}/results?start=1&count=50&method=adaptive&indent=yes`,
-                { credentials: "same-origin" }
-            );
-
-            const resultsText = await resultsResp.text();
-            output.textContent = resultsText || "(empty result)";
-
-            // Close cursor
-            fetch(`${API_BASE}/api/query/${cursor}`, {
-                method: "DELETE",
-                credentials: "same-origin",
-            }).catch(() => {});
-
-            // Timing info
-            if (execData.timing) {
-                output.textContent +=
-                    `\n\n(${execData.items} items, ${execData.timing.total}ms)`;
-            }
+            const text = await resp.text();
+            output.textContent = text || "(empty result)";
         } catch (err) {
             output.textContent = `Error: ${err.message}`;
         } finally {
