@@ -1,1 +1,6 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: Convert a permission mode string to octal :)
+(
+    sm:mode-to-octal("rwxr-xr-x"),
+    sm:mode-to-octal("rw-r--r--"),
+    sm:mode-to-octal("rwx------")
+)

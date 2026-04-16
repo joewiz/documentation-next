@@ -1,1 +1,2 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: system:export-silently creates a backup without progress events :)
+"system:export-silently() would create a backup"

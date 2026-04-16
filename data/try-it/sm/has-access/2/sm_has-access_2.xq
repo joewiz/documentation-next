@@ -1,1 +1,6 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: Check if the current user has specific access to a resource :)
+(
+    "read /db/apps/docs: " || sm:has-access(xs:anyURI("/db/apps/docs"), "r"),
+    "write /db/apps/docs: " || sm:has-access(xs:anyURI("/db/apps/docs"), "w"),
+    "execute /db/apps/docs: " || sm:has-access(xs:anyURI("/db/apps/docs"), "x")
+)

@@ -1,1 +1,5 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+let $_ := xmldb:store("/db/apps/docs/data/try-it", "copy-src2.xml", <test/>)
+let $_ := xmldb:create-collection("/db/apps/docs/data/try-it", "copy-target")
+let $_ := xmldb:copy-resource("/db/apps/docs/data/try-it", "copy-src2.xml", "/db/apps/docs/data/try-it/copy-target", "copy-dst2.xml", true())
+let $_ := (xmldb:remove("/db/apps/docs/data/try-it", "copy-src2.xml"), xmldb:remove("/db/apps/docs/data/try-it/copy-target"))
+return "Copied resource (preserve)"

@@ -1,1 +1,7 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: List running queries instead of killing them :)
+let $queries := system:get-running-xqueries()
+return
+    if (exists($queries//query)) then
+        for $q in $queries//query
+        return "ID: " || $q/@id || " — " || substring($q/@sourceKey, 1, 60)
+    else "No running queries"

@@ -1,1 +1,1 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+util:eval-with-context(".", <static-context><default-context><value>42</value></default-context></static-context>, false(), (), ())

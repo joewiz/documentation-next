@@ -1,1 +1,3 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+let $stored := xmldb:store("/db/apps/docs/data/try-it", "test.txt", "Hello World", "text/plain")
+let $_ := xmldb:remove("/db/apps/docs/data/try-it", "test.txt")
+return "Stored and removed: " || $stored

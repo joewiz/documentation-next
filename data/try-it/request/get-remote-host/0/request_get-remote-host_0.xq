@@ -1,1 +1,3 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: request:get-remote-host requires an HTTP request context :)
+try { request:get-remote-host() }
+catch * { "request:get-remote-host — " || $err:description }

@@ -1,1 +1,3 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: system:shutdown shuts down the database — DO NOT run in production!
+   Showing the function exists but not executing it. :)
+"system:shutdown() is available — use with extreme caution"

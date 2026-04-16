@@ -1,1 +1,4 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+let $_ := xmldb:store("/db/apps/docs/data/try-it", "mime-test.xml", <test/>)
+let $_ := xmldb:set-mime-type(xs:anyURI("/db/apps/docs/data/try-it/mime-test.xml"), "application/xml")
+let $_ := xmldb:remove("/db/apps/docs/data/try-it", "mime-test.xml")
+return "Set MIME type"

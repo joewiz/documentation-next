@@ -1,1 +1,5 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+let $priority := "hello"
+let $logger-name := "hello"
+let $message := "hello"
+return
+    util:log-app($priority, $logger-name, $message)

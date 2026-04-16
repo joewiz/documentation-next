@@ -1,1 +1,4 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: remove#1 deletes a collection — demo with create/remove :)
+let $_ := xmldb:create-collection("/db/apps/docs/data/try-it", "remove-test")
+let $_ := xmldb:remove("/db/apps/docs/data/try-it/remove-test")
+return "Created and removed collection"

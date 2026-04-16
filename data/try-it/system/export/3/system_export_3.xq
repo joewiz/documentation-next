@@ -1,1 +1,5 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: system:export creates a database backup :)
+try {
+    let $dir := file:temp-dir() || "exist-backup-demo"
+    return "Backup would be created at: " || $dir
+} catch * { "export: " || $err:description }

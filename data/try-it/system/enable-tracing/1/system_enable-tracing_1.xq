@@ -1,1 +1,6 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: Enable query tracing :)
+let $was := system:tracing-enabled()
+let $_ := system:enable-tracing(true())
+let $now := system:tracing-enabled()
+let $_ := system:enable-tracing($was)
+return "Tracing was " || $was || ", temporarily set to " || $now

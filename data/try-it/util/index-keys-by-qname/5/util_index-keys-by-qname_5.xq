@@ -1,1 +1,4 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+try {
+    util:index-keys-by-qname(xs:QName("line"), collection("/db/apps/docs/data/try-it/ft/data"), (),
+        function($key, $count) { $key || ": " || $count[1] }, 10)
+} catch * { "Error: " || $err:description }

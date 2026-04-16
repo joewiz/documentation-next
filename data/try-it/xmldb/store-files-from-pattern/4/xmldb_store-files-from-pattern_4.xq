@@ -1,1 +1,2 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+try { xmldb:store-files-from-pattern("/db/apps/docs/data/try-it", "/tmp", "*.nonexistent", "application/xml") }
+catch * { "store-files-from-pattern: no matching files (expected)" }

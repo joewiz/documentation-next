@@ -1,1 +1,5 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: Check if a function is available :)
+(
+    "fn:concat#2: " || system:function-available(xs:QName("fn:concat"), 2),
+    "fn:nonexistent#0: " || system:function-available(xs:QName("fn:nonexistent"), 0)
+)

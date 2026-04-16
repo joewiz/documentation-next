@@ -1,1 +1,1 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+xmldb:find-last-modified-since(collection("/db/apps/docs/data/try-it/ft/data"), xs:dateTime("2020-01-01T00:00:00Z"))

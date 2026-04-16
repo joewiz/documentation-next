@@ -1,1 +1,3 @@
-<?xml version="1.0" ?><exception><path>/db/apps/exist-api/modules/api.xq</path><message>err:XPST0003 error found while loading module packages: error found while loading module from packages.xqm: Stream closed [source: /db/apps/exist-api/modules/api.xq]</message></exception>
+(: request:get-cookie-names requires an HTTP request context :)
+try { request:get-cookie-names() }
+catch * { "request:get-cookie-names — " || $err:description }
