@@ -1,0 +1,68 @@
+<poems>
+    <poem>
+        <title>The Road Not Taken</title>
+        <author>Robert Frost</author>
+        <stanza>
+            <line>Two roads diverged in a yellow wood,</line>
+            <line>And sorry I could not travel both</line>
+            <line>And be one traveler, long I stood</line>
+            <line>And looked down one as far as I could</line>
+            <line>To where it bent in the undergrowth;</line>
+        </stanza>
+        <stanza>
+            <line>Then took the other, as just as fair,</line>
+            <line>And having perhaps the better claim,</line>
+            <line>Because it was grassy and wanted wear;</line>
+            <line>Though as for that the passing there</line>
+            <line>Had worn them really about the same,</line>
+        </stanza>
+        <stanza>
+            <line>I shall be telling this with a sigh</line>
+            <line>Somewhere ages and ages hence:</line>
+            <line>Two roads diverged in a wood, and I—</line>
+            <line>I took the one less traveled by,</line>
+            <line>And that has made all the difference.</line>
+        </stanza>
+    </poem>
+    <poem>
+        <title>Ozymandias</title>
+        <author>Percy Bysshe Shelley</author>
+        <stanza>
+            <line>I met a traveller from an antique land,</line>
+            <line>Who said — "Two vast and trunkless legs of stone</line>
+            <line>Stand in the desert. . . . Near them, on the sand,</line>
+            <line>Half sunk a shattered visage lies, whose frown,</line>
+            <line>And wrinkled lip, and sneer of cold command,</line>
+            <line>Tell that its sculptor well those passions read</line>
+            <line>Which yet survive, stamped on these lifeless things,</line>
+            <line>The hand that mocked them, and the heart that fed;</line>
+        </stanza>
+        <stanza>
+            <line>And on the pedestal, these words appear:</line>
+            <line>My name is Ozymandias, King of Kings;</line>
+            <line>Look on my Works, ye Mighty, and despair!</line>
+            <line>Nothing beside remains. Round the decay</line>
+            <line>Of that colossal Wreck, boundless and bare</line>
+            <line>The lone and level sands stretch far away."</line>
+        </stanza>
+    </poem>
+    <poem>
+        <title>Do Not Go Gentle into That Good Night</title>
+        <author>Dylan Thomas</author>
+        <stanza>
+            <line>Do not go gentle into that good night,</line>
+            <line>Old age should burn and rave at close of day;</line>
+            <line>Rage, rage against the dying of the light.</line>
+        </stanza>
+        <stanza>
+            <line>Though wise men at their end know dark is right,</line>
+            <line>Because their words had forked no lightning they</line>
+            <line>Do not go gentle into that good night.</line>
+        </stanza>
+        <stanza>
+            <line>Good men, the last wave by, crying how bright</line>
+            <line>Their frail deeds might have danced in a green bay,</line>
+            <line>Rage, rage against the dying of the light.</line>
+        </stanza>
+    </poem>
+</poems>

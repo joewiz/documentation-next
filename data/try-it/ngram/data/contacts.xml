@@ -1,0 +1,32 @@
+<contacts>
+    <person>
+        <name>Alice Wonderland</name>
+        <email>alice@example.org</email>
+        <city>Springfield</city>
+        <description>Software developer specializing in XML databases and XQuery.</description>
+    </person>
+    <person>
+        <name>Bob Springfield</name>
+        <email>bob.spring@example.com</email>
+        <city>New York</city>
+        <description>Database administrator working with eXist-db and native XML storage.</description>
+    </person>
+    <person>
+        <name>Charlie Chaplin</name>
+        <email>charlie@example.net</email>
+        <city>Los Angeles</city>
+        <description>Digital humanities researcher using TEI and XQuery for text analysis.</description>
+    </person>
+    <person>
+        <name>Diana Prince</name>
+        <email>diana.prince@example.org</email>
+        <city>Springfield</city>
+        <description>Librarian managing digital collections with XML and metadata standards.</description>
+    </person>
+    <person>
+        <name>Erich Müller</name>
+        <email>erich.mueller@example.de</email>
+        <city>München</city>
+        <description>Linguist building multilingual corpora and annotation pipelines.</description>
+    </person>
+</contacts>

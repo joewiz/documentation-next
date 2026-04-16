@@ -1,0 +1,34 @@
+<glossary>
+    <entry category="database">
+        <term>XQuery</term>
+        <definition>A functional query language designed to query and transform collections of structured and unstructured data, typically XML.</definition>
+    </entry>
+    <entry category="database">
+        <term>Lucene</term>
+        <definition>A high-performance, full-featured text search engine library written in Java, used by eXist-db for full-text indexing and search.</definition>
+    </entry>
+    <entry category="standard">
+        <term>XPath</term>
+        <definition>A query language for selecting nodes from an XML document, also used in XSLT and XQuery for navigating document trees.</definition>
+    </entry>
+    <entry category="database">
+        <term>collection</term>
+        <definition>A hierarchical container in eXist-db that organizes XML documents and binary resources, similar to a directory in a filesystem.</definition>
+    </entry>
+    <entry category="standard">
+        <term>XSLT</term>
+        <definition>Extensible Stylesheet Language Transformations, a language for transforming XML documents into other formats such as HTML, text, or other XML.</definition>
+    </entry>
+    <entry category="indexing">
+        <term>full-text index</term>
+        <definition>An index that tokenizes and stores text content to enable fast keyword searches, wildcard queries, phrase matching, and relevance-ranked results.</definition>
+    </entry>
+    <entry category="indexing">
+        <term>range index</term>
+        <definition>An index on typed values that enables fast equality, comparison, and range lookups without scanning all documents.</definition>
+    </entry>
+    <entry category="indexing">
+        <term>NGram index</term>
+        <definition>A character-level index that stores overlapping character sequences (n-grams) to enable fast substring matching and fuzzy search.</definition>
+    </entry>
+</glossary>

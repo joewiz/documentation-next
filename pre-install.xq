@@ -36,5 +36,25 @@ let $_ := local:mkcol-recursive("/db/system/config",
 let $_ := local:mkcol-recursive("/db/system/config",
     tokenize(substring-after($sys-config || "/data/articles", "/db/system/config/"), "/")[. != ""]
 )
+
+(: Pre-create system config paths for try-it sample data collections.
+ : Reads the registry.xml from the XAR source ($dir) to discover which
+ : module directories may contain collection.xconf files, and creates
+ : the corresponding /db/system/config/... paths. :)
+let $registry :=
+    if (doc-available($dir || "/data/try-it/registry.xml")) then
+        doc($dir || "/data/try-it/registry.xml")/try-it-registry
+    else ()
+let $_ :=
+    if (exists($registry)) then
+        for $module in $registry/module
+        let $module-dir := $module/@dir/string()
+        let $sys-path := $sys-config || "/data/try-it/" || $module-dir || "/data"
+        return
+            local:mkcol-recursive("/db/system/config",
+                tokenize(substring-after($sys-path, "/db/system/config/"), "/")[. != ""]
+            )
+    else ()
+
 return
     util:log("INFO", "documentation-next: system config collections created")

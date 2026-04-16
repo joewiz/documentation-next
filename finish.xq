@@ -21,6 +21,21 @@ declare variable $home external;
 declare variable $dir external;
 declare variable $target external;
 
+declare function local:mkcol-recursive($collection as xs:string, $components as xs:string*) {
+    if (empty($components)) then
+        ()
+    else
+        let $child := head($components)
+        let $new-coll := $collection || "/" || $child
+        return (
+            if (xmldb:collection-available($new-coll)) then
+                ()
+            else
+                xmldb:create-collection($collection, $child),
+            local:mkcol-recursive($new-coll, tail($components))
+        )
+};
+
 (: --- Step 1: Create data and transform collections --- :)
 let $_ := (
     if (not(xmldb:collection-available($target || "/data"))) then
@@ -104,14 +119,35 @@ let $_ :=
             into $topic
     )
 
-(: --- Step 5: Generate XQDoc for function reference --- :)
+(: --- Step 5: Install try-it sample data index configurations --- :)
+let $tryit-root := $target || "/data/try-it"
+let $_ :=
+    if (xmldb:collection-available($tryit-root)) then
+        for $module-dir in xmldb:get-child-collections($tryit-root)
+        let $data-path := $tryit-root || "/" || $module-dir || "/data"
+        where xmldb:collection-available($data-path)
+            and ("collection.xconf" = xmldb:get-child-resources($data-path))
+        let $xconf := doc($data-path || "/collection.xconf")
+        let $sys-path := $sys-config || "/data/try-it/" || $module-dir || "/data"
+        (: Ensure system config path exists — pre-install may not have created it
+           if the registry wasn't readable from the XAR staging directory :)
+        let $_ := local:mkcol-recursive("/db/system/config",
+            tokenize(substring-after($sys-path, "/db/system/config/"), "/")[. != ""])
+        return (
+            xmldb:store($sys-path, "collection.xconf", $xconf),
+            xmldb:reindex($data-path),
+            util:log("INFO", "docs: installed try-it xconf for " || $module-dir)
+        )
+    else ()
+
+(: --- Step 6: Generate XQDoc for function reference --- :)
 let $summary := fundocs:generate-all()
 
-(: --- Step 6: Reindex both data collections --- :)
+(: --- Step 7: Reindex both data collections --- :)
 let $_ := xmldb:reindex($target || "/data/functions")
 let $_ := xmldb:reindex($target || "/data/articles")
 
-(: --- Step 7: Run Jinks generator to copy profile files --- :)
+(: --- Step 8: Run Jinks generator to copy profile files --- :)
 let $jinks-config := map {
     "label": "eXist-db Documentation",
     "id": "http://exist-db.org/apps/docs",
