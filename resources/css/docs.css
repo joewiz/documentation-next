@@ -435,13 +435,13 @@ h3:focus-within .fn-anchor {
 .param-name {
     font-family: monospace;
     white-space: nowrap;
-    color: #c0392b;
+    color: #953800; /* matches .tok-variableName */
 }
 
 .param-type {
     font-family: monospace;
     white-space: nowrap;
-    color: #8e44ad;
+    color: #8250df; /* matches .tok-typeName */
 }
 
 .return-type {

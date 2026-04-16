@@ -34,12 +34,98 @@ function wrapWithCopyButton(pre) {
     wrapper.appendChild(btn);
 }
 
+/**
+ * Tokenize an XQuery function signature string into an array of
+ * {text, cls} objects where cls is a tok-* class name or null.
+ *
+ * Signature format: [ns:]name([$var as type[?/*+], ...]) as return-type
+ * - Function name: not highlighted (left as plain text)
+ * - Variables ($name): tok-variableName
+ * - "as" keyword: tok-keyword
+ * - Type names after "as": tok-typeName (including occurrence indicator)
+ * - Punctuation ( ) ,: tok-punctuation
+ */
+function tokenizeSignature(text) {
+    const tokens = [];
+    let i = 0;
+    // Match a QName with optional occurrence indicator
+    const QNAME_OCC_RE = /^(?:[a-zA-Z_][\w.-]*:)?[a-zA-Z_][\w.-]*[?*+]?/;
+    const VAR_RE = /^\$[a-zA-Z_][\w-]*/;
+    const WS_RE = /^\s+/;
+    let nextIsType = false;  // true right after 'as'
+    let pastOpen = false;    // true after the first '(' — inside param list or return type
+
+    while (i < text.length) {
+        const rest = text.slice(i);
+        let m;
+
+        if ((m = rest.match(WS_RE))) {
+            tokens.push({ text: m[0], cls: null });
+            i += m[0].length;
+        } else if ((m = rest.match(VAR_RE))) {
+            tokens.push({ text: m[0], cls: "tok-variableName" });
+            i += m[0].length;
+            nextIsType = false;
+        } else if (rest[0] === "(" || rest[0] === ")" || rest[0] === ",") {
+            if (rest[0] === "(") pastOpen = true;
+            tokens.push({ text: rest[0], cls: "tok-punctuation" });
+            i++;
+            nextIsType = false;
+        } else if ((m = rest.match(/^as\b/))) {
+            tokens.push({ text: m[0], cls: "tok-keyword" });
+            i += m[0].length;
+            nextIsType = true;
+        } else if (nextIsType && (m = rest.match(QNAME_OCC_RE))) {
+            tokens.push({ text: m[0], cls: "tok-typeName" });
+            i += m[0].length;
+            nextIsType = false;
+        } else if ((m = rest.match(QNAME_OCC_RE))) {
+            // Function name (before first paren) or other identifiers — plain text
+            tokens.push({ text: m[0], cls: null });
+            i += m[0].length;
+        } else {
+            tokens.push({ text: rest[0], cls: null });
+            i++;
+        }
+    }
+    return tokens;
+}
+
+/**
+ * Apply XQuery syntax highlighting to function signature code elements.
+ * Uses a targeted tokenizer since signatures follow a known format.
+ */
+function highlightSignature(el) {
+    const text = el.textContent;
+    if (!text) return;
+    const tokens = tokenizeSignature(text);
+    el.textContent = "";
+    for (const { text: t, cls } of tokens) {
+        if (cls) {
+            const span = document.createElement("span");
+            span.className = cls;
+            span.textContent = t;
+            el.appendChild(span);
+        } else {
+            el.appendChild(document.createTextNode(t));
+        }
+    }
+}
+
 function applyHighlighting() {
     // Apply syntax highlighting using CM6/Lezer (same engine as eXide + Notebook)
     const hl = globalThis.highlightCode;
+
+    // Function signature blocks — use a targeted tokenizer since signatures
+    // are not standalone XQuery expressions
+    document.querySelectorAll("pre.signature code.language-xquery").forEach((el) => {
+        highlightSignature(el);
+    });
+
     if (hl) {
+
         // Standard pre>code blocks (function reference pages)
-        document.querySelectorAll("pre code[class*='language-']").forEach((el) => {
+        document.querySelectorAll("pre.code-block code[class*='language-']").forEach((el) => {
             const lang = (el.className.match(/language-(\S+)/) || [])[1];
             if (lang) hl.highlightElement(el, lang);
         });

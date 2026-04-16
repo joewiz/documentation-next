@@ -16,9 +16,17 @@ describe("Function reference", () => {
     cy.get(".function").should("have.length.greaterThan", 0);
   });
 
-  it("function signatures have code highlighting", () => {
-    cy.visit("/functions/fn/");
-    cy.get(".signature code").should("have.length.greaterThan", 0);
+  it("function signatures have Lezer syntax highlighting tokens", () => {
+    cy.visit("/functions/fn/concat");
+    // Lezer injects tok-* spans into the code element after page load
+    cy.get(".signature code [class^='tok-']").should("have.length.greaterThan", 0);
+  });
+
+  it("param-name variable color matches signature tok-variableName color", () => {
+    cy.visit("/functions/fn/concat");
+    // Both should use the same brown (#953800) from the GitHub Light token theme
+    cy.get(".param-name").first()
+      .should("have.css", "color", "rgb(149, 56, 0)");
   });
 
   it("function detail has parameter table", () => {
