@@ -1,0 +1,24 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <!--
+        Index configuration for try-it sample data (range module).
+        Deployed by finish.xq into /db/system/config/.../try-it/range/data/
+    -->
+    <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <range>
+            <!-- Simple element indexes -->
+            <create qname="name" type="xs:string"/>
+            <create qname="city" type="xs:string"/>
+            <create qname="population" type="xs:integer"/>
+            <create qname="@code" type="xs:string"/>
+            <create qname="@founded" type="xs:integer"/>
+
+            <!-- Complex index with fields -->
+            <create match="//city">
+                <field name="city-name" match="name" type="xs:string"/>
+                <field name="city-country" match="country" type="xs:string"/>
+                <field name="city-population" match="population" type="xs:integer"/>
+                <field name="city-code" match="@code" type="xs:string"/>
+            </create>
+        </range>
+    </index>
+</collection>

@@ -16,7 +16,34 @@ Create runnable XQuery examples for every function in a given eXist-db module. E
 Check `taskings/try-it-module-coverage.md` for modules that still need coverage. Pick one and note its:
 - **Prefix** (e.g., `transform`)
 - **Namespace URI** (e.g., `http://exist-db.org/xquery/transform`)
-- **Function count** — get the full list:
+- **Function count**
+
+### Verify the module is loadable
+
+Before writing any queries, confirm the module is available in the running instance:
+
+```bash
+xst run 'inspect:inspect-module-uri(xs:anyURI("http://exist-db.org/xquery/transform"))'
+```
+
+This returns an XML description with all function signatures and arities. If it fails with `XQST0059 failed to load module`, the module is not registered in the current runtime — skip it and note why in the coverage tracker.
+
+Some modules listed in the coverage tracker are conf.xml-only (commented out or requiring external dependencies like `exiftool`, `exi`, `spatial`) or require a XAR that isn't installed (like `vector`). These cannot be covered until activated.
+
+You can also batch-check multiple modules at once:
+
+```bash
+for uri in "http://exist-db.org/xquery/zip" "http://exist-db.org/xquery/exi"; do
+  echo "=== $uri ==="
+  xst run "try { count(inspect:inspect-module-uri(xs:anyURI('$uri'))//function) } catch * { 'NOT LOADED' }" 2>&1
+done
+```
+
+Modules confirmed as not loaded in the current runtime: `zip`, `exi`, `oracle`, `spatial`, and the native `file` module (`http://exist-db.org/xquery/file` — shadowed by the EXPath file module's XAR).
+
+### Alternative: get the function list from the docs app
+
+If the module is already registered in the docs app, you can also query it via:
 
 ```xquery
 import module namespace fundocs = "http://exist-db.org/apps/docs/fundocs"
@@ -71,22 +98,47 @@ mkdir -p data/try-it/{prefix}/{name}/{arity}
 
 4. **For dangerous/mutating functions**, use one of these patterns:
    - **Create-then-cleanup**: `let $_ := xmldb:store(...) ... let $_ := xmldb:remove(...)`
+   - **Create-then-destroy** (for stateful modules like cache, counter, sort): `let $_ := cache:create("demo", ...) ... let $_ := cache:destroy("demo")` — ensures no state leaks between runs
    - **Try/catch wrapper**: `try { dangerous-fn() } catch * { "Error: " || $err:description }`
    - **Description only**: `"fn:name#arity — requires specific context/permissions"`
 
-5. **For context-dependent functions** (request, response, session):
+5. **For context-dependent functions** (request, response, session, req, rest):
    - Wrap in try/catch: `try { request:get-method() } catch * { "requires HTTP context" }`
+   - These functions work correctly in the try-it widget (which has HTTP context) but fail via `util:eval()` in the validator
 
-6. **For functions needing imports** (not auto-registered):
+6. **For external-service modules** (mail, sql, jndi) where no server is available:
+   - Use **description-only strings** for every function
+   - Include the full signature and a brief explanation of the XML format for parameters:
+     ```xquery
+     (: Open a JDBC connection :)
+     "sql:get-connection($driver as xs:string, $url as xs:string) as xs:long? — opens a connection using the JDBC driver and URL"
+     ```
+   - This pattern also applies to `plogin` (requires session tokens) and mutating `scheduler`/`repo`/`exrest` functions
+
+7. **For functions needing imports** (not auto-registered):
    - Add import in the prolog: `import module namespace exfile = "http://expath.org/ns/file";`
-   - The native eXist `file:` module is registered in conf.xml — no import needed
-   - The EXPath `file` module uses prefix `exfile:` to avoid conflict
+   - The EXPath `file` module uses prefix `exfile:` to avoid conflict with the native `file:` prefix
+   - **XAR-loaded modules** need explicit imports without an `at` clause:
+     ```xquery
+     import module namespace crypto = "http://expath.org/ns/crypto";
+     import module namespace http = "http://expath.org/ns/http-client";
+     import module namespace console = "http://exist-db.org/xquery/console";
+     import module namespace md = "http://exist-db.org/xquery/markdown";
+     ```
+   - **conf.xml-registered modules** (transform, validation, compression, cache, counter, image, xmldiff, xslfo, cqlparser, simpleql, scheduler, backups, mail, sql, jndi, etc.) need no import at all — they are available by default
 
-7. **Use comments** to explain what the query demonstrates:
+8. **Use comments** to explain what the query demonstrates:
    ```xquery
    (: Pack an integer into binary with big-endian byte order :)
    xs:hexBinary(bin:pack-integer(256, 2, "most-significant-first"))
    ```
+
+9. **Watch for exact type requirements** in Java module functions:
+   - Java modules may require exact types (e.g., `xs:long` vs `xs:integer`). If you get a static type error, check the function signature and add an explicit cast: `counter:create("name", xs:long(100))`.
+
+10. **Java module bugs** — some functions crash with Java-level errors that XQuery try/catch cannot always intercept:
+   - Workarounds: change the input data (e.g., add `targetNamespace` to an XSD to avoid a null pointer in `validation:pre-parse-grammar`), wrap in try/catch (may or may not catch it depending on where the NPE occurs), or fall back to a description-only string.
+   - Known examples: `contentextraction:get-metadata` Tika RuntimeException, `compression:tar` header-size bug, `compression:unzip#3` requiring a 3-arg filter despite the signature showing 2.
 
 ### Reference sources for examples
 
@@ -104,6 +156,19 @@ data/try-it/{prefix}/data/sample.xml         — sample documents
 ```
 
 The `finish.xq` post-install script will automatically deploy the collection.xconf to `/db/system/config/` and reindex.
+
+Binary sample data (images, XSD schemas, etc.) can also be stored in `data/try-it/{prefix}/data/`. Reference them in queries with:
+```xquery
+util:binary-doc("/db/apps/docs/data/try-it/{prefix}/data/filename.png")
+doc("/db/apps/docs/data/try-it/{prefix}/data/schema.xsd")
+```
+
+Examples:
+- `ft` module uses poems and glossary XML with Lucene indexes
+- `range` module uses city data with both simple element and complex field indexes
+- `image` module uses a sample PNG
+- `validation` module uses a sample XSD with a `targetNamespace`
+- `sort` module reuses the range module's stored city data (no sample data of its own)
 
 ## Step 4: Format with Prettier
 
@@ -150,6 +215,14 @@ Total: N | OK: N | Errors: 0
    - **"Unknown collation"** — use `"http://www.w3.org/2013/collation/UCA"`
    - **"Context item is absent"** — use XPath context: `<el/>/local-name()` or `(1 to 10)[last()]`
    - **XPST0003 static error** — check for corrupted file content; re-check XQuery syntax
+   - **Static type error with numeric literals** — Java modules expecting `xs:long` reject plain integer literals; use `xs:long(N)`
+   - **"entry-filter function must take at least 3 arguments"** — `compression:unzip#3` requires a 3-arg filter at runtime despite the signature showing 2; use `unzip#6` with inline functions as a workaround
+   - **"Cannot invoke ... because this.value is null"** — Java NPE in the module; try changing the input data (e.g., add `targetNamespace` to XSD)
+   - **"Request to write N bytes exceeds size in header of 0 bytes"** — `compression:tar` header-size bug; wrap in try/catch
+   - **"unexpected docvalues type NONE for field"** — range index numeric field comparisons (`range:field-gt/lt/le/ge` on `xs:integer` fields) fail; use string-typed fields for field-level comparisons instead
+   - **"Cannot run program ... No such file or directory"** — `process:execute` can't find executables in Docker; wrap in try/catch
+   - **"headers" is null** — `http:send-request#3` NPE when sending a body; wrap in try/catch
+   - **Empty result from xqdm:scan** — the XQDoc scanner silently returns empty for modern XQuery 3.1 syntax; wrap with fallback message
 
 2. Fix the queries **on disk** (never rely on DB-only edits — they're lost on redeploy)
 
@@ -181,6 +254,7 @@ Update `taskings/try-it-module-coverage.md`:
 |------|---------------|
 | `xs:string` | `"hello"` |
 | `xs:integer` | `42` |
+| `xs:long` | `xs:long(42)` |
 | `xs:boolean` | `true()` |
 | `xs:date` | `xs:date("2025-06-15")` |
 | `xs:dateTime` | `current-dateTime()` |
@@ -191,5 +265,13 @@ Update `taskings/try-it-module-coverage.md`:
 | `map(*)` | `map { "a": 1, "b": 2 }` |
 | `array(*)` | `["x", "y", "z"]` |
 | `function(*)` | `function($x) { $x }` |
+| `xs:base64Binary` | `util:string-to-binary("hello")` |
+| `xs:duration` | `xs:dayTimeDuration("P1DT2H")` |
+| `xs:int` | `1800` |
 | collation URI | `"http://www.w3.org/2013/collation/UCA"` |
 | collection path | `"/db/apps/docs/data/try-it/ft/data"` |
+| AES key (16 bytes) | `"0123456789abcdef"` |
+| DES key (8 bytes) | `"01234567"` |
+| cron expression | `"0 0 * * * ?"` (every hour) |
+| JDBC driver class | `"org.h2.Driver"` |
+| SMTP host property | `<properties><property name="mail.smtp.host" value="smtp.example.com"/></properties>` |

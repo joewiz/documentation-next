@@ -1,0 +1,32 @@
+<cities>
+    <city code="NYC" founded="1624">
+        <name>New York</name>
+        <country>United States</country>
+        <population>8336817</population>
+    </city>
+    <city code="LON" founded="43">
+        <name>London</name>
+        <country>United Kingdom</country>
+        <population>8982000</population>
+    </city>
+    <city code="PAR" founded="250">
+        <name>Paris</name>
+        <country>France</country>
+        <population>2161000</population>
+    </city>
+    <city code="TKY" founded="1457">
+        <name>Tokyo</name>
+        <country>Japan</country>
+        <population>13960000</population>
+    </city>
+    <city code="SYD" founded="1788">
+        <name>Sydney</name>
+        <country>Australia</country>
+        <population>5312000</population>
+    </city>
+    <city code="BER" founded="1237">
+        <name>Berlin</name>
+        <country>Germany</country>
+        <population>3645000</population>
+    </city>
+</cities>

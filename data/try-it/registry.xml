@@ -25,4 +25,36 @@
     <module dir="response" uri="http://exist-db.org/xquery/response"               prefix="response"/>
     <module dir="system"  uri="http://exist-db.org/xquery/system"                   prefix="system"/>
     <module dir="xproc"   uri="http://exist-db.org/xproc"                           prefix="xproc"/>
+    <module dir="md"      uri="http://exist-db.org/xquery/markdown"                prefix="md"/>
+    <module dir="lsp"     uri="http://exist-db.org/xquery/lsp"                    prefix="lsp"/>
+    <module dir="ws"      uri="http://exist-db.org/xquery/websocket"              prefix="ws"/>
+    <module dir="transform"   uri="http://exist-db.org/xquery/transform"         prefix="transform"/>
+    <module dir="validation"  uri="http://exist-db.org/xquery/validation"        prefix="validation"/>
+    <module dir="compression" uri="http://exist-db.org/xquery/compression"       prefix="compression"/>
+    <module dir="inspect"     uri="http://exist-db.org/xquery/inspection"        prefix="inspect"/>
+    <module dir="cache"       uri="http://exist-db.org/xquery/cache"             prefix="cache"/>
+    <module dir="contentextraction" uri="http://exist-db.org/xquery/contentextraction" prefix="contentextraction"/>
+    <module dir="counter"    uri="http://exist-db.org/xquery/counter"             prefix="counter"/>
+    <module dir="image"      uri="http://exist-db.org/xquery/image"               prefix="image"/>
+    <module dir="xmldiff"    uri="http://exist-db.org/xquery/xmldiff"             prefix="xmldiff"/>
+    <module dir="xslfo"      uri="http://exist-db.org/xquery/xslfo"               prefix="xslfo"/>
+    <module dir="cqlparser"  uri="http://exist-db.org/xquery/cqlparser"           prefix="cqlparser"/>
+    <module dir="simpleql"   uri="http://exist-db.org/xquery/simple-ql"           prefix="simpleql"/>
+    <module dir="xqdm"       uri="http://exist-db.org/xquery/xqdoc"               prefix="xqdm"/>
+    <module dir="rest"       uri="http://exquery.org/ns/restxq"                   prefix="rest"/>
+    <module dir="exrest"     uri="http://exquery.org/ns/restxq/exist"             prefix="exrest"/>
+    <module dir="repo"       uri="http://exist-db.org/xquery/repo"                prefix="repo"/>
+    <module dir="range"      uri="http://exist-db.org/xquery/range"               prefix="range"/>
+    <module dir="sort"       uri="http://exist-db.org/xquery/sort"                prefix="sort"/>
+    <module dir="crypto"     uri="http://expath.org/ns/crypto"                    prefix="crypto"/>
+    <module dir="http"       uri="http://expath.org/ns/http-client"               prefix="http"/>
+    <module dir="scheduler"  uri="http://exist-db.org/xquery/scheduler"           prefix="scheduler"/>
+    <module dir="backups"    uri="http://exist-db.org/xquery/backups"             prefix="backups"/>
+    <module dir="console"    uri="http://exist-db.org/xquery/console"             prefix="console"/>
+    <module dir="plogin"     uri="http://exist-db.org/xquery/persistentlogin"     prefix="plogin"/>
+    <module dir="mail"       uri="http://exist-db.org/xquery/mail"                prefix="mail"/>
+    <module dir="sql"        uri="http://exist-db.org/xquery/sql"                 prefix="sql"/>
+    <module dir="jndi"       uri="http://exist-db.org/xquery/jndi"                prefix="jndi"/>
+    <module dir="session"    uri="http://exist-db.org/xquery/session"             prefix="session"/>
+    <module dir="req"        uri="http://exquery.org/ns/request"                  prefix="req"/>
 </try-it-registry>
