@@ -1,7 +1,5 @@
-import module namespace exfile = "http://expath.org/ns/file";
-
-(: Check if a file or directory exists :)
+(: Check if a path exists on the filesystem :)
 (
-    exfile:temp-dir() || " exists: " || exfile:exists(exfile:temp-dir()),
-    "/nonexistent exists: " || exfile:exists("/nonexistent")
+    "temp dir exists: " || file:exists(util:system-property("java.io.tmpdir")),
+    "/nonexistent exists: " || file:exists("/nonexistent")
 )

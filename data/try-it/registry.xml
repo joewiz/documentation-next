@@ -16,7 +16,8 @@
     <module dir="util"    uri="http://exist-db.org/xquery/util"                     prefix="util"/>
     <module dir="xmldb"   uri="http://exist-db.org/xquery/xmldb"                    prefix="xmldb"/>
     <module dir="bin"     uri="http://expath.org/ns/binary"                         prefix="bin"/>
-    <module dir="file"    uri="http://expath.org/ns/file"                          prefix="file"/>
+    <module dir="file"    uri="http://exist-db.org/xquery/file"                    prefix="file"/>
+    <module dir="exfile"  uri="http://expath.org/ns/file"                          prefix="exfile"/>
     <module dir="process" uri="http://exist-db.org/xquery/process"                  prefix="process"/>
     <module dir="sm"      uri="http://exist-db.org/xquery/securitymanager"          prefix="sm"/>
     <module dir="ft"      uri="http://exist-db.org/xquery/lucene"                   prefix="ft"/>
