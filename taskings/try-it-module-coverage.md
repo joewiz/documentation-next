@@ -17,7 +17,7 @@ Status of try-it query coverage across all eXist-db modules.
 ## EXPath Standard Libraries
 
 - [x] **bin** (40 functions) — `http://expath.org/ns/binary`
-- [x] **file** / exfile (58 functions) — `http://expath.org/ns/file` (uses `exfile:` prefix in queries to avoid conflict)
+- [x] **exfile** (58 functions) — `http://expath.org/ns/file` (uses `exfile:` prefix; directory renamed from `file` to `exfile`)
 - [x] **http** (3 functions) — `http://expath.org/ns/http-client`
 - [x] **crypto** (8 functions) — `http://expath.org/ns/crypto` — loaded from XAR, not conf.xml
 - [ ] **zip** (6 functions) — `http://expath.org/ns/zip` — NOT loaded in current runtime
@@ -30,7 +30,7 @@ Status of try-it query coverage across all eXist-db modules.
 - [x] **sm** (59 functions) — `http://exist-db.org/xquery/securitymanager` — read-only demos; mutating functions show signatures
 - [x] **request** (31 functions) — `http://exist-db.org/xquery/request` — try/catch for missing HTTP context
 - [x] **response** (10 functions) — `http://exist-db.org/xquery/response` — signature descriptions for HTTP-only functions
-- [ ] **file** (native) — `http://exist-db.org/xquery/file` — eXist's native file module (file:sync, file:serialize, etc.); NOT registered in this runtime's conf.xml — only the EXPath file module is configured, which fully shadows the `file:` prefix
+- [x] **file** (native, 20 functions) — `http://exist-db.org/xquery/file` — eXist's native file module (file:sync, file:serialize, etc.); requires conf.xml registration (available on next-v3)
 - [ ] **vector** — `http://exist-db.org/xquery/vector` — vector similarity search (new in next-v2, DJL/HuggingFace)
 - [?] **kwic** (4 queries) — KWIC module; 2/4 pass (50%); 2 need Lucene match context that doesn't survive util:eval
 - [?] **test** (1 query) — XQSuite test framework; 0/1 pass; needs inspect context; works via REST
@@ -97,14 +97,14 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 
 ## Summary
 
-| Status | Count | Functions |
-|--------|-------|-----------|
-| `[x]` 100% validated | 43 modules | ~956 |
-| `[?]` Started, not 100% | 6 modules | ~155 |
+| Status | Count | Files |
+|--------|-------|-------|
+| `[x]` 100% validated | 44 modules | ~976 |
+| `[?]` Started, not 100% | 6 modules | ~136 |
 | `[ ]` Not started | 0 modules | 0 |
-| **Total** | ~49 modules | ~1186+ |
+| **Total** | 50 modules | 1112 |
 
-## Validation Status (as of 2026-04-16)
+## Validation Status (as of 2026-04-17)
 
 | Module | Files | Pass | Rate | Status | Notes |
 |--------|-------|------|------|--------|-------|
@@ -113,7 +113,8 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 | map | 20 | 20/20 | 100% | `[x]` | |
 | math | 18 | 18/18 | 100% | `[x]` | |
 | bin | 40 | 40/40 | 100% | `[x]` | EXPath Binary; uses `import module` |
-| file | 43 | 43/43 | 100% | `[x]` | EXPath File; uses `exfile:` prefix |
+| exfile | 43 | 43/43 | 100% | `[x]` | EXPath File (`http://expath.org/ns/file`); prefix `exfile:`; renamed from `file` dir |
+| file (native) | 20 | 20/20 | 100% | `[x]` | eXist native file module (`http://exist-db.org/xquery/file`); file:sync, file:serialize, etc.; requires conf.xml registration (next-v3) |
 | system | 39 | 39/39 | 100% | `[x]` | Dangerous functions safely wrapped |
 | sm | 59 | 59/59 | 100% | `[x]` | Read-only demos; mutating fns show signatures |
 | request | 31 | 31/31 | 100% | `[x]` | try/catch for missing HTTP context |
@@ -157,7 +158,7 @@ These are in `exist-distribution/src/main/config/conf.xml` but not currently reg
 | jndi | 8 | 8/8 | 100% | `[x]` | All descriptions; requires external JNDI/LDAP directory |
 | session | 15 | 15/15 | 100% | `[x]` | HTTP-context-dependent; try/catch wrappers |
 | req | 19 | 19/19 | 100% | `[x]` | EXQuery HTTP Request; try/catch wrappers |
-| **Total** | **1092** | **1079** | **98.8%** | |
+| **Total** | **1112** | **1099** | **98.8%** | |
 
 ## Known Issues
 
@@ -193,7 +194,7 @@ Always do try-it work on disk first, then deploy via XAR. Never rely on DB-only 
 
 ## Notes
 
-- The native `file` module (`http://exist-db.org/xquery/file`) provides `file:sync`, `file:serialize`, `file:serialize-binary` — different from the EXPath `file` module. Registered in conf.xml as `file:`, no import needed. However, when the EXPath file module is installed, it shadows the native module's `file:` prefix at runtime.
+- **Two file modules**: The native `file` module (`http://exist-db.org/xquery/file`, prefix `file:`) provides `file:sync`, `file:serialize`, `file:serialize-binary`, `file:read`, etc. The EXPath file module (`http://expath.org/ns/file`, prefix `exfile:`) provides the W3C EXPath File spec functions. On next-v3 both coexist: native in conf.xml, EXPath from XAR with `exfile:` prefix. On next-v2 the native module was shadowed (fixed in next-v3 conf.xml). Try-it directories: `data/try-it/file` (native) and `data/try-it/exfile` (EXPath).
 - `kwic` is not a registered Java module — it's an XQuery library at `resource:org/exist/xquery/lib/kwic.xqm`
 - `test` is the XQSuite annotation-based test framework at `resource:org/exist/xquery/lib/xqsuite/xqsuite.xql`
 - Modules marked "loaded from XAR" are installed via packages, not conf.xml
