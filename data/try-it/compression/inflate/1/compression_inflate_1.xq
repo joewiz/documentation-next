@@ -1,0 +1,5 @@
+(: Deflate and then inflate data to verify round-trip :)
+let $original := util:string-to-binary("Inflate this!")
+let $deflated := compression:deflate($original)
+let $inflated := compression:inflate($deflated)
+return util:binary-to-string($inflated)

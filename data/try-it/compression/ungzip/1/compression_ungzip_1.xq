@@ -1,0 +1,5 @@
+(: GZip and then UnGZip data to verify round-trip :)
+let $original := util:string-to-binary("Hello, compressed world!")
+let $compressed := compression:gzip($original)
+let $decompressed := compression:ungzip($compressed)
+return util:binary-to-string($decompressed)

@@ -1,0 +1,5 @@
+(: Inflate raw deflate data (no zlib wrapper) :)
+let $original := util:string-to-binary("Raw round-trip!")
+let $deflated := compression:deflate($original, true())
+let $inflated := compression:inflate($deflated, true())
+return util:binary-to-string($inflated)
