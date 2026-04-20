@@ -128,7 +128,7 @@ declare function docs:load-article($slug as xs:string) as map(*)? {
  :)
 declare function docs:render($article as map(*)) as node()* {
     let $base-path := request:get-parameter("base-path", ())
-    let $html := xdita:render($article?doc)
+    let $html := xdita:render($article?doc, $article?slug)
     return
         if ($base-path) then
             docs:rebase-html-links($html, $base-path)

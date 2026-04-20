@@ -106,12 +106,46 @@ declare %private function xdita:resolve-refs($node as node()) as node() {
  : @return HTML fragment
  :)
 declare function xdita:render($topic as element(topic)) as node()* {
+    xdita:render($topic, ())
+};
+
+declare function xdita:render($topic as element(topic), $slug as xs:string?) as node()* {
     let $topic := xdita:expand-indexes($topic)
+    let $topic := if ($slug) then xdita:prefix-asset-hrefs($topic, $slug) else $topic
     let $topic := xdita:resolve-refs($topic)
     return $pm-config:xdita-web-transform(map {
         "root": $topic,
         "webcomponents": 7
     }, $topic)
+};
+
+(:~
+ : Prefix relative image hrefs with the article slug so they resolve
+ : correctly from /articles/{slug}. The browser resolves relative URLs
+ : against /articles/ (the parent path), so assets/foo.png needs to
+ : become {slug}/assets/foo.png.
+ :)
+declare %private function xdita:prefix-asset-hrefs($node as node(), $slug as xs:string) as node() {
+    typeswitch ($node)
+        case element(image) return
+            element { node-name($node) } {
+                for $attr in $node/@*
+                return
+                    if (local-name($attr) = "href" and
+                        not(starts-with(string($attr), "http")) and
+                        not(starts-with(string($attr), "/")) and
+                        not(starts-with(string($attr), "{"))) then
+                        attribute href { $slug || "/" || string($attr) }
+                    else
+                        $attr,
+                $node/node() ! xdita:prefix-asset-hrefs(., $slug)
+            }
+        case element() return
+            element { node-name($node) } {
+                $node/@*,
+                $node/node() ! xdita:prefix-asset-hrefs(., $slug)
+            }
+        default return $node
 };
 
 (:~

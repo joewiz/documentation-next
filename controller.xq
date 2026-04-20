@@ -205,12 +205,17 @@ else if ($path = "/search") then
             name="$section" value="search"/>
     ))
 
-(: Admin :)
+(: Admin — DBA access required :)
 else if ($path = "/admin") then
-    local:view("admin.tpl", (
-        <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
-            name="$section" value="admin"/>
-    ))
+    if (sm:is-dba($user)) then
+        local:view("admin.tpl", (
+            <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
+                name="$section" value="admin"/>
+        ))
+    else
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="{request:get-context-path()}/apps/docs/login?redirect={encode-for-uri(request:get-uri())}"/>
+        </dispatch>
 
 (: API: regenerate XQDoc data (POST only, runs setgid DBA) :)
 else if ($path = "/api/xqdoc/regenerate" and request:get-method() = "POST") then
