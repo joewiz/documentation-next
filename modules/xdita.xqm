@@ -106,11 +106,100 @@ declare %private function xdita:resolve-refs($node as node()) as node() {
  : @return HTML fragment
  :)
 declare function xdita:render($topic as element(topic)) as node()* {
+    let $topic := xdita:expand-indexes($topic)
     let $topic := xdita:resolve-refs($topic)
     return $pm-config:xdita-web-transform(map {
         "root": $topic,
         "webcomponents": 7
     }, $topic)
+};
+
+(:~
+ : Expand dynamic index placeholders before ODD rendering.
+ : Replaces <p outputclass="indexontitle"/> and <p outputclass="indexonkeyword"/>
+ : with generated XDITA content that the ODD can render normally.
+ :)
+declare %private function xdita:expand-indexes($node as node()) as node()+ {
+    typeswitch ($node)
+        case element(p) return
+            if ($node/@outputclass = "indexontitle") then
+                xdita:generate-title-index()
+            else if ($node/@outputclass = "indexonkeyword") then
+                xdita:generate-keyword-index()
+            else
+                element { node-name($node) } {
+                    $node/@*,
+                    $node/node() ! xdita:expand-indexes(.)
+                }
+        case element() return
+            element { node-name($node) } {
+                $node/@*,
+                $node/node() ! xdita:expand-indexes(.)
+            }
+        default return $node
+};
+
+(:~
+ : Generate alphabetical article index as XDITA dl (definition list).
+ :)
+declare %private function xdita:generate-title-index() as element(section)* {
+    let $articles :=
+        for $topic in collection($config:data-root || "/articles")//topic
+        let $title := $topic/title/string()
+        let $slug := replace(base-uri($topic), "^.*/([^/]+)/[^/]+$", "$1")
+        where $slug != "documentation" and $slug != "xdita-test"
+        order by lower-case($title)
+        return map { "title": $title, "slug": $slug, "topic": $topic }
+    let $letters := distinct-values($articles ! upper-case(substring(?title, 1, 1)))
+    for $letter in sort($letters)
+    let $group := $articles[upper-case(substring(?title, 1, 1)) = $letter]
+    return
+        <section id="index-{lower-case($letter)}">
+            <title>{$letter}</title>
+            <dl>{
+                for $a in $group
+                return
+                    <dlentry>
+                        <dt><xref href="{$a?slug}" scope="external">{$a?title}</xref></dt>
+                        <dd><p>{
+                            let $desc := string($a?topic/body/shortdesc)
+                            return if ($desc != "") then $desc
+                            else substring(string-join($a?topic/body//p[1]//text(), " "), 1, 150) || "..."
+                        }</p></dd>
+                    </dlentry>
+            }</dl>
+        </section>
+};
+
+(:~
+ : Generate keyword-grouped article index as XDITA sections.
+ :)
+declare %private function xdita:generate-keyword-index() as element(dl) {
+    let $articles := collection($config:data-root || "/articles")//topic
+    let $all-keywords :=
+        distinct-values(
+            for $topic in $articles
+            return $topic/prolog/data[@name="keyword"]/@value/string()
+        )
+    return
+        <dl>{
+            for $keyword in $all-keywords
+            order by $keyword collation "http://www.w3.org/2005/xpath-functions/collation/unicode-case-insensitive"
+            return (
+                <dlentry>
+                    <dt>{replace($keyword, "-", " ")}</dt>
+                    <dd><ul>{
+                        for $topic in $articles[prolog/data[@name="keyword"][@value=$keyword]]
+                        let $title := $topic/title/string()
+                        let $slug := replace(base-uri($topic), "^.*/([^/]+)/[^/]+$", "$1")
+                        where $slug != "documentation"
+                        order by lower-case($title)
+                        return
+                            <li><xref href="{$slug}" scope="external">{$title}</xref></li>
+                    }</ul></dd>
+                </dlentry>
+            )
+        }</dl>
 };
 
 (: ========================= :)

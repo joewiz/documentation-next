@@ -127,7 +127,37 @@ declare function docs:load-article($slug as xs:string) as map(*)? {
  : @return HTML fragment
  :)
 declare function docs:render($article as map(*)) as node()* {
-    xdita:render($article?doc)
+    let $base-path := request:get-parameter("base-path", ())
+    let $html := xdita:render($article?doc)
+    return
+        if ($base-path) then
+            docs:rebase-html-links($html, $base-path)
+        else
+            $html
+};
+
+(:~
+ : Rewrite relative "../" links in rendered HTML.
+ : When the documentation overview is displayed at /articles (not
+ : /articles/documentation), the ODD's ../ prefix goes one level
+ : too high. This rewrites ../slug to articles/slug.
+ :)
+declare %private function docs:rebase-html-links($nodes as node()*, $base as xs:string) as node()* {
+    for $node in $nodes
+    return
+        typeswitch ($node)
+            case element() return
+                element { node-name($node) } {
+                    for $attr in $node/@*
+                    return
+                        if (local-name($attr) = "href" and starts-with(string($attr), "../")
+                            and not(starts-with(string($attr), "../articles/"))) then
+                            attribute href { $base || substring(string($attr), 4) }
+                        else
+                            $attr,
+                    docs:rebase-html-links($node/node(), $base)
+                }
+            default return $node
 };
 
 (: ========================= :)

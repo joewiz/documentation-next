@@ -100,20 +100,32 @@ else if ($exist:resource eq "logout") then (
     </dispatch>
 )
 
-(: Landing page — forward internally to the "Documentation" overview article,
- : which has the grouped TOC and section descriptions matching the
- : legacy app's landing page. The redirect ensures relative links in the
- : article (e.g., ../basic-installation) resolve correctly. :)
+(: Landing page — redirect to /articles :)
 else if ($path = "" or $path = "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{request:get-context-path()}/apps/docs/articles/documentation"/>
+        <redirect url="{request:get-context-path()}/apps/docs/articles"/>
     </dispatch>
 
-(: Article index :)
+(: Article index — display the "documentation" overview article.
+ : The add-parameter base-path rewrites the ODD's ../ link prefix to
+ : stay within /articles/ since we're displaying at /articles not
+ : /articles/documentation. :)
 else if ($path = "/articles") then
-    local:view("article-index.tpl", (
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/view.xq">
+            <set-attribute name="template" value="templates/article.tpl"/>
+            <set-attribute name="$section" value="articles"/>
+            <set-attribute name="$slug" value="documentation"/>
+            <add-parameter name="base-path" value="articles/"/>
+        </forward>
+    </dispatch>
+
+else if (false()) then
+    local:view("article.tpl", (
         <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
-            name="$section" value="articles"/>
+            name="$section" value="articles"/>,
+        <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
+            name="$slug" value="documentation"/>
     ))
 
 (: Article assets — images, listings, etc.

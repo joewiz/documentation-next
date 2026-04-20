@@ -761,14 +761,14 @@
             <title>Alphabetical index</title>
     
     <p>This section lists all available articles in title alphabetical order.</p>
-    <p/>
+    <p outputclass="indexontitle"/>
   </section>
         <section id="subject-index">
             <title>Subject index</title>
-    
+
     <p>This section lists all available articles by subject.
     </p>
-    <p/>
+    <p outputclass="indexonkeyword"/>
   </section>
     </body>
 </topic>

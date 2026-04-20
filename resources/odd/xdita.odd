@@ -62,6 +62,8 @@
 
                 <!-- ============ Block content ============ -->
                 <elementSpec ident="p">
+                    <!-- p[@outputclass='indexontitle'] and p[@outputclass='indexonkeyword']
+                         are handled by xdita:render() post-processing, not the ODD. -->
                     <model behaviour="paragraph"/>
                 </elementSpec>
                 <elementSpec ident="pre">
