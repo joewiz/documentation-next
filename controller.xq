@@ -100,12 +100,14 @@ else if ($exist:resource eq "logout") then (
     </dispatch>
 )
 
-(: Landing page — article index :)
+(: Landing page — forward internally to the "Documentation" overview article,
+ : which has the grouped TOC and section descriptions matching the
+ : legacy app's landing page. The redirect ensures relative links in the
+ : article (e.g., ../basic-installation) resolve correctly. :)
 else if ($path = "" or $path = "/") then
-    local:view("article-index.tpl", (
-        <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
-            name="$section" value="articles"/>
-    ))
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{request:get-context-path()}/apps/docs/articles/documentation"/>
+    </dispatch>
 
 (: Article index :)
 else if ($path = "/articles") then
