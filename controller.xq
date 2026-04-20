@@ -70,25 +70,29 @@ if ($exist:path != "/" and ends-with($exist:path, "/")
             <redirect url="{$target}"/>
         </dispatch>
 
-(: --- Login (GET) --- :)
+(: --- Login (GET) — render through view pipeline with shared navbar --- :)
 else
 if ($exist:resource eq "login" and $method eq "get") then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/login.html"/>
-    </dispatch>
+    local:view("login.tpl", (
+        <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
+            name="$section" value="login"/>
+    ))
 
-(: --- Login (POST) --- :)
-else if ($exist:resource eq "login" and $method eq "post") then
-    let $base := request:get-context-path() || "/apps/docs"
-    return
-        if ($user and not($user = ("guest", "nobody"))) then
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <redirect url="{request:get-parameter('redirect', $base || '/admin')}"/>
-            </dispatch>
-        else
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <redirect url="{$base}/login?error=1"/>
-            </dispatch>
+(: --- Login (POST) — return JSON for fetch-based login --- :)
+else if ($exist:resource eq "login" and $method eq "post") then (
+    util:declare-option("exist:serialize", "method=json media-type=application/json"),
+    if ($user and not($user = ("guest", "nobody"))) then
+        <status xmlns:json="http://www.json.org">
+            <user>{$user}</user>
+            <isAdmin json:literal="true">{sm:is-dba($user)}</isAdmin>
+        </status>
+    else (
+        response:set-status-code(401),
+        <status>
+            <message>Login failed</message>
+        </status>
+    )
+)
 
 (: --- Logout --- :)
 else if ($exist:resource eq "logout") then (

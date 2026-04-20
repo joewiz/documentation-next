@@ -310,6 +310,13 @@ declare function local:route-context() as map(*) {
                 "breadcrumb": dnav:breadcrumb("search", (), ())
             }
 
+        (: === Login === :)
+        else if ($section = "login") then
+            map {
+                "page-title": "Login",
+                "breadcrumb": dnav:breadcrumb("home", (), ())
+            }
+
         (: === Admin === :)
         else if ($section = "admin") then
             map {

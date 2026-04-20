@@ -23,7 +23,7 @@
 
 [% template content %]
 <div class="docs-app">
-    <nav class="docs-tabs" aria-label="Documentation navigation">
+    <nav class="app-tabs" aria-label="Documentation navigation">
         <ul>
             <li><a href="[[ $context-path ]]/articles" class="[[ $tabs?articles ]]">Articles</a></li>
             <li><a href="[[ $context-path ]]/functions" class="[[ $tabs?functions ]]">Functions</a></li>
