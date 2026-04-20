@@ -212,10 +212,10 @@
                     <model predicate="starts-with(@href,'mailto:')" behaviour="link">
                         <param name="uri" value="@href"/>
                     </model>
-                    <!-- Cross-article slug (bare slug or slug#anchor): prepend ../ so
-                         relative URLs resolve correctly from /articles/{slug}/ -->
+                    <!-- Cross-article slug (bare slug or slug#anchor): use as-is.
+                         From /articles/{slug}, bare "target" resolves to /articles/target. -->
                     <model behaviour="link">
-                        <param name="uri" value="'../' || @href"/>
+                        <param name="uri" value="@href"/>
                     </model>
                 </elementSpec>
                 <elementSpec ident="image">

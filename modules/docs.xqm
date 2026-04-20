@@ -137,10 +137,10 @@ declare function docs:render($article as map(*)) as node()* {
 };
 
 (:~
- : Rewrite relative "../" links in rendered HTML.
- : When the documentation overview is displayed at /articles (not
- : /articles/documentation), the ODD's ../ prefix goes one level
- : too high. This rewrites ../slug to articles/slug.
+ : Rewrite relative article links when the documentation overview is
+ : displayed at /articles (not /articles/documentation).
+ : From /articles, bare "slug" resolves to /slug (wrong). Prepending
+ : "articles/" makes it resolve to /articles/slug (correct).
  :)
 declare %private function docs:rebase-html-links($nodes as node()*, $base as xs:string) as node()* {
     for $node in $nodes
@@ -150,9 +150,14 @@ declare %private function docs:rebase-html-links($nodes as node()*, $base as xs:
                 element { node-name($node) } {
                     for $attr in $node/@*
                     return
-                        if (local-name($attr) = "href" and starts-with(string($attr), "../")
-                            and not(starts-with(string($attr), "../articles/"))) then
-                            attribute href { $base || substring(string($attr), 4) }
+                        if (local-name($attr) = "href" and
+                            not(starts-with(string($attr), "http")) and
+                            not(starts-with(string($attr), "/")) and
+                            not(starts-with(string($attr), "#")) and
+                            not(starts-with(string($attr), "mailto:")) and
+                            not(starts-with(string($attr), "articles/")) and
+                            not(contains(string($attr), "/assets/"))) then
+                            attribute href { $base || string($attr) }
                         else
                             $attr,
                     docs:rebase-html-links($node/node(), $base)
