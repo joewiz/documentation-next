@@ -80,8 +80,8 @@ function tokenizeSignature(text) {
             i += m[0].length;
             nextIsType = false;
         } else if ((m = rest.match(QNAME_OCC_RE))) {
-            // Function name (before first paren) or other identifiers — plain text
-            tokens.push({ text: m[0], cls: null });
+            // Function name (before first paren) or other identifiers
+            tokens.push({ text: m[0], cls: pastOpen ? null : "tok-macroName" });
             i += m[0].length;
         } else {
             tokens.push({ text: rest[0], cls: null });

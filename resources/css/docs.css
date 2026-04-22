@@ -271,13 +271,19 @@
     color: #3498db;
 }
 
-/* Anchor link on function headings — hidden until hover */
+/* Anchor link on function headings — hidden until hover, sticks out left */
+.function h2,
+.function h3 {
+    position: relative;
+}
+
 .fn-anchor {
     color: #ccc;
-    margin-right: 0.25rem;
     text-decoration: none;
     opacity: 0;
     transition: opacity 0.15s;
+    position: absolute;
+    left: -1.25rem;
 }
 
 h2:hover .fn-anchor,
@@ -524,7 +530,7 @@ h3:focus-within .fn-anchor {
 .tok-className     { color: #8250df; }
 .tok-labelName     { color: #953800; }
 .tok-namespace     { color: #953800; }
-.tok-macroName     { color: #0550ae; }
+.tok-macroName     { color: #0000ff; }
 .tok-literal    { color: #0550ae; }
 .tok-bool       { color: #0550ae; }
 .tok-atom       { color: #0550ae; }
@@ -638,24 +644,18 @@ h3:focus-within .fn-anchor {
     position: relative;
 }
 
-.tryit-code {
+jinn-codemirror.tryit-code {
     display: block;
     width: 100%;
     box-sizing: border-box;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    font-size: 0.85rem;
-    line-height: 1.5;
     border: 1px solid #d0d7de;
     border-radius: 4px;
-    padding: 0.6rem 2.5rem 0.6rem 0.75rem;
-    resize: vertical;
     background: #fff;
-    color: #24292e;
-    tab-size: 4;
+    min-height: 4.5em;
+    font-size: 0.85rem;
 }
 
-.tryit-code:focus {
-    outline: none;
+jinn-codemirror.tryit-code:focus-within {
     border-color: #0969da;
     box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
 }
