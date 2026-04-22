@@ -77,6 +77,7 @@ declare function local:context($section as xs:string?, $route-context as map(*))
     )
 
     return map:merge((
+        $route-context,
         map {
             (: Profile context variables :)
             "context-path": $context-path,
@@ -98,17 +99,14 @@ declare function local:context($section as xs:string?, $route-context as map(*))
             },
 
             (: App-specific context :)
+            "slug": (),
             "user": $user,
             "app-base": $context-path,
             "has-api": config:has-api(),
             "tabs": $tabs,
             "q": request:get-parameter("q", ""),
-            "category": request:get-parameter("category", "all"),
-
-            (: Default to empty so page-content.tpl exists($slug) check is always valid :)
-            "slug": ()
-        },
-        $route-context
+            "category": request:get-parameter("category", "all")
+        }
     ))
 };
 
@@ -121,6 +119,7 @@ declare function local:route-context() as map(*) {
     let $function-name := request:get-attribute("$function-name")
     let $arity := request:get-attribute("$arity")
     let $slug := request:get-attribute("$slug")
+    let $is-index := request:get-attribute("$is-index") = "true"
     let $q := request:get-parameter("q", "")
     let $type := request:get-parameter("type", "all")
     let $ns-prefix := request:get-parameter("prefix", "")
@@ -138,7 +137,7 @@ declare function local:route-context() as map(*) {
                 if (exists($article)) then
                     map {
                         "page-title": $article?title,
-                        "slug": $slug,
+                        "slug": if ($is-index) then () else $slug,
                         "article": $article,
                         "article-html": docs:render($article),
                         "toc": docs:toc($article),
@@ -319,8 +318,10 @@ declare function local:route-context() as map(*) {
 
         (: === Admin === :)
         else if ($section = "admin") then
-            map {
+            let $edit-slug := request:get-parameter("edit", "")
+            return map {
                 "page-title": "Administration",
+                "edit-slug": $edit-slug,
                 "all-articles": docs:list-articles(),
                 "breadcrumb": dnav:breadcrumb("admin", (), ())
             }

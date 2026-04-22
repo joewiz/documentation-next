@@ -426,8 +426,10 @@ function setup() {
                 const data = await resp.json();
 
                 if (data.status === "ok") {
+                    const skipped = data.total - data.generated;
                     status.textContent =
-                        `Done. Generated documentation for ${data.generated} of ${data.total} modules.`;
+                        `Done. Generated documentation for ${data.generated} modules` +
+                        (skipped > 0 ? ` (${skipped} modules skipped — no documentable source).` : '.');
                     status.className = "status-ok";
                 } else {
                     status.textContent = `Error: ${data.message || "Unknown error"}`;

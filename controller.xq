@@ -120,6 +120,7 @@ else if ($path = "/articles") then
             <set-attribute name="template" value="templates/article.tpl"/>
             <set-attribute name="$section" value="articles"/>
             <set-attribute name="$slug" value="documentation"/>
+            <set-attribute name="$is-index" value="true"/>
             <add-parameter name="base-path" value="articles/"/>
         </forward>
     </dispatch>
@@ -211,7 +212,7 @@ else if ($path = "/search") then
 
 (: Admin — DBA access required :)
 else if ($path = "/admin") then
-    if (sm:is-dba($user)) then
+    if ($user and sm:is-dba($user)) then
         local:view("admin.tpl", (
             <set-attribute xmlns="http://exist.sourceforge.net/NS/exist"
                 name="$section" value="admin"/>
