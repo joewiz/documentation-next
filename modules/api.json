@@ -1,0 +1,60 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "eXist-db Documentation API",
+        "version": "1.0.0",
+        "description": "Function documentation and article APIs"
+    },
+    "servers": [
+        { "url": "/exist/apps/docs" }
+    ],
+    "security": [],
+    "paths": {
+        "/api/functions/{prefix}/{name}": {
+            "get": {
+                "summary": "Get function documentation by prefix and local name",
+                "operationId": "fn-api:get-function",
+                "parameters": [
+                    {
+                        "name": "prefix",
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" },
+                        "description": "Module prefix (e.g., fn, util, crypto)"
+                    },
+                    {
+                        "name": "name",
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" },
+                        "description": "Function local name (e.g., hash, eval)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Function documentation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Function not found"
+                    }
+                }
+            }
+        },
+        "/api/xqdoc/regenerate": {
+            "post": {
+                "summary": "Regenerate XQDoc data from all modules",
+                "operationId": "fn-api:regenerate-xqdoc",
+                "responses": {
+                    "200": { "description": "Regeneration summary" }
+                }
+            }
+        }
+    }
+}

@@ -243,6 +243,14 @@ else if (matches($path, "^/api/articles/[^/]+/xdita$")) then
             </forward>
         </dispatch>
 
+(: API: Roaster-based REST endpoints :)
+else if (starts-with($path, "/api/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/api.xq">
+            <set-header name="Cache-Control" value="no-cache"/>
+        </forward>
+    </dispatch>
+
 (: Functions: module browser :)
 else if ($path = "/functions") then
     local:view("module-list.tpl", (

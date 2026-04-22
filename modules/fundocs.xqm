@@ -240,13 +240,24 @@ declare %private function fundocs:cardinality($cardinality as xs:string) as xs:s
 declare %private function fundocs:signature(
     $function as element(function)
 ) as xs:string {
+    let $name := $function/@name/string()
+    (: Prepend module prefix if the name doesn't already contain one :)
+    let $qualified-name :=
+        if (contains($name, ':')) then $name
+        else
+            let $module := $function/ancestor::module
+            let $prefix := fundocs:default-prefix($module/@uri, $module/@prefix)
+            return
+                if ($prefix != "" and $prefix != "unknown") then
+                    $prefix || ":" || $name
+                else $name
     let $arguments :=
         for $argument in $function/argument
         return
             "$" || $argument/@var || " as " ||
             $argument/@type || fundocs:cardinality($argument/@cardinality)
     return
-        $function/@name/string() || "(" || string-join($arguments, ", ") || ")" ||
+        $qualified-name || "(" || string-join($arguments, ", ") || ")" ||
         " as " || $function/returns/@type ||
         fundocs:cardinality($function/returns/@cardinality)
 };
