@@ -7,7 +7,7 @@ query: |
 ---
 
 The eXist-db `process` module enables admin users to execute system commands on the machine where eXist is running.
-`process:execute` receives the command as a sequence of strings, plus optional `<option>` XML.
+[`process:execute`]({docs}/functions/process/execute) receives the command as a sequence of strings, plus optional `<option>` XML.
 
 **Note:** For security reasons, only users in the `dba` group may call this function.
 

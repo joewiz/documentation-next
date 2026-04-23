@@ -13,7 +13,7 @@ query: |
       </embedding>
 ---
 
-Generates a vector embedding for the given text using the specified model. Returns an `array(*)` of float values suitable for use with `ft:query-vector()` and `ft:query-field-vector()`.
+Generates a vector embedding for the given text using the specified model. Returns an `array(*)` of float values suitable for use with [`ft:query-vector()`]({docs}/functions/ft/query-vector) and [`ft:query-field-vector()`]({docs}/functions/ft/query-field-vector).
 
 The 2-arity form resolves the model via the `<vector-models>` registry in `conf.xml` or built-in defaults. The 3-arity form accepts an explicit model path. The 4-arity form also accepts an API key for HTTP-based providers.
 

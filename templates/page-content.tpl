@@ -38,6 +38,7 @@
 <script src="[[ $context-path ]]/resources/js/highlight-bundle.js"></script>
 <script src="[[ $context-path ]]/resources/js/docs.js"></script>
 [% if $has-api %]
+<script type="module" src="[[ $context-path ]]/resources/vendor/jinn-codemirror/jinn-codemirror-bundle.js"></script>
 <script src="[[ $context-path ]]/resources/js/tryit.js"></script>
 [% endif %]
 [% if $tabs?admin = "active" %]

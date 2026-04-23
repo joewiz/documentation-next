@@ -3,6 +3,9 @@
  *
  * Sends XQuery expressions to exist-api's /api/eval endpoint
  * and displays results. Degrades gracefully if exist-api is not available.
+ *
+ * Code input uses <jinn-codemirror mode="xquery"> for syntax highlighting.
+ * Result output is highlighted via the highlight-bundle (Lezer/CM6).
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -39,6 +42,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /**
+     * Read code from a jinn-codemirror element.
+     * Falls back to textarea .value for dynamically-created panels
+     * before the web component upgrades.
+     */
+    function readCode(el) {
+        return (typeof el.content === "string" ? el.content : el.value) || "";
+    }
+
+    /**
+     * Write code into a jinn-codemirror element.
+     */
+    function writeCode(el, code) {
+        if (el.tagName === "JINN-CODEMIRROR") {
+            el.setAttribute("code", code);
+        } else {
+            el.value = code;
+        }
+    }
+
+    /**
+     * Force jinn-codemirror to re-render after becoming visible.
+     * CM6 can't lay out while the container is hidden, so we poke
+     * its internal EditorView to re-measure.
+     */
+    function refreshEditor(el) {
+        if (el._editor) {
+            el._editor.requestMeasure();
+        }
+    }
+
     function handleTryIt(e) {
         const btn = e.currentTarget;
         const existingPanel = btn.closest(".tryit-section")?.querySelector(".tryit-panel");
@@ -57,8 +91,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (panel.hidden) {
             panel.hidden = false;
             const codeArea = panel.querySelector(".tryit-code");
-            if (codeArea && !codeArea.value.trim()) {
-                codeArea.value = generateExample(btn);
+            if (codeArea) {
+                const existing = readCode(codeArea).trim();
+                if (!existing) {
+                    writeCode(codeArea, generateExample(btn));
+                } else {
+                    // Re-set the same code so CM6 re-renders after the panel
+                    // becomes visible (it can't lay out while hidden)
+                    refreshEditor(codeArea);
+                }
             }
             // Wire up Run button if not already done
             const runBtn = panel.querySelector(".tryit-run");
@@ -76,12 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const querySource = btn.parentElement.querySelector(".tryit-query-source");
         const query = (querySource ? querySource.value : "").trim();
         const code = query || generateExample(btn);
-        const rows = Math.min(Math.max(code.split("\n").length + 1, 4), 14);
         const panel = document.createElement("div");
         panel.className = "tryit-panel";
         panel.innerHTML = `
             <div class="tryit-code-wrapper">
-                <textarea class="tryit-code" rows="${rows}"></textarea>
+                <jinn-codemirror class="tryit-code" mode="xquery"></jinn-codemirror>
                 <button class="tryit-copy" title="Copy to clipboard" aria-label="Copy to clipboard">
                     <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/></svg>
                 </button>
@@ -89,8 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <button class="tryit-run">Run</button>
             <pre class="tryit-output" hidden></pre>
         `;
-        const textarea = panel.querySelector(".tryit-code");
-        textarea.value = code;
+        // Set code after the element is in DOM so the web component can upgrade
+        const cm = panel.querySelector(".tryit-code");
+        customElements.whenDefined("jinn-codemirror").then(() => {
+            writeCode(cm, code);
+        });
         panel.querySelector(".tryit-run").addEventListener("click", () => runQuery(panel));
         panel.querySelector(".tryit-copy").addEventListener("click", () => copyCode(panel));
         return panel;
@@ -212,20 +255,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function copyCode(panel) {
-        const textarea = panel.querySelector(".tryit-code");
+        const codeArea = panel.querySelector(".tryit-code");
         const copyBtn = panel.querySelector(".tryit-copy");
-        if (!textarea || !copyBtn) return;
-        navigator.clipboard.writeText(textarea.value).then(() => {
+        if (!codeArea || !copyBtn) return;
+        navigator.clipboard.writeText(readCode(codeArea)).then(() => {
             copyBtn.classList.add("copied");
             setTimeout(() => copyBtn.classList.remove("copied"), 1500);
         });
+    }
+
+    /**
+     * Highlight the try-it output element based on content type.
+     * XML → xml, JSON-like → json, atomic values → no highlighting.
+     */
+    function highlightOutput(output) {
+        const hl = globalThis.highlightCode;
+        if (!hl) return;
+        const text = output.textContent;
+        const type = /^\s*</.test(text) ? "xml"
+                   : /^\s*[\[{]/.test(text) ? "json"
+                   : null;
+        if (type) {
+            hl.highlightElement(output, type);
+        }
     }
 
     async function runQuery(panel) {
         const codeArea = panel.querySelector(".tryit-code");
         const output = panel.querySelector(".tryit-output");
         const runBtn = panel.querySelector(".tryit-run");
-        const query = codeArea.value.trim();
+        const query = readCode(codeArea).trim();
 
         if (!query) return;
 
@@ -250,6 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const text = await resp.text();
             output.textContent = text || "(empty result)";
+            highlightOutput(output);
         } catch (err) {
             output.textContent = `Error: ${err.message}`;
         } finally {

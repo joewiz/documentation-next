@@ -51,6 +51,14 @@ function copyJinnTap() {
     .pipe(dest("resources/vendor/jinntap"));
 }
 
+function copyJinnCodemirror() {
+  return src([
+    "node_modules/@jinntec/jinn-codemirror/dist/jinn-codemirror-bundle.js",
+    "node_modules/@jinntec/jinn-codemirror/dist/jinn-codemirror-bundle.js.map",
+  ], { encoding: false, allowEmpty: true })
+    .pipe(dest("resources/vendor/jinn-codemirror"));
+}
+
 function copyXarResources() {
   return src([
     "controller.xq",
@@ -108,7 +116,7 @@ function deployXar() {
 
 const build = series(
   clean,
-  copyJinnTap,
+  parallel(copyJinnTap, copyJinnCodemirror),
   copyXarResources,
   templates,
   createXar

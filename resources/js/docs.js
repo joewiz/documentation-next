@@ -80,8 +80,8 @@ function tokenizeSignature(text) {
             i += m[0].length;
             nextIsType = false;
         } else if ((m = rest.match(QNAME_OCC_RE))) {
-            // Function name (before first paren) or other identifiers — plain text
-            tokens.push({ text: m[0], cls: null });
+            // Function name (before first paren) or other identifiers
+            tokens.push({ text: m[0], cls: pastOpen ? null : "tok-macroName" });
             i += m[0].length;
         } else {
             tokens.push({ text: rest[0], cls: null });
@@ -426,8 +426,10 @@ function setup() {
                 const data = await resp.json();
 
                 if (data.status === "ok") {
+                    const skipped = data.total - data.generated;
                     status.textContent =
-                        `Done. Generated documentation for ${data.generated} of ${data.total} modules.`;
+                        `Done. Generated documentation for ${data.generated} modules` +
+                        (skipped > 0 ? ` (${skipped} modules skipped — no documentable source).` : '.');
                     status.className = "status-ok";
                 } else {
                     status.textContent = `Error: ${data.message || "Unknown error"}`;
