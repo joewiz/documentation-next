@@ -23,10 +23,9 @@
             <div id="regenerate-status"></div>
         </section>
 
+        [% if exists($edit-slug) and $edit-slug != '' %]
         <section class="admin-section" id="xdita-editor-section">
-            <h2>Edit Article</h2>
-            <p>Use the <strong>Edit Article</strong> button on any article page to open
-               the editor. The article will load automatically below.</p>
+            <h2>Edit Article: [[ $edit-slug ]]</h2>
             <div class="editor-controls">
                 <button type="button" class="btn btn-primary" id="save-article-btn" disabled="disabled">Save</button>
                 <span id="editor-status"></span>
@@ -37,6 +36,13 @@
                 </jinn-tap>
             </div>
         </section>
+        [% else %]
+        <section class="admin-section">
+            <h2>Edit Article</h2>
+            <p>Use the <strong>Edit Article</strong> button on any article page to open
+               the editor here.</p>
+        </section>
+        [% endif %]
 
         <section class="admin-section">
             <h2>Editorial Tools</h2>
