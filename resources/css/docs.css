@@ -179,12 +179,13 @@
 }
 
 .module-card h3 a {
-    color: #2c3e50;
+    color: var(--site-nav-bg, #1a365d);
     text-decoration: none;
 }
 
 .module-card h3 a:hover {
-    color: #3498db;
+    color: var(--site-accent, #3498db);
+    text-decoration: underline;
 }
 
 .module-uri {
@@ -302,15 +303,16 @@ h3:focus-within .fn-anchor {
     font-weight: 400;
 }
 
-/* Function name links in headings: black, light blue on hover */
+/* Function name links in headings: dark blue, light blue on hover */
 .function h2 > a,
 .function h3 > a:not(.fn-anchor):not(.fn-article-badge) {
-    color: #24292e;
+    color: var(--site-nav-bg, #1a365d);
     text-decoration: none;
 }
 .function h2 > a:hover,
 .function h3 > a:not(.fn-anchor):not(.fn-article-badge):hover {
-    color: #3498db;
+    color: var(--site-accent, #3498db);
+    text-decoration: underline;
 }
 
 /* Small "more" badge on functions that have a supplementary article */
@@ -833,12 +835,13 @@ jinn-codemirror.tryit-code:focus-within {
 }
 
 .search-result h2 a {
-    color: #2c3e50;
+    color: var(--site-nav-bg, #1a365d);
     text-decoration: none;
 }
 
 .search-result h2 a:hover {
-    color: #3498db;
+    color: var(--site-accent, #3498db);
+    text-decoration: underline;
 }
 
 .search-snippet {
@@ -1137,13 +1140,14 @@ h4:hover .heading-anchor-btn {
 }
 
 .article-item a {
-    color: #2c3e50;
+    color: var(--site-nav-bg, #1a365d);
     text-decoration: none;
     font-weight: 500;
 }
 
 .article-item a:hover {
-    color: #3498db;
+    color: var(--site-accent, #3498db);
+    text-decoration: underline;
 }
 
 .article-description {
