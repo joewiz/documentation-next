@@ -260,8 +260,11 @@ declare function local:route-context() as map(*) {
 
         (: === Search === :)
         else if ($section = "search") then
-            let $fn-results-all  := fundocs:search($q)
+            let $fundocs-results  := fundocs:search($q)
             let $article-results := docs:search($q)
+            (: Split fundocs results into functions and modules :)
+            let $fn-results-all := array { $fundocs-results?*[?type = "function"] }
+            let $mod-results-all := array { $fundocs-results?*[?type = "module"] }
             (: Module Namespace Prefix facets: count functions per prefix :)
             let $prefix-facets :=
                 map:merge(
@@ -290,6 +293,7 @@ declare function local:route-context() as map(*) {
                     else $filtered
                 return array { $filtered }
             let $all-results := array {
+                if ($type = "all" or $type = "module") then $mod-results-all?* else (),
                 if ($type = "all" or $type = "function") then $fn-results?* else (),
                 if ($type = "all" or $type = "article") then $article-results?* else ()
             }
@@ -305,6 +309,7 @@ declare function local:route-context() as map(*) {
                 "category-facets": $category-facets,
                 "search-results": $all-results,
                 "function-count": array:size($fn-results-all),
+                "module-count": array:size($mod-results-all),
                 "article-count": array:size($article-results),
                 "breadcrumb": dnav:breadcrumb("search", (), ())
             }

@@ -17,6 +17,7 @@ import module namespace dbutil = "http://exist-db.org/apps/docs/dbutil"
     at "dbutil.xqm";
 
 declare namespace xqdoc = "http://www.xqdoc.org/1.0";
+declare namespace exist = "http://exist.sourceforge.net/NS/exist";
 
 (: ========================= :)
 (:  XQDoc Generation         :)
@@ -438,30 +439,76 @@ declare function fundocs:search($q as xs:string) as array(*) {
     if ($q = "") then
         array {}
     else
-        (: Preprocess the query to handle XQuery function name syntax (prefix:name).
-           KeywordAnalyzer fields (name, signature, uri) index the full string as one
-           token, so we escape the colon: util:eval → util\:eval.
-           StandardAnalyzer fields (description) split on punctuation, so we convert
-           to a phrase search: util:eval → "util eval". :)
-        let $kw-q   := replace($q, '(\w+):(\w+)', '$1\\:$2')
+        (: Detect prefix:name pattern in the query :)
+        let $has-colon := matches($q, '\w+:\w+')
+        (: For StandardAnalyzer fields, convert prefix:name to phrase "prefix name"
+           because StandardAnalyzer splits on punctuation. :)
         let $text-q := replace($q, '(\w+):(\w+)', '"$1 $2"')
-        let $hits := (
-            (: Search function names (KeywordAnalyzer — colon is part of the token) :)
-            $fundocs:data//xqdoc:function[ft:query(xqdoc:name, $kw-q)],
-            (: Search signatures (KeywordAnalyzer) :)
-            $fundocs:data//xqdoc:function[ft:query(xqdoc:signature, $kw-q)],
-            (: Search descriptions (StandardAnalyzer — use phrase search) :)
+        (: For module-level matching, use the prefix portion if colon present :)
+        let $mod-q := if ($has-colon) then replace($q, ':.*$', '') else $q
+
+        (: --- Function-level hits ---
+           Use Lucene XML query syntax for KeywordAnalyzer fields to bypass
+           the query parser, which treats colon as a field delimiter. :)
+        let $fn-hits := (
+            (: Function names — KeywordAnalyzer :)
+            if ($has-colon) then
+                (: Exact match for prefix:name via XML term query :)
+                $fundocs:data//xqdoc:function[ft:query(xqdoc:name,
+                    <query><term>{$q}</term></query>)]
+            else (
+                (: Exact name match :)
+                $fundocs:data//xqdoc:function[ft:query(xqdoc:name,
+                    <query><term>{$q}</term></query>)],
+                (: Local-name wildcard — "sync" matches "file:sync" :)
+                $fundocs:data//xqdoc:function[ft:query(xqdoc:name,
+                    <query><wildcard>*:{$q}</wildcard></query>)],
+                (: Prefix wildcard — "util" matches "util:eval", "util:log", etc. :)
+                $fundocs:data//xqdoc:function[ft:query(xqdoc:name,
+                    <query><wildcard>{$q}:*</wildcard></query>)]
+            ),
+            (: Descriptions — StandardAnalyzer, phrase search for colon patterns :)
             $fundocs:data//xqdoc:function
-                [ft:query(xqdoc:comment/xqdoc:description, $text-q)],
-            (: Search module URIs (KeywordAnalyzer) :)
-            $fundocs:data[ft:query(xqdoc:module/xqdoc:uri, $kw-q)]//xqdoc:function,
-            (: Search module prefix names (KeywordAnalyzer — exact match on short names) :)
-            $fundocs:data[xqdoc:module/xqdoc:name = $q]//xqdoc:function
+                [ft:query(xqdoc:comment/xqdoc:description, $text-q)]
         )
-        let $unique := distinct-values($hits ! generate-id(.))
-        return array {
-            for $id in $unique
-            let $function := $hits[generate-id(.) = $id][1]
+
+        (: --- Module-level hits ---
+           Use exact prefix match + URI suffix match (trailing segment only,
+           to avoid "util" matching "dbutil", "apputil", etc.). :)
+        let $mod-hits := (
+            $fundocs:data[xqdoc:module/xqdoc:name = $mod-q],
+            $fundocs:data[ft:query(xqdoc:module/xqdoc:uri,
+                <query><wildcard>*/{$mod-q}</wildcard></query>)]
+        )
+
+        (: --- KWIC highlighting ---
+           Run supplementary queries against the site-content field
+           (SimpleAnalyzer) to establish Lucene context for
+           ft:highlight-field-matches.  Build a lookup map from
+           generate-id → HTML snippet string. :)
+        let $site-opts := map { "fields": "site-content" }
+        let $kwic-fns := $fundocs:data//xqdoc:function
+            [ft:query(., $text-q, $site-opts)]
+        let $kwic-mods := $fundocs:data
+            [ft:query(., $text-q, $site-opts)]
+        let $fn-kwic := map:merge(
+            for $fn in $kwic-fns
+            let $snippet := fundocs:kwic-snippet($fn)
+            where exists($snippet)
+            return map:entry(generate-id($fn), $snippet)
+        )
+        let $mod-kwic := map:merge(
+            for $m in $kwic-mods
+            let $snippet := fundocs:kwic-snippet($m)
+            where exists($snippet)
+            return map:entry(generate-id($m), $snippet)
+        )
+
+        (: Deduplicate and build function results :)
+        let $unique-fn-ids := distinct-values($fn-hits ! generate-id(.))
+        let $fn-results :=
+            for $id in $unique-fn-ids
+            let $function := $fn-hits[generate-id(.) = $id][1]
             let $module := $function/ancestor::xqdoc:xqdoc
             let $prefix := $module/xqdoc:module/xqdoc:name/string()
             let $uri := $module/xqdoc:module/xqdoc:uri/string()
@@ -477,14 +524,73 @@ declare function fundocs:search($q as xs:string) as array(*) {
                 "local-name": $local-name,
                 "arity": $function/xqdoc:arity/string(),
                 "signature": $function/xqdoc:signature/string(),
-                "description": substring(
-                    $function/xqdoc:comment/xqdoc:description/string(), 1, 200
-                ),
+                "description": (
+                    $fn-kwic(generate-id($function)),
+                    substring(
+                        $function/xqdoc:comment/xqdoc:description/string(), 1, 200)
+                )[1],
                 "module-uri": $uri,
                 "category": fundocs:categorize($uri, $location),
                 "type": "function"
             }
-        }
+
+        (: Deduplicate module results by prefix — multiple xqdoc documents
+           can share a prefix (e.g. stored vs registered module). :)
+        let $mod-results :=
+            for $module in $mod-hits
+            group by $prefix := $module/xqdoc:module/xqdoc:name/string()
+            let $first := $module[1]
+            let $uri := $first/xqdoc:module/xqdoc:uri/string()
+            let $location := $first/xqdoc:control/xqdoc:location/string()
+            let $fn-count := sum($module ! count(.//xqdoc:function))
+            return map {
+                "prefix": $prefix,
+                "module-uri": $uri,
+                "description": (
+                    $mod-kwic(generate-id($first)),
+                    substring(
+                        $first/xqdoc:module/xqdoc:comment/xqdoc:description/string(), 1, 200)
+                )[1],
+                "function-count": $fn-count,
+                "category": fundocs:categorize($uri, $location),
+                "type": "module"
+            }
+
+        (: Module results first, then function results by relevance :)
+        return array { $mod-results, $fn-results }
+};
+
+(: ========================= :)
+(:  KWIC highlighting        :)
+(: ========================= :)
+
+(:~
+ : Build a KWIC snippet from ft:highlight-field-matches on site-content.
+ :
+ : Returns an HTML string with <mark> tags around matched terms, or empty
+ : sequence if no highlights are available.  The element must have been
+ : matched by ft:query with the site-content field for this to work.
+ :)
+declare %private function fundocs:kwic-snippet($hit as element()) as xs:string? {
+    let $highlighted := ft:highlight-field-matches($hit, "site-content")
+    return
+        if (exists($highlighted)) then
+            let $nodes := $highlighted//exist:match/..
+            return
+                if (exists($nodes)) then
+                    serialize(
+                        element span {
+                            for $node in ($nodes[1])/node()
+                            return
+                                if ($node instance of element(exist:match)) then
+                                    element mark { string($node) }
+                                else
+                                    substring(string($node), 1, 80)
+                        },
+                        map { "method": "xml" }
+                    )
+                else ()
+        else ()
 };
 
 (: ========================= :)

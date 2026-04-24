@@ -4,14 +4,37 @@
         <!-- Lucene full-text indexes for function documentation -->
         <lucene>
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+            <!-- SimpleAnalyzer splits on any non-letter and lowercases.
+                 Used on the site-wide text elements so that prefix:name
+                 (e.g. file:sync) is tokenized as two terms ("file", "sync")
+                 instead of one — StandardAnalyzer's UAX#29 treats colon as
+                 MidLetter, keeping "file:sync" as a single token. -->
+            <analyzer class="org.apache.lucene.analysis.core.SimpleAnalyzer" id="simple"/>
 
-            <!-- Function name: boosted, keyword analyzer for substring-like matching -->
-            <text qname="xqdoc:name" boost="2.0">
+            <!-- Function name: boosted, keyword analyzer for exact token matching.
+                 Uses match (not qname) so the name text is NOT excluded from the
+                 parent xqdoc:function Lucene document.
+                 Also carries site-* fields so that keyword-matched xqdoc:name
+                 elements can serve as sitewide search hits directly. -->
+            <text match="//xqdoc:functions/xqdoc:function/xqdoc:name" boost="2.0">
                 <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+                <facet dimension="site-app"     expression="'docs'"/>
+                <facet dimension="site-section" expression="'functions'"/>
+                <field name="site-content" expression="."/>
+                <field name="site-title"  expression="."/>
+                <field name="site-app"    expression="'docs'"/>
+                <field name="site-section" expression="'functions'"/>
+                <field name="site-url"
+                       expression="concat('functions/',
+                           ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:name, '/',
+                           if (contains(., ':'))
+                           then substring-after(., ':')
+                           else .)"/>
             </text>
 
-            <!-- Function signature: keyword analyzer for exact matching -->
-            <text qname="xqdoc:signature">
+            <!-- Function signature: keyword analyzer for exact matching.
+                 Match-based for the same parent-exclusion reason as above. -->
+            <text match="//xqdoc:functions/xqdoc:function/xqdoc:signature">
                 <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
             </text>
 
@@ -27,11 +50,11 @@
                 <analyzer class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
             </text>
 
-            <!-- Site-wide search fields for exist-api / site-shell integration -->
-            <text qname="xqdoc:xqdoc">
-                <!-- Facets must be inside <text> to be tracked by Lucene -->
+            <!-- Site-wide search: module-level (one hit per module).
+                 Uses SimpleAnalyzer so function names split on colons. -->
+            <text qname="xqdoc:xqdoc" analyzer="simple">
                 <facet dimension="site-app"     expression="'docs'"/>
-                <facet dimension="site-section" expression="'functions'"/>
+                <facet dimension="site-section" expression="'modules'"/>
                 <field name="site-content"
                        expression="string-join((
                            xqdoc:module/xqdoc:name,
@@ -45,9 +68,34 @@
                 <field name="site-app"
                        expression="'docs'"/>
                 <field name="site-section"
-                       expression="'functions'"/>
+                       expression="'modules'"/>
                 <field name="site-url"
                        expression="xqdoc:control/xqdoc:site-url"/>
+            </text>
+
+            <!-- Site-wide search: function-level (one hit per function).
+                 Uses SimpleAnalyzer so "file:sync" produces tokens
+                 "file" + "sync" instead of one UAX#29 MidLetter token. -->
+            <text qname="xqdoc:function" analyzer="simple">
+                <facet dimension="site-app"     expression="'docs'"/>
+                <facet dimension="site-section" expression="'functions'"/>
+                <field name="site-content"
+                       expression="string-join((
+                           xqdoc:name,
+                           xqdoc:comment/xqdoc:description
+                       ), ' ')"/>
+                <field name="site-title"
+                       expression="xqdoc:name"/>
+                <field name="site-app"
+                       expression="'docs'"/>
+                <field name="site-section"
+                       expression="'functions'"/>
+                <field name="site-url"
+                       expression="concat('functions/',
+                           ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:name, '/',
+                           if (contains(xqdoc:name, ':'))
+                           then substring-after(xqdoc:name, ':')
+                           else xqdoc:name)"/>
             </text>
         </lucene>
 

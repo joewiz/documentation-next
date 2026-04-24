@@ -34,9 +34,9 @@
                     <ul class="facet-list">
                         <li>
                             [% if $type-filter = 'all' and $prefix-filter = '' %]
-                            <span class="facet-link facet-active">All <span class="facet-count">([[ $function-count + $article-count ]])</span></span>
+                            <span class="facet-link facet-active">All <span class="facet-count">([[ $function-count + $module-count + $article-count ]])</span></span>
                             [% else %]
-                            <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=all">All <span class="facet-count">([[ $function-count + $article-count ]])</span></a>
+                            <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=all">All <span class="facet-count">([[ $function-count + $module-count + $article-count ]])</span></a>
                             [% endif %]
                         </li>
                         <li>
@@ -46,6 +46,15 @@
                             <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=function">Functions <span class="facet-count">([[ $function-count ]])</span></a>
                             [% endif %]
                         </li>
+                        [% if $module-count > 0 %]
+                        <li>
+                            [% if $type-filter = 'module' %]
+                            <span class="facet-link facet-active">Modules <span class="facet-count">([[ $module-count ]])</span></span>
+                            [% else %]
+                            <a class="facet-link" href="[[ $app-base ]]/search?q=[[ encode-for-uri($q) ]]&amp;type=module">Modules <span class="facet-count">([[ $module-count ]])</span></a>
+                            [% endif %]
+                        </li>
+                        [% endif %]
                         <li>
                             [% if $type-filter = 'article' %]
                             <span class="facet-link facet-active">Articles <span class="facet-count">([[ $article-count ]])</span></span>
@@ -97,6 +106,21 @@
                 <ol class="search-results">
                     [% for $result in $search-results?* %]
                     <li class="search-result search-result-[[ $result?type ]]">
+                        [% if $result?type = 'module' %]
+                        <h2>
+                            <a href="[[ $app-base ]]/functions/[[ $result?prefix ]]/">
+                                [[ $result?prefix ]] module
+                            </a>
+                        </h2>
+                        [% if $result?description != '' %]
+                        <p class="search-snippet">[[ if (contains($result?description, '<mark>')) then parse-xml("<r>" || $result?description || "</r>")/r/node() else $result?description ]]</p>
+                        [% endif %]
+                        <div class="search-meta">
+                            <span class="search-type badge badge-module">module</span>
+                            <span class="search-module">[[ $result?module-uri ]]</span>
+                            <span class="search-fn-count">[[ $result?function-count ]] functions</span>
+                        </div>
+                        [% else %]
                         [% if $result?type = 'function' %]
                         <h2>
                             <a href="[[ $app-base ]]/functions/[[ $result?prefix ]]/[[ $result?local-name ]]">
@@ -104,7 +128,7 @@
                             </a>
                         </h2>
                         [% if $result?description != '' %]
-                        <p class="search-snippet">[[ $result?description ]]</p>
+                        <p class="search-snippet">[[ if (contains($result?description, '<mark>')) then parse-xml("<r>" || $result?description || "</r>")/r/node() else $result?description ]]</p>
                         [% endif %]
                         <div class="search-meta">
                             <span class="search-type badge">function</span>
@@ -117,11 +141,12 @@
                             </a>
                         </h2>
                         [% if $result?description != '' %]
-                        <p class="search-snippet">[[ $result?description ]]</p>
+                        <p class="search-snippet">[[ if (contains($result?description, '<mark>')) then parse-xml("<r>" || $result?description || "</r>")/r/node() else $result?description ]]</p>
                         [% endif %]
                         <div class="search-meta">
                             <span class="search-type badge badge-article">article</span>
                         </div>
+                        [% endif %]
                         [% endif %]
                     </li>
                     [% endfor %]

@@ -850,6 +850,12 @@ jinn-codemirror.tryit-code:focus-within {
     margin: 0 0 0.25rem;
 }
 
+.search-snippet mark {
+    background: #fff3cd;
+    padding: 0.1em 0.2em;
+    border-radius: 2px;
+}
+
 .search-meta {
     font-size: 0.8rem;
     color: #999;
@@ -1163,6 +1169,16 @@ h4:hover .heading-anchor-btn {
 .badge-article {
     background: #3498db;
     color: #fff;
+}
+
+.badge-module {
+    background: #8e44ad;
+    color: #fff;
+}
+
+.search-fn-count {
+    color: #888;
+    font-size: 0.85rem;
 }
 
 .status-ok {

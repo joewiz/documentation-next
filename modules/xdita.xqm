@@ -10,6 +10,8 @@ xquery version "3.1";
  :)
 module namespace xdita = "http://exist-db.org/apps/docs/xdita";
 
+declare namespace exist = "http://exist.sourceforge.net/NS/exist";
+
 import module namespace config = "http://exist-db.org/apps/docs/config"
     at "config.xqm";
 import module namespace pm-config = "http://www.tei-c.org/tei-simple/pm-config"
@@ -301,13 +303,35 @@ declare function xdita:search($q as xs:string) as array(*) {
             )
             let $slug := xdita:uri-to-slug($doc-uri)
             let $title := $hit/title/string()
+            (: KWIC snippet from site-content field highlights :)
+            let $highlighted := ft:highlight-field-matches($hit, "site-content")
+            let $snippet :=
+                if (exists($highlighted)) then
+                    let $nodes := $highlighted//exist:match/..
+                    return
+                        if (exists($nodes)) then
+                            serialize(
+                                element span {
+                                    for $node in ($nodes[1])/node()
+                                    return
+                                        if ($node instance of element(exist:match)) then
+                                            element mark { string($node) }
+                                        else
+                                            substring(string($node), 1, 80)
+                                },
+                                map { "method": "xml" }
+                            )
+                        else ()
+                else ()
             order by ft:score($hit) descending
             return map {
                 "slug": $slug,
                 "title": $title,
-                "description": substring(
-                    string-join($hit/body/section[1]/p[1]//text(), " "), 1, 200
-                ),
+                "description": (
+                    $snippet,
+                    substring(
+                        string-join($hit/body/section[1]/p[1]//text(), " "), 1, 200)
+                )[1],
                 "score": ft:score($hit),
                 "type": "article"
             }
