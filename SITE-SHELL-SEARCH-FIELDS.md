@@ -12,11 +12,13 @@ Apps contribute to sitewide search by defining Lucene index fields with the `sit
 | `site-title` | Display title for the search result | "Containerization via Docker", "http://www.w3.org/2005/xpath-functions" |
 | `site-app` | App identifier (for filtering/display) | "docs", "blog", "notebook" |
 | `site-section` | Section within the app | "articles", "functions" |
-| `site-url` | **NEW** — Clean URL path relative to the app root | "articles/docker", "functions/fn/" |
+| `site-url` | Root-relative view URL — begins with `/`, points at the rendered page | "/exist/apps/docs/articles/docker", "/exist/apps/docs/functions/fn/" |
 
 ## How `site-url` Works
 
-Apps store the clean URL path in the indexed document. For documents where the database path doesn't match the user-facing URL, `site-url` provides the correct link target.
+Apps store the view URL in the indexed document. For documents where the database path doesn't match the user-facing URL, `site-url` provides the correct link target.
+
+> **Contract:** `site-url` is a **root-relative path beginning with `/`** that points at the rendered page (not the `/db/...` storage resource), e.g. `/exist/apps/docs/functions/fn/`. No scheme/host/port — consumers prefix their own origin. This is the shared `site-content` producer contract; the canonical definition lives in existdb-openapi's README ("Sitewide search"). Articles authored with an app-relative `<?site-url …?>` are rewritten to the root-relative form by `finish.xq` at install; function/module URLs are emitted root-relative directly.
 
 **Articles** (DocBook) — URL injected as a processing instruction during post-install:
 ```xml
@@ -40,7 +42,7 @@ Index config:
     <xqdoc:control>
         <xqdoc:date>...</xqdoc:date>
         <xqdoc:location>...</xqdoc:location>
-        <xqdoc:site-url>functions/fn/</xqdoc:site-url>
+        <xqdoc:site-url>/exist/apps/docs/functions/fn/</xqdoc:site-url>
     </xqdoc:control>
     ...
 </xqdoc:xqdoc>
