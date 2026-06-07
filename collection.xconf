@@ -25,7 +25,7 @@
                 <field name="site-app"    expression="'docs'"/>
                 <field name="site-section" expression="'functions'"/>
                 <field name="site-url"
-                       expression="concat('functions/',
+                       expression="concat('/exist/apps/docs/functions/',
                            ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:name, '/',
                            if (contains(., ':'))
                            then substring-after(., ':')
@@ -91,7 +91,7 @@
                 <field name="site-section"
                        expression="'functions'"/>
                 <field name="site-url"
-                       expression="concat('functions/',
+                       expression="concat('/exist/apps/docs/functions/',
                            ancestor::xqdoc:xqdoc/xqdoc:module/xqdoc:name, '/',
                            if (contains(xqdoc:name, ':'))
                            then substring-after(xqdoc:name, ':')

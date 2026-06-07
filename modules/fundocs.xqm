@@ -102,7 +102,7 @@ declare %private function fundocs:module-to-xqdoc(
         <xqdoc:control>
             <xqdoc:date>{current-dateTime()}</xqdoc:date>
             <xqdoc:location>{$module/@location/string()}</xqdoc:location>
-            <xqdoc:site-url>functions/{$prefix}/</xqdoc:site-url>
+            <xqdoc:site-url>/exist/apps/docs/functions/{$prefix}/</xqdoc:site-url>
         </xqdoc:control>
         <xqdoc:module type="library">
             <xqdoc:uri>{$module/@uri/string()}</xqdoc:uri>
